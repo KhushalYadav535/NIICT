@@ -51,6 +51,7 @@ function Navbar() {
           <Link to="/" className={`nav-link ${isActive('/')}`} onClick={handleMenuItemClick}>Home</Link>
           <Link to="/about" className={`nav-link ${isActive('/about')}`} onClick={handleMenuItemClick}>About</Link>
           <Link to="/courses" className={`nav-link ${isActive('/courses')}`} onClick={handleMenuItemClick}>Courses</Link>
+          <Link to="/admission" className={`nav-link ${isActive('/admission')}`} onClick={handleMenuItemClick}>Admission</Link>
           <Link to="/contact" className={`nav-link ${isActive('/contact')}`} onClick={handleMenuItemClick}>Contact</Link>
 
           <Menu as="div" className="dropdown">

@@ -8,20 +8,22 @@ import Contact from './pages/Contact';
 import Courses from './components/Courses';
 import StudentPortal from './pages/StudentPortal';
 import Testimonial from './components/Testimonial';
+import Admission from './pages/Admission';
 
 function App() {
   return (
     <Router>
-      <div>
+      <div className="app">
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/admission" element={<Admission />} />
           <Route path="/testimonial" element={<Testimonial />} />
-          <Route path="/student-portal/:section" element={<StudentPortal />} />
           <Route path="/student-portal" element={<StudentPortal />} />
+          <Route path="/student-portal/:section" element={<StudentPortal />} />
         </Routes>
         <Footer />
       </div>

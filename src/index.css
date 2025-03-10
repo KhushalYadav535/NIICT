@@ -38,6 +38,14 @@ body {
   justify-content: space-between;
   align-items: center;
 }
+.nav-container span{
+  font-size: 3rem;
+  /* height: 100px;
+  width: 100px;
+  background-color: var(--primary-color); */
+
+  
+}
 
 .logo {
   display: flex;
@@ -45,12 +53,12 @@ body {
   gap: 0.75rem;
   text-decoration: none;
   color: var(--text-color);
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: bold;
 }
 
 .logo-image {
-  height: 60px;
+  height: 100px;
   border-radius: 50%;
 }
 
@@ -2132,6 +2140,132 @@ h2 {
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Admission Form Styles */
+.admission-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 80px auto 2rem;
+}
+
+.admission-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.admission-title {
+  color: var(--primary-color);
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.admission-form {
+  width: 100%;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #374151;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-group.image-upload {
+  grid-column: 1 / -1;
+}
+
+.image-preview {
+  margin-top: 1rem;
+  max-width: 200px;
+}
+
+.image-preview img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid #d1d5db;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.submit-button {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-button:hover {
+  background-color: #1d4ed8;
+}
+
+.submit-button:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .admission-container {
+    padding: 1rem;
+  }
+  
+  .admission-content {
+    padding: 1.5rem;
   }
 }
 
