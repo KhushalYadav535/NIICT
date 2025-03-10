@@ -36,7 +36,12 @@ function Navbar() {
       <nav className="nav-container">
         <Link to="/" className="logo">
           <img src={logo} alt="NIICT Logo" className="logo-image" />
-          <span>NIICT</span>
+          <div className="logo-text-container">
+            <div className="main-text-wrapper">
+              <span className="logo-text">NIICT<sup className="trademark">TM</sup></span>
+              <span className="logo-subtext">एक विश्‍वास</span>
+            </div>
+          </div>
         </Link>
 
         <button 

@@ -19,7 +19,21 @@ function About() {
       role: 'Mentor',
       bio: 'Schin Sir is an expert in data science and AI, guiding students to master cutting-edge technologies and excel in their careers.',
       image: '/images/instructors/schin-sir.jpg',
+
     },
+    {
+      name: 'Hemant Sir',
+      role: 'Mentor',
+      bio: 'Hemant Sir is a frontend developer and mentor, passionate about teaching students the latest web technologies and design principles.',
+      image: '/images/instructors/anita-maam.jpg',
+    },
+    {
+      name: 'Deepak Sir',
+      role: 'Mentor',
+      bio: 'Deepak Sir is a cybersecurity expert, helping students develop the skills to protect systems and networks from cyber threats.',
+      image: '/images/instructors/d',
+    }
+
   ];
 
   return (
