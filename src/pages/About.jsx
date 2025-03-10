@@ -6,16 +6,19 @@ function About() {
       name: 'Ramesh Sir',
       role: 'Director',
       bio: 'With over 20 years of experience in the IT industry, Ramesh Sir leads NIICT with a vision to transform education through innovation and practical learning.',
+      image: '/images/instructors/ramesh-sir.jpg',
     },
     {
       name: 'SK Sir',
       role: 'Mentor',
       bio: 'SK Sir is a seasoned software engineer and mentor, specializing in full-stack development and helping students build real-world projects.',
+      image: '/images/instructors/sk-sir.jpg',
     },
     {
       name: 'Schin Sir',
       role: 'Mentor',
       bio: 'Schin Sir is an expert in data science and AI, guiding students to master cutting-edge technologies and excel in their careers.',
+      image: '/images/instructors/schin-sir.jpg',
     },
   ];
 
@@ -43,6 +46,14 @@ function About() {
           <div className="instructor-grid">
             {instructors.map((instructor, index) => (
               <div className="instructor-card" key={index}>
+                <img 
+                  src={instructor.image} 
+                  alt={instructor.name}
+                  className="instructor-image"
+                  onError={(e) => {
+                    e.target.src = '/images/default-instructor.jpg';
+                  }}
+                />
                 <h3 className="instructor-name">{instructor.name}</h3>
                 <p className="instructor-role">{instructor.role}</p>
                 <p className="instructor-bio">{instructor.bio}</p>

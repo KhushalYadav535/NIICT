@@ -1,21 +1,41 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import Hero from '../components/Hero';
-import Courses from '../components/Courses';
-import Features from '../components/Features';
 import Stats from '../components/Stats';
-import Contact from '../components/Contact';
-import Testimonial from '../components/Testimonial';
-import About from './About';
+
+// Lazy load components for better performance
+const Courses = lazy(() => import('../components/Courses'));
+const Features = lazy(() => import('../components/Features'));
+const Testimonial = lazy(() => import('../components/Testimonial'));
+const About = lazy(() => import('./About'));
+const Contact = lazy(() => import('./Contact'));
+// Loading component
+const LoadingFallback = () => (
+  <div className="loading">
+    <div className="spinner"></div>
+    Loading...
+  </div>
+);
+
 function Home() {
   return (
-    <div>
+    <div className="home-container">
       <Hero />
-      <Courses />
-      <Features />
+      <Suspense fallback={<LoadingFallback />}>
+        <Courses />
+      </Suspense>
+      <Suspense fallback={<LoadingFallback />}>
+        <Features />
+      </Suspense>
       <Stats />
-      <About/>
-      <Contact />
-      <Testimonial/>
+      <Suspense fallback={<LoadingFallback />}>
+        <About />
+      </Suspense>
+      <Suspense fallback={<LoadingFallback />}>
+        <Contact />
+      </Suspense>
+      <Suspense fallback={<LoadingFallback />}>
+        <Testimonial />
+      </Suspense>
     </div>
   );
 }

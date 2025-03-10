@@ -4,7 +4,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import About from './pages/About';
-import Contact from './components/Contact';
+import Contact from './pages/Contact';
 import Courses from './components/Courses';
 import StudentPortal from './pages/StudentPortal';
 import Testimonial from './components/Testimonial';
@@ -19,8 +19,9 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/testmonial" element={<Testimonial />} />
-          <Route path="/student/:section" element={<StudentPortal />} />
+          <Route path="/testimonial" element={<Testimonial />} />
+          <Route path="/student-portal/:section" element={<StudentPortal />} />
+          <Route path="/student-portal" element={<StudentPortal />} />
         </Routes>
         <Footer />
       </div>
