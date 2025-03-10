@@ -2269,3 +2269,59 @@ h2 {
   }
 }
 
+/* WhatsApp Chat Button Styles */
+.whatsapp-button {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background-color: #25D366;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.whatsapp-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  background-color: #128C7E;
+}
+
+.whatsapp-text {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Animation for the button */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.whatsapp-button {
+  animation: bounce 2s infinite;
+}
+
+/* Hide text on mobile, show only icon */
+@media (max-width: 768px) {
+  .whatsapp-button {
+    padding: 1rem;
+    border-radius: 50%;
+  }
+  
+  .whatsapp-text {
+    display: none;
+  }
+}
+

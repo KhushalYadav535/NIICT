@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import WhatsAppChat from './components/WhatsAppChat';
 import Home from './pages/Home';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -25,6 +26,7 @@ function App() {
           <Route path="/student-portal" element={<StudentPortal />} />
           <Route path="/student-portal/:section" element={<StudentPortal />} />
         </Routes>
+        <WhatsAppChat />
         <Footer />
       </div>
     </Router>
