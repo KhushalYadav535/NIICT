@@ -89,17 +89,17 @@ function Contact() {
     {
       icon: '📍',
       title: 'Visit Us',
-      content: '123 Education Street, Tech City, State 12345',
+      content: 'Janghai Station Road , Besides Nagrik Degree College, Janghai Jaunpur (U.P)',
     },
     {
       icon: '📞',
       title: 'Call Us',
-      content: '+1 (234) 567-8900',
+      content: '+91 8182838680',
     },
     {
       icon: '✉️',
       title: 'Email Us',
-      content: 'info@niict.edu',
+      content: 'niict01@gmail.com',
     },
     {
       icon: '⏰',

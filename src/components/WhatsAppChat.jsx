@@ -3,7 +3,7 @@ import { MessageCircle } from 'lucide-react';
 
 function WhatsAppChat() {
   // Replace this with your actual WhatsApp number
-  const phoneNumber = '919876543210'; // Format: country code + number
+  const phoneNumber = '91945'; // Format: country code + number
   const message = encodeURIComponent('Hi, I would like to know more about NIICT courses.');
   
   const handleClick = () => {

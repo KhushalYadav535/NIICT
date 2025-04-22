@@ -39,7 +39,7 @@ function Navbar() {
           <div className="logo-text-container">
             <div className="main-text-wrapper">
               <span className="logo-text">NIICT<sup className="trademark">TM</sup></span>
-              <span className="logo-subtext">एक विश्‍वास</span>
+              {/* <span className="logo-subtext">एक विश्‍वास</span> */}
             </div>
           </div>
         </Link>

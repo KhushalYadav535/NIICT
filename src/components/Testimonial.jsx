@@ -7,17 +7,17 @@ import student3 from '../assets/sst4.jpg';
 function Testimonial() {
   const testimonials = [
     {
-      name: "John Doe",
+      name: "Amit Kumar",
       message: "NIICT has transformed my career! The courses are top-notch and the instructors are very knowledgeable.",
      image: student1,
     },
     {
-      name: "Jane Smith",
+      name: "Sunil ",
       message: "I gained practical skills that helped me land my dream job. Highly recommend NIICT!",
       image: student2,
     },
     {
-      name: "Alice Johnson",
+    name: "Abhishek",
       message: "The learning environment is fantastic, and the support from the staff is exceptional.",
      image: student3,
     },

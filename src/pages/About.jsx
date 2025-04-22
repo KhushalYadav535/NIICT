@@ -1,37 +1,42 @@
 import React from 'react';
+import rameshSir from '../assets/tutor1.jpeg';
+import sksir from '../assets/sksir.jpg';
+import schinSir from '../assets/sachinsir.png';
+import hemantSir from '../assets/hemantsir.png';
+import deepakSir from '../assets/gauravsir.png';
 
 function About() {
   const instructors = [
     {
       name: 'Ramesh Sir',
       role: 'Director',
-      bio: 'With over 20 years of experience in the IT industry, Ramesh Sir leads NIICT with a vision to transform education through innovation and practical learning.',
-      image: '/images/instructors/ramesh-sir.jpg',
+      bio: 'With over 10 years of experience in the IT industry, Ramesh Sir leads NIICT with a vision to transform education through innovation and practical learning.',
+      image: rameshSir,
     },
     {
       name: 'SK Sir',
       role: 'Mentor',
-      bio: 'SK Sir is a seasoned software engineer and mentor, specializing in full-stack development and helping students build real-world projects.',
-      image: '/images/instructors/sk-sir.jpg',
+      bio: 'SK Sir is a seasoned computer professional and mentor, specializing in full-stack development and helping students build real-world projects.',
+      image: sksir,
     },
     {
-      name: 'Schin Sir',
+      name: 'Sachin Sir',
       role: 'Mentor',
-      bio: 'Schin Sir is an expert in data science and AI, guiding students to master cutting-edge technologies and excel in their careers.',
-      image: '/images/instructors/schin-sir.jpg',
+      bio: 'Sachin Sir is an expert in data science and AI, guiding students to master cutting-edge technologies and excel in their careers.',
+      image: schinSir,
 
     },
     {
       name: 'Hemant Sir',
       role: 'Mentor',
       bio: 'Hemant Sir is a frontend developer and mentor, passionate about teaching students the latest web technologies and design principles.',
-      image: '/images/instructors/anita-maam.jpg',
+      image: hemantSir,
     },
     {
       name: 'Deepak Sir',
       role: 'Mentor',
       bio: 'Deepak Sir is a cybersecurity expert, helping students develop the skills to protect systems and networks from cyber threats.',
-      image: '/images/instructors/d',
+      image: deepakSir,
     }
 
   ];

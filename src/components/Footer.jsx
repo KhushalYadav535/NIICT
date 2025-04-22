@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaFacebook, FaTwitter, FaLinkedin, FaInstagram } from 'react-icons/fa';
+import { FaFacebook, FaTwitter, FaLinkedin, FaInstagram, FaYoutube} from 'react-icons/fa';
 //import './Footer.css'; // Import your CSS file
 
 function Footer() {
@@ -46,9 +46,9 @@ function Footer() {
         <div className="footer-section">
           <h3>Contact Info</h3>
           <ul className="footer-links">
-            <li>Phone: +91 123 456 7890</li>
-            <li>Email: admissions@niict.edu</li>
-            <li>Address: 123 Education Hub, Bangalore</li>
+            <li>Phone: +91 8182838680</li>
+            <li>Email: niict01@gmail.com</li>
+            <li>Address: Janghai Station Road , Besides Nagrik Degree College, Janghai Jaunpur (U.P)</li>
           </ul>
         </div>
         <div className="footer-section">
@@ -61,9 +61,9 @@ function Footer() {
               </a>
             </li>
             <li>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-                <FaTwitter />
-                Twitter
+              <a href="https://YouTube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                <FaYoutube />
+                YouTube
               </a>
             </li>
             <li>

@@ -1,25 +1,80 @@
 import React, { useState, useEffect } from 'react';
-import { Code, Database, Brain } from 'lucide-react';
+import { 
+  Laptop, 
+  GraduationCap, 
+  MonitorSmartphone, 
+  Calculator, 
+  Printer, 
+  Globe, 
+  PenTool, 
+  Database,
+  BookOpen 
+} from 'lucide-react';
 
 const courseData = [
   {
     id: 1,
-    title: 'Full Stack Development',
-    description: 'Master both frontend and backend development with modern technologies',
-    icon: <Code size={32} color="#2563eb" />,
+    title: 'CCC',
+    description: 'Course on Computer Concepts - Foundation course for computer literacy',
+    icon: <Laptop size={32} color="#2563eb" />,
+    duration: '3 Months'
   },
   {
     id: 2,
-    title: 'Data Science',
-    description: 'Learn data analysis, machine learning, and statistical modeling',
-    icon: <Database size={32} color="#2563eb" />,
+    title: 'O Level',
+    description: 'Advanced diploma in computer applications and programming',
+    icon: <GraduationCap size={32} color="#2563eb" />,
+    duration: '1 Year'
   },
   {
     id: 3,
-    title: 'Artificial Intelligence',
-    description: 'Explore AI, deep learning, and neural networks',
-    icon: <Brain size={32} color="#2563eb" />,
+    title: 'ADCA',
+    description: 'Advanced Diploma in Computer Applications',
+    icon: <MonitorSmartphone size={32} color="#2563eb" />,
+    duration: '1 Year'
   },
+  {
+    id: 4,
+    title: 'Tally',
+    description: 'Complete accounting and business management software training',
+    icon: <Calculator size={32} color="#2563eb" />,
+    duration: '3 Months'
+  },
+  {
+    id: 5,
+    title: 'DTP',
+    description: 'Desktop Publishing - Master document design and printing',
+    icon: <Printer size={32} color="#2563eb" />,
+    duration: '6 Months'
+  },
+  {
+    id: 6,
+    title: 'Web Designing',
+    description: 'Learn to create modern and responsive websites',
+    icon: <Globe size={32} color="#2563eb" />,
+    duration: '6 Months'
+  },
+  {
+    id: 7,
+    title: 'Graphic Designing',
+    description: 'Master digital art and creative design skills',
+    icon: <PenTool size={32} color="#2563eb" />,
+    duration: '6 Months'
+  },
+  {
+    id: 8,
+    title: 'DIT',
+    description: 'Diploma in Information Technology',
+    icon: <Database size={32} color="#2563eb" />,
+    duration: '1 Year'
+  },
+  {
+    id: 9,
+    title: 'PGDCA',
+    description: 'Post Graduate Diploma in Computer Applications',
+    icon: <BookOpen size={32} color="#2563eb" />,
+    duration: '1 Year'
+  }
 ];
 
 function Courses() {
@@ -49,7 +104,7 @@ function Courses() {
     <section id="courses" className="courses">
       <div className="section-title">
         <h2>Our Professional Courses</h2>
-        <p>Choose from our wide range of industry-relevant courses designed to launch your IT career</p>
+        <p>Comprehensive IT training programs to advance your career</p>
       </div>
       <div className="courses-grid">
         {courseData.map((course) => (
@@ -57,7 +112,10 @@ function Courses() {
             <div className="course-icon">{course.icon}</div>
             <h3>{course.title}</h3>
             <p>{course.description}</p>
-            <button className="btn btn-course">Learn More</button>
+            <div className="course-footer">
+              <span className="course-duration">Duration: {course.duration}</span>
+              <button className="btn btn-course">Learn More</button>
+            </div>
           </div>
         ))}
       </div>

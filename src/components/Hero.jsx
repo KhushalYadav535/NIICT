@@ -4,9 +4,10 @@ import image1 from '../assets/image5.jpg';
 import image2 from '../assets/image6.jpg';
 import image3 from '../assets/image7.jpg';
 import image4 from '../assets/image8.jpg';
+import image5 from '../assets/banner.jpg'
 
 function Hero() {
-  const images = [image1, image2, image3, image4];
+  const images = [image5,image1, image2, image3, image4];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [textColor, setTextColor] = useState('white');
   const [loading, setLoading] = useState(true);
