@@ -47,7 +47,7 @@ function About() {
         <h1 className="about-title">About NIICT</h1>
         <div className="about-card">
           <p className="about-text">
-            NIICT (National Institute of Information and Communication Technology) is a premier institution
+            NIICT (Nihanshi Institute of Information and Computer Technology) is a premier institution
             dedicated to empowering students with cutting-edge technology skills and knowledge.
           </p>
           <h2 className="about-subtitle">Our Mission</h2>
