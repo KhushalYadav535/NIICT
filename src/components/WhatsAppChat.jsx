@@ -1,26 +1,17 @@
 import React from 'react';
-import { MessageCircle } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
 
-function WhatsAppChat() {
-  // Replace this with your actual WhatsApp number
-  const phoneNumber = '91945'; // Format: country code + number
-  const message = encodeURIComponent('Hi, I would like to know more about NIICT courses.');
-  
-  const handleClick = () => {
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
-    window.open(whatsappUrl, '_blank');
-  };
-
+const WhatsAppChat = () => {
   return (
-    <button 
-      className="whatsapp-button" 
-      onClick={handleClick}
-      aria-label="Chat on WhatsApp"
+    <a
+      href="https://wa.me/1234567890" // Replace with your WhatsApp number
+      className="whatsapp-chat"
+      target="_blank"
+      rel="noopener noreferrer"
     >
-      <MessageCircle size={24} />
-      <span className="whatsapp-text">Chat with us</span>
-    </button>
+      <FaWhatsapp size={32} />
+    </a>
   );
-}
+};
 
-export default WhatsAppChat; 
+export default WhatsAppChat;

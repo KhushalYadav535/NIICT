@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { MapPin, Phone, Mail, Clock, Send, CheckCircle } from 'lucide-react';
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ function Contact() {
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [activeField, setActiveField] = useState(null);
 
   const validateForm = () => {
     const newErrors = {};
@@ -57,6 +59,14 @@ function Contact() {
     }
   };
 
+  const handleFocus = (fieldName) => {
+    setActiveField(fieldName);
+  };
+
+  const handleBlur = () => {
+    setActiveField(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -67,7 +77,7 @@ function Contact() {
     setLoading(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       setSubmitted(true);
       setFormData({
@@ -77,7 +87,7 @@ function Contact() {
         subject: '',
         message: '',
       });
-      setTimeout(() => setSubmitted(false), 3000);
+      setTimeout(() => setSubmitted(false), 5000);
     } catch (error) {
       setErrors({ submit: 'Failed to send message. Please try again.' });
     } finally {
@@ -87,141 +97,182 @@ function Contact() {
 
   const contactInfo = [
     {
-      icon: '📍',
+      icon: <MapPin size={24} color="#2563eb" />,
       title: 'Visit Us',
-      content: 'Janghai Station Road , Besides Nagrik Degree College, Janghai Jaunpur (U.P)',
+      content: 'Janghai Station Road, Besides Nagrik Degree College, Janghai Jaunpur (U.P)',
     },
     {
-      icon: '📞',
+      icon: <Phone size={24} color="#2563eb" />,
       title: 'Call Us',
       content: '+91 8182838680',
+      link: 'tel:+918182838680'
     },
     {
-      icon: '✉️',
+      icon: <Mail size={24} color="#2563eb" />,
       title: 'Email Us',
       content: 'niict01@gmail.com',
+      link: 'mailto:niict01@gmail.com'
     },
     {
-      icon: '⏰',
+      icon: <Clock size={24} color="#2563eb" />,
       title: 'Working Hours',
       content: 'Mon - Sat: 9:00 AM - 6:00 PM',
     },
   ];
 
   return (
-    <div className="contact-container">
-      <div className="contact-content">
-        <h1 className="contact-title">Contact Us</h1>
-        
+    <section className="contact-section">
+      <div className="contact-container">
+        <div className="contact-header">
+          <h1 className="contact-title">Get In Touch</h1>
+          <p className="contact-subtitle">We'd love to hear from you! Reach out for inquiries or support.</p>
+        </div>
+
         <div className="contact-grid">
-          <div className="contact-form-section">
-            <div className="contact-card">
-              <h2 className="contact-subtitle">Send us a Message</h2>
+          <div className="contact-form-container">
+            <div className="form-card">
+              <h2 className="form-title">Send us a Message</h2>
               <form onSubmit={handleSubmit} className="contact-form">
-                <div className="form-group">
+                <div className={`form-group ${activeField === 'name' ? 'active' : ''} ${errors.name ? 'error' : ''}`}>
+                  <label htmlFor="name">Your Name</label>
                   <input
+                    id="name"
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    placeholder="Your Name"
-                    className={errors.name ? 'error' : ''}
+                    onFocus={() => handleFocus('name')}
+                    onBlur={handleBlur}
                   />
                   {errors.name && <span className="error-message">{errors.name}</span>}
                 </div>
-                <div className="form-group">
+
+                <div className={`form-group ${activeField === 'email' ? 'active' : ''} ${errors.email ? 'error' : ''}`}>
+                  <label htmlFor="email">Email Address</label>
                   <input
+                    id="email"
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="Your Email"
-                    className={errors.email ? 'error' : ''}
+                    onFocus={() => handleFocus('email')}
+                    onBlur={handleBlur}
                   />
                   {errors.email && <span className="error-message">{errors.email}</span>}
                 </div>
-                <div className="form-group">
+
+                <div className={`form-group ${activeField === 'phone' ? 'active' : ''} ${errors.phone ? 'error' : ''}`}>
+                  <label htmlFor="phone">Phone Number (Optional)</label>
                   <input
+                    id="phone"
                     type="tel"
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    placeholder="Your Phone (optional)"
-                    className={errors.phone ? 'error' : ''}
+                    onFocus={() => handleFocus('phone')}
+                    onBlur={handleBlur}
                   />
                   {errors.phone && <span className="error-message">{errors.phone}</span>}
                 </div>
-                <div className="form-group">
+
+                <div className={`form-group ${activeField === 'subject' ? 'active' : ''} ${errors.subject ? 'error' : ''}`}>
+                  <label htmlFor="subject">Subject</label>
                   <input
+                    id="subject"
                     type="text"
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
-                    placeholder="Subject"
-                    className={errors.subject ? 'error' : ''}
+                    onFocus={() => handleFocus('subject')}
+                    onBlur={handleBlur}
                   />
                   {errors.subject && <span className="error-message">{errors.subject}</span>}
                 </div>
-                <div className="form-group">
+
+                <div className={`form-group ${activeField === 'message' ? 'active' : ''} ${errors.message ? 'error' : ''}`}>
+                  <label htmlFor="message">Your Message</label>
                   <textarea
+                    id="message"
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
-                    placeholder="Your Message"
+                    onFocus={() => handleFocus('message')}
+                    onBlur={handleBlur}
                     rows="5"
-                    className={errors.message ? 'error' : ''}
                   ></textarea>
                   {errors.message && <span className="error-message">{errors.message}</span>}
                 </div>
+
                 <button 
                   type="submit" 
                   className={`submit-button ${loading ? 'loading' : ''}`}
                   disabled={loading}
                 >
-                  {loading ? 'Sending...' : 'Send Message'}
+                  {loading ? (
+                    <span className="button-loader"></span>
+                  ) : (
+                    <>
+                      <Send size={18} /> Send Message
+                    </>
+                  )}
                 </button>
+
                 {errors.submit && (
                   <div className="error-message submit-error">
                     {errors.submit}
                   </div>
                 )}
+
                 {submitted && (
                   <div className="success-message">
-                    Thank you for your message! We'll get back to you soon.
+                    <CheckCircle size={20} /> Thank you! Your message has been sent.
                   </div>
                 )}
               </form>
             </div>
           </div>
 
-          <div className="contact-info-section">
-            <div className="contact-info-grid">
+          <div className="contact-info-container">
+            <div className="info-cards">
               {contactInfo.map((info, index) => (
-                <div key={index} className="contact-info-card">
-                  <span className="contact-info-icon">{info.icon}</span>
-                  <h3 className="contact-info-title">{info.title}</h3>
-                  <p className="contact-info-content">{info.content}</p>
-                </div>
+                <a 
+                  href={info.link} 
+                  key={index} 
+                  className="info-card"
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  <div className="info-icon">
+                    {info.icon}
+                  </div>
+                  <div className="info-content">
+                    <h3>{info.title}</h3>
+                    <p>{info.content}</p>
+                  </div>
+                </a>
               ))}
             </div>
 
             <div className="map-container">
-  <iframe
-    src="https://www.google.com/maps/place/Niict+Computer/@25.5423762,82.3080288,593m/data=!3m2!1e3!4b1!4m6!3m5!1s0x399003e52a9b7d65:0x8b92656ee8a0560e!8m2!3d25.5423714!4d82.3106037!16s%2Fg%2F11hcb1yhd9?entry=ttu&g_ep=EgoyMDI1MDMwNC4wIKXMDSoASAFQAw%3D%3D"
-    width="100%"
-    height="300"
-    style={{ border: 0 }}
-    allowFullScreen=""
-    loading="lazy"
-    referrerPolicy="no-referrer-when-downgrade"
-    title="NIICT Location"
-  ></iframe>
-</div>
+              <div className="map-overlay" onClick={(e) => e.preventDefault()}>
+                <span>Click to interact with map</span>
+              </div>
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3593.547582561444!2d82.3080288!3d25.5423762!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399003e52a9b7d65%3A0x8b92656ee8a0560e!2sNiict%20Computer!5e0!3m2!1sen!2sin!4v1713960000000!5m2!1sen!2sin"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="NIICT Location"
+              ></iframe>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
-export default Contact; 
+export default Contact;
