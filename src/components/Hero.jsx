@@ -5,15 +5,16 @@ import image1 from '../assets/image5.jpg';
 import image2 from '../assets/image6.jpg';
 import image3 from '../assets/image7.jpg';
 import image4 from '../assets/image8.jpg';
-import image5 from '../assets/banner.jpg';
+
 
 function Hero() {
-  const images = [image5, image1, image2, image3, image4];
+  const images = [image1, image2, image3, image4];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [textColor, setTextColor] = useState('white');
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isVisible, setIsVisible] = useState(false);
   const heroRef = useRef(null);
   let intervalRef = useRef(null);
 
@@ -141,11 +142,11 @@ function Hero() {
       onMouseEnter={pauseSlideshow}
       onMouseLeave={startSlideshow}
     >
-      {/* Background images with parallax effect */}
+      {/* Background images with parallax effect and zoom animation */}
       {images.map((image, index) => (
         <div
           key={index}
-          className={`hero-background ${index === currentImageIndex ? 'active' : ''}`}
+          className={`hero-background ${index === currentImageIndex ? 'active zoom' : ''}`}
           style={{
             backgroundImage: `url(${image})`,
             transform: index === currentImageIndex ? 
@@ -155,8 +156,8 @@ function Hero() {
         ></div>
       ))}
       
-      {/* Overlay gradient */}
-      <div className="hero-overlay"></div>
+      {/* Overlay gradient with animated gradient */}
+      <div className="hero-overlay animated-gradient"></div>
       
       {/* Content */}
       <div className="hero-content" style={{ color: textColor }}>
@@ -180,9 +181,14 @@ function Hero() {
               backgroundColor: textColor === 'black' ? '#2563eb' : '#fbbf24',
               color: textColor === 'black' ? 'white' : 'black',
             }}
+            onMouseEnter={(e) => e.currentTarget.classList.add('btn-hover')}
+            onMouseLeave={(e) => e.currentTarget.classList.remove('btn-hover')}
           >
-            Explore Courses <FiArrowRight className="ml-2" />
+            Explore Courses
           </Link>
+          <div className="hero-arrow-right">
+            <FiArrowRight />
+          </div>
           
           <Link
             to="contact"
@@ -194,18 +200,22 @@ function Hero() {
               borderColor: textColor === 'black' ? '#2563eb' : '#fbbf24',
               color: textColor,
             }}
+            onMouseEnter={(e) => e.currentTarget.classList.add('btn-hover')}
+            onMouseLeave={(e) => e.currentTarget.classList.remove('btn-hover')}
           >
             Free Consultation
           </Link>
         </div>
       </div>
       
-      {/* Slideshow controls */}
+      {/* Slideshow controls with microinteractions */}
       <div className="hero-controls">
         <button 
           className="hero-nav-btn prev"
           onClick={prevSlide}
           aria-label="Previous slide"
+          onMouseEnter={(e) => e.currentTarget.classList.add('btn-hover')}
+          onMouseLeave={(e) => e.currentTarget.classList.remove('btn-hover')}
         >
           &lsaquo;
         </button>
@@ -214,6 +224,8 @@ function Hero() {
           className="hero-play-btn"
           onClick={toggleSlideshow}
           aria-label={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
+          onMouseEnter={(e) => e.currentTarget.classList.add('btn-hover')}
+          onMouseLeave={(e) => e.currentTarget.classList.remove('btn-hover')}
         >
           {isPlaying ? <FiPause /> : <FiPlay />}
         </button>
@@ -222,6 +234,8 @@ function Hero() {
           className="hero-nav-btn next"
           onClick={nextSlide}
           aria-label="Next slide"
+          onMouseEnter={(e) => e.currentTarget.classList.add('btn-hover')}
+          onMouseLeave={(e) => e.currentTarget.classList.remove('btn-hover')}
         >
           &rsaquo;
         </button>
@@ -235,6 +249,8 @@ function Hero() {
             className={`indicator ${index === currentImageIndex ? 'active' : ''}`}
             onClick={() => goToSlide(index)}
             aria-label={`Go to slide ${index + 1}`}
+            onMouseEnter={(e) => e.currentTarget.classList.add('btn-hover')}
+            onMouseLeave={(e) => e.currentTarget.classList.remove('btn-hover')}
           />
         ))}
       </div>

@@ -1,8 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown, Menu as MenuIcon, X } from 'lucide-react';
 import { Menu } from '@headlessui/react';
 import logo from '../assets/logo.jpg';
+
+// import React, { useState, useEffect } from 'react';
+// import { Link, useLocation } from 'react-router-dom';
+// import { ChevronDown, Menu as MenuIcon, X } from 'lucide-react';
+// import { Menu } from '@headlessui/react';
+// import logo from '../assets/logo.jpg';
 
 function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -49,7 +56,7 @@ function Navbar() {
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label="Toggle menu"
         >
-          {isMobileMenuOpen ? <X size={24} /> : <MenuIcon size={24} />}
+          {isMobileMenuOpen ? <X size={24} className="menu-icon animated-icon" /> : <MenuIcon size={24} className="menu-icon animated-icon" />}
         </button>
 
         <div className={`nav-links ${isMobileMenuOpen ? 'open' : ''}`}>
