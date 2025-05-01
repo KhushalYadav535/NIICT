@@ -159,95 +159,97 @@ const Courses = () => {
   }, [activeTab]);
 
   return (
-    <div className="courses-container">
-      <div className="section-title">
-        <h2>Explore Our Professional Courses</h2>
-        <p>Invest in your future with our expertly designed training programs.</p>
-      </div>
+    <>
+      <div className="courses-container">
+        <div className="section-title">
+          <h2>Explore Our Professional Courses</h2>
+          <p>Invest in your future with our expertly designed training programs.</p>
+        </div>
 
-      <div className="course-filter">
-        <button
-          className={`filter-button ${activeTab === 'all' ? 'active' : ''}`}
-          onClick={() => setActiveTab('all')}
-        >
-          All Courses
-        </button>
-        <button
-          className={`filter-button ${activeTab === 'beginner' ? 'active' : ''}`}
-          onClick={() => setActiveTab('beginner')}
-        >
-          Beginner
-        </button>
-        <button
-          className={`filter-button ${activeTab === 'intermediate' ? 'active' : ''}`}
-          onClick={() => setActiveTab('intermediate')}
-        >
-          Intermediate
-        </button>
-        <button
-          className={`filter-button ${activeTab === 'advanced' ? 'active' : ''}`}
-          onClick={() => setActiveTab('advanced')}
-        >
-          Advanced
-        </button>
-        <button
-          className={`filter-button ${activeTab === 'professional' ? 'active' : ''}`}
-          onClick={() => setActiveTab('professional')}
-        >
-          Professional
-        </button>
-      </div>
-
-      <div className="courses-grid">
-        {filteredCourses.map((course) => (
-          <div
-            key={course.id}
-            className={`course-card ${isAnimating ? 'animating' : ''}`}
-            onClick={() => handleCourseClick(course)}
-            role="button"
-            tabIndex={0}
-            onKeyPress={(e) => e.key === 'Enter' && handleCourseClick(course)}
+        <div className="course-filter">
+          <button
+            className={`filter-button ${activeTab === 'all' ? 'active' : ''}`}
+            onClick={() => setActiveTab('all')}
           >
-            <div className="course-image-container">
-              <img
-                src={course.image}
-                alt={course.title}
-                className="course-image"
-                loading="lazy"
-              />
-              <div className="course-image-overlay" />
+            All Courses
+          </button>
+          <button
+            className={`filter-button ${activeTab === 'beginner' ? 'active' : ''}`}
+            onClick={() => setActiveTab('beginner')}
+          >
+            Beginner
+          </button>
+          <button
+            className={`filter-button ${activeTab === 'intermediate' ? 'active' : ''}`}
+            onClick={() => setActiveTab('intermediate')}
+          >
+            Intermediate
+          </button>
+          <button
+            className={`filter-button ${activeTab === 'advanced' ? 'active' : ''}`}
+            onClick={() => setActiveTab('advanced')}
+          >
+            Advanced
+          </button>
+          <button
+            className={`filter-button ${activeTab === 'professional' ? 'active' : ''}`}
+            onClick={() => setActiveTab('professional')}
+          >
+            Professional
+          </button>
+        </div>
+
+        <div className="courses-grid">
+          {filteredCourses.map((course) => (
+            <div
+              key={course.id}
+              className={`course-card ${isAnimating ? 'animating' : ''}`}
+              onClick={() => handleCourseClick(course)}
+              role="button"
+              tabIndex={0}
+              onKeyPress={(e) => e.key === 'Enter' && handleCourseClick(course)}
+            >
+              <div className="course-image-container">
+                <img
+                  src={course.image}
+                  alt={course.title}
+                  className="course-image"
+                  loading="lazy"
+                />
+                <div className="course-image-overlay" />
+              </div>
+              <div className="course-content">
+                <h3 className="course-title">{course.title}</h3>
+                <p className="course-description">{course.description}</p>
+                <div className="course-meta">
+                  <div className="meta-item">
+                    <Clock size={16} className="meta-icon" aria-hidden="true" />
+                    <span>{course.duration}</span>
+                  </div>
+                  <div className="meta-item">
+                    <Users size={16} className="meta-icon" aria-hidden="true" />
+                    <span>{course.students}+ students</span>
+                  </div>
+                </div>
+                <div className="course-meta">
+                  <div className="meta-item">
+                    <Calendar size={16} className="meta-icon" aria-hidden="true" />
+                    <span>Starts {course.startDate}</span>
+                  </div>
+                  <div className="meta-item">
+                    <Award size={16} className="meta-icon" aria-hidden="true" />
+                    <span>Level: {course.level}</span>
+                  </div>
+                </div>
+                <div className="course-cta">
+                  <button className="view-details-btn">
+                    View Details <ArrowRight size={16} className="cta-icon" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="course-content">
-              <h3 className="course-title">{course.title}</h3>
-              <p className="course-description">{course.description}</p>
-              <div className="course-meta">
-                <div className="meta-item">
-                  <Clock size={16} className="meta-icon" aria-hidden="true" />
-                  <span>{course.duration}</span>
-                </div>
-                <div className="meta-item">
-                  <Users size={16} className="meta-icon" aria-hidden="true" />
-                  <span>{course.students}+ students</span>
-                </div>
-              </div>
-              <div className="course-meta">
-                <div className="meta-item">
-                  <Calendar size={16} className="meta-icon" aria-hidden="true" />
-                  <span>Starts {course.startDate}</span>
-                </div>
-                <div className="meta-item">
-                  <Award size={16} className="meta-icon" aria-hidden="true" />
-                  <span>Level: {course.level}</span>
-                </div>
-              </div>
-              <div className="course-cta">
-                <button className="view-details-btn">
-                  View Details <ArrowRight size={16} className="cta-icon" aria-hidden="true" />
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {isModalOpen && selectedCourse && (
@@ -256,7 +258,7 @@ const Courses = () => {
           onClose={handleCloseModal}
         />
       )}
-    </div>
+    </>
   );
 }
 

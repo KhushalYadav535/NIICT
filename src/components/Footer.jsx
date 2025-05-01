@@ -84,15 +84,11 @@ function Footer() {
 
       <div className="footer-bottom">
         <p>&copy; 2024 NIICT. All rights reserved.</p>
+        <p>Designed and Developed by NIICT Team ❤️</p>
       </div>
 
       {/* Back to Top Button */}
-      <div
-        className={`back-to-top ${showButton ? 'show' : ''}`}
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      >
-        ↑
-      </div>
+      {/* Removed back-to-top button as per user request */}
     </footer>
   );
 }

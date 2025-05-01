@@ -27,8 +27,10 @@ function App() {
           <Route path="/student-portal" element={<StudentPortal />} />
           <Route path="/student-portal/:section" element={<StudentPortal />} />
         </Routes>
-        <WhatsAppChat />
-        <ChatBot />
+        <div className="chat-icons-container">
+          <WhatsAppChat />
+          <ChatBot />
+        </div>
         <Footer />
       </div>
     </Router>

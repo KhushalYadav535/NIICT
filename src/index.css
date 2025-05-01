@@ -3249,16 +3249,23 @@ h2 {
   }
 }
 
-.whatsapp-chat {
+.chat-icons-container {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 6rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  z-index: 1000;
+}
+
+.whatsapp-chat {
+  position: static;
   background-color: #25d366;
   color: white;
   border-radius: 50%;
   padding: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
   transition: background-color 0.3s;
 }
 
