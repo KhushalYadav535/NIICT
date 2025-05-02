@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { saveAs } from 'file-saver';
 
 const CourseMaterials = () => {
   const [selectedContent, setSelectedContent] = useState(null);
@@ -10,6 +11,7 @@ const CourseMaterials = () => {
         { 
           type: 'notes',
           name: 'Introduction to Computer Fundamentals',
+          downloadUrl: '/materials/computer-fundamentals.pdf',
           content: '# Computer Fundamentals\n\n## What is a Computer?\nA computer is an electronic device that processes data according to a set of instructions. It follows the IPO cycle (Input → Processing → Output) to perform tasks.\n\n## Basic Components\n### 1. CPU (Central Processing Unit)\n- Control Unit: Manages and coordinates computer operations\n- ALU (Arithmetic Logic Unit): Performs mathematical calculations\n- Registers: Small, high-speed memory units\n- Clock Speed: Measured in GHz, determines processing speed\n\n### 2. Memory\n- RAM (Random Access Memory):\n  - Temporary storage\n  - Volatile memory\n  - Faster access speed\n  - Common sizes: 4GB, 8GB, 16GB, 32GB\n\n- ROM (Read Only Memory):\n  - Permanent storage\n  - Non-volatile memory\n  - Contains BIOS/UEFI\n  - Types: PROM, EPROM, EEPROM\n\n### 3. Input/Output Devices\n- Input Devices:\n  - Keyboard: Standard QWERTY layout\n  - Mouse: Optical/Mechanical\n  - Scanner: Flatbed/Document\n  - Microphone: Audio input\n\n- Output Devices:\n  - Monitor: LCD/LED display\n  - Printer: Inkjet/Laser\n  - Speakers: Audio output\n  - Projector: Image projection\n\n### 4. Storage Devices\n- Primary Storage:\n  - RAM and ROM\n  - Cache memory\n\n- Secondary Storage:\n  - HDD: Large capacity, slower\n  - SSD: Faster, more reliable\n  - USB drives: Portable storage\n  - Cloud storage: Online backup\n\n## Types of Software\n### 1. System Software\n- Operating Systems:\n  - Windows\n  - macOS\n  - Linux\n  - Android/iOS\n\n- Utility Programs:\n  - Antivirus\n  - Disk cleanup\n  - File compression\n  - System backup\n\n### 2. Application Software\n- Productivity Software:\n  - MS Office Suite\n  - Adobe Creative Suite\n  - Web browsers\n\n- Development Tools:\n  - Programming IDEs\n  - Code editors\n  - Debugging tools\n\n## Computer Networks\n- LAN (Local Area Network)\n- WAN (Wide Area Network)\n- Internet connectivity\n- Network security basics'
         },
         { 
@@ -159,6 +161,18 @@ const CourseMaterials = () => {
     setSelectedContent(null);
   };
 
+  const handleDownload = (resource) => {
+    // For demonstration, we'll create a text file for notes
+    // In a real app, you would use the actual downloadUrl
+    if (resource.type === 'notes') {
+      const blob = new Blob([resource.content], { type: 'text/plain;charset=utf-8' });
+      saveAs(blob, `${resource.name}.txt`);
+    } else if (resource.downloadUrl) {
+      // For other resources with downloadUrl
+      window.open(resource.downloadUrl, '_blank');
+    }
+  };
+
   return (
     <div className="materials-container">
       <div className="materials-grid">
@@ -174,18 +188,29 @@ const CourseMaterials = () => {
                   <div className="resource-details">
                     <h4 className="resource-name">{resource.name}</h4>
                     {resource.type === 'notes' ? (
-                      <button 
-                        className="view-btn"
-                        onClick={() => handleViewContent(resource.content)}
-                      >
-                        View Notes
-                      </button>
+                      <div className="button-group">
+                        <button 
+                          className="view-btn"
+                          onClick={() => handleViewContent(resource.content)}
+                        >
+                          View Notes
+                        </button>
+                        <button 
+                          className="download-btn"
+                          onClick={() => handleDownload(resource)}
+                        >
+                          Download
+                        </button>
+                      </div>
                     ) : (
                       <>
                         <p className="resource-meta">
                           {resource.size || resource.duration || resource.files}
                         </p>
-                        <button className="download-btn">
+                        <button 
+                          className="download-btn"
+                          onClick={() => handleDownload(resource)}
+                        >
                           Download
                         </button>
                       </>

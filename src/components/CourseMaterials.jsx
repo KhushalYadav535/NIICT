@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const courses = [
   { name: 'CCC', notes: 'Notes for CCC course...' },
@@ -17,15 +17,28 @@ const courses = [
 ];
 
 const CourseMaterials = () => {
+  const [selectedCourse, setSelectedCourse] = useState(null);
+
   return (
-    <div className="course-materials-container" style={{ padding: '2rem', maxWidth: '900px', margin: 'auto' }}>
-      <h2 style={{ color: '#2563eb', marginBottom: '1.5rem' }}>Course Materials</h2>
-      {courses.map((course, index) => (
-        <div key={index} style={{ background: 'white', padding: '1rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', marginBottom: '1rem' }}>
-          <h3 style={{ color: '#1e40af', marginBottom: '0.5rem' }}>{course.name}</h3>
-          <p style={{ color: '#4b5563' }}>{course.notes}</p>
+    <div className="materials-container">
+      <h2 className="section-title">Course Materials</h2>
+      <div className="materials-grid">
+        {courses.map((course, index) => (
+          <div key={index} className="material-section" onClick={() => setSelectedCourse(course)}>
+            <h3>{course.name}</h3>
+            <p>{course.notes}</p>
+          </div>
+        ))}
+      </div>
+      {selectedCourse && (
+        <div className="content-modal" onClick={() => setSelectedCourse(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setSelectedCourse(null)}>×</button>
+            <h2>{selectedCourse.name} Notes</h2>
+            <p>{selectedCourse.notes}</p>
+          </div>
         </div>
-      ))}
+      )}
     </div>
   );
 };
