@@ -5,22 +5,22 @@ function ClassSchedule() {
     {
       day: 'Monday',
       classes: [
-        { time: '9:00 AM - 11:00 AM', subject: 'React.js Fundamentals', instructor: 'John Doe', room: 'Lab 101' },
-        { time: '11:30 AM - 1:30 PM', subject: 'Node.js Basics', instructor: 'Jane Smith', room: 'Lab 102' }
+        { time: '9:00 AM - 11:00 AM', subject: 'Frontend Development', instructor: 'Ramesh Sir', room: 'Lab 101' },
+        { time: '11:30 AM - 1:30 PM', subject: 'Backend Development', instructor: 'SK Sir', room: 'Lab 102' }
       ]
     },
     {
       day: 'Tuesday',
       classes: [
-        { time: '9:00 AM - 11:00 AM', subject: 'Database Design', instructor: 'Mike Johnson', room: 'Lab 103' },
-        { time: '2:00 PM - 4:00 PM', subject: 'API Development', instructor: 'Sarah Wilson', room: 'Lab 101' }
+        { time: '9:00 AM - 11:00 AM', subject: 'Database Management', instructor: 'Sachin Sir', room: 'Lab 101' },
+        { time: '2:00 PM - 4:00 PM', subject: 'Web Development', instructor: 'Khushal Sir', room: 'Lab 102' }
       ]
     },
     {
       day: 'Wednesday',
       classes: [
-        { time: '10:00 AM - 12:00 PM', subject: 'React Advanced Topics', instructor: 'John Doe', room: 'Lab 101' },
-        { time: '2:00 PM - 4:00 PM', subject: 'MongoDB', instructor: 'Mike Johnson', room: 'Lab 102' }
+        { time: '10:00 AM - 12:00 PM', subject: 'React & Node.js', instructor: 'Deepak Sir', room: 'Lab 101' },
+        { time: '2:00 PM - 4:00 PM', subject: 'Project Development', instructor: 'SK Sir', room: 'Lab 102' }
       ]
     }
   ];
