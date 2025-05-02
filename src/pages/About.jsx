@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import rameshSir from '../assets/tutor1.jpeg';
 import sksir from '../assets/sksir.jpg';
 import schinSir from '../assets/sachinsir.png';
-import hemantSir from '../assets/hemantsir.png';
+import hemantSir from '../assets/hemant.jpeg'
 import deepakSir from '../assets/gauravsir.png';
 import KhushalSir from '../assets/gaurav.jpg';
 
@@ -30,27 +30,27 @@ function About() {
       image: sksir,
     },
     {
-      name: 'Sachin Sir',
-      role: 'Mentor',
-      bio: 'Sachin Sir is an expert in fundamental computer science and programming, providing students with a strong foundation in these areas.',
-      image: schinSir,
-    },
-    {
-      name: 'Hemant Sir',
-      role: 'Mentor',
-      bio: 'Hemant Sir is skilled in English Grammar and literature, inspiring students to communicate effectively and think critically.',
-      image: hemantSir,
-    },
-    {
       name: 'Deepak Sir',
       role: 'Mentor',
-      bio: 'Deepak Sir is a cybersecurity expert, helping students develop the skills to protect systems and networks from cyber threats.',
+      bio: 'Deepak Sir is a dedicated mentor with expertise in computer fundamentals and programming concepts. His teaching approach emphasizes practical learning and problem-solving skills.',
       image: deepakSir,
     },
     {
-      name: 'Khushal Sir',
+      name: 'Hemant Sir',
+      role: 'English Mentor',
+      bio: 'Hemant Sir is skilled in English Grammar and literature, inspiring students to communicate effectively and think critically. His expertise helps students develop strong language and communication skills.',
+      image: hemantSir,
+    },
+    {
+      name: 'Sachin Sir',
       role: 'Mentor',
-      bio: 'Khushal Sir is skilled in computer science and programming, providing students with a strong foundation in these areas.',
+      bio: 'Sachin Sir is an expert in fundamental computer science and programming, providing students with a strong foundation in these areas. His teaching methodology focuses on practical applications.',
+      image: schinSir,
+    },
+    {
+      name: 'Khushal Sir',
+      role: 'Programming Expert',
+      bio: 'Khushal Sir specializes in computer programming and software development. His expertise in various programming languages and modern development tools helps students master coding skills.',
       image: KhushalSir,
     },
   ];

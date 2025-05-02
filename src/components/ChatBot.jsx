@@ -68,24 +68,26 @@ const ChatBot = () => {
       icon: <Award size={16} />
     },
     'timings': {
-      text: 'We offer flexible timing options:',
+      text: 'Our coaching hours are:',
       options: [
-        'Morning Batch: 8:00 AM - 11:00 AM',
-        'Afternoon Batch: 12:00 PM - 3:00 PM',
-        'Evening Batch: 4:00 PM - 7:00 PM',
-        'Weekend Batch: Saturday & Sunday',
+        'Open: 6:00 AM - 6:00 PM',
+        'Monday to Saturday',
+        'Sunday: By Appointment',
       ],
-      note: '* You can choose any batch as per your convenience.',
+      note: '* Flexible batch timings available within these hours',
       icon: <Clock size={16} />
     },
     'faculty': {
-      text: 'Our faculty members are highly qualified professionals:',
+      text: 'Our experienced faculty members:',
       options: [
-        'Experienced industry professionals',
-        'Certified trainers',
-        'Regular workshops and seminars',
-        'One-to-one mentoring available',
+        'Ramesh Sir - Programming Expert',
+        'SK Sir - Web Development',
+        'Deepak Sir - Database Management',
+        'Hemant Sir - Digital Marketing',
+        'Sachin Sir - Networking',
+        'Khushal Sir - Full Stack Development'
       ],
+      note: '* All faculty members have extensive industry experience',
       icon: <Users size={16} />
     },
     'admission': {
@@ -136,7 +138,7 @@ const ChatBot = () => {
         options: [
           '📞 Phone: +91-XXXXXXXXXX',
           '📧 Email: info@niict.com',
-          '📍 Address: Your Institute Address',
+          '📍 Address: Janghai Station Road, Near Degree College, Jaunpur'
         ],
         note: '* Feel free to visit us during office hours: 9 AM - 6 PM',
       };

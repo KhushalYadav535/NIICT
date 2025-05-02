@@ -61,7 +61,7 @@ function Footer() {
               </a>
             </li>
             <li>
-              <a href="https://YouTube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+              <a href="https://www.youtube.com/@gautameducation9214" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
                 <FaYoutube />
                 YouTube
               </a>
@@ -73,7 +73,7 @@ function Footer() {
               </a>
             </li>
             <li>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <a href="https://www.instagram.com/invites/contact/?utm_source=ig_contact_invite&utm_medium=copy_link&utm_content=xgma0jt" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                 <FaInstagram />
                 Instagram
               </a>

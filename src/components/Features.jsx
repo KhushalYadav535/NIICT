@@ -89,7 +89,7 @@ function Features() {
     <section id="features" className="features">
       <div className="features-grid">
         <div className="features-content">
-          <h2>Why Choose NIICT?</h2>
+          <h2 className="features-title">Why Choose NIICT?</h2>
           <ul className="feature-list">
             {featureData.map((feature) => (
               <li
@@ -97,9 +97,9 @@ function Features() {
                 key={feature.id}
                 onMouseEnter={() => handleFeatureHover(feature.id)}
               >
-                <span className="feature-icon">{feature.icon}</span>
+                <span className="feature-icon feature-icon-glow">{feature.icon}</span>
                 <div className="feature-text-container">
-                  <h3 className="feature-title">{feature.title}</h3>
+                  <h3 className="feature-title feature-title-underline">{feature.title}</h3>
                   <span className="feature-text">{feature.text}</span>
                 </div>
               </li>
@@ -113,7 +113,7 @@ function Features() {
             className="feature-image"
             loading="lazy"
           />
-          <div className="feature-image-overlay" />
+          <div className="feature-image-overlay feature-image-overlay-animate" />
         </div>
       </div>
     </section>

@@ -1,15 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown, Menu as MenuIcon, X } from 'lucide-react';
 import { Menu } from '@headlessui/react';
 import logo from '../assets/logo.jpg';
-
-// import React, { useState, useEffect } from 'react';
-// import { Link, useLocation } from 'react-router-dom';
-// import { ChevronDown, Menu as MenuIcon, X } from 'lucide-react';
-// import { Menu } from '@headlessui/react';
-// import logo from '../assets/logo.jpg';
 
 function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -41,12 +34,11 @@ function Navbar() {
   return (
     <header className={`header ${isScrolled ? 'shadow-lg' : ''}`}>
       <nav className="nav-container">
-        <Link to="/" className="logo">
+        <Link to="/" className="logo" onClick={handleMenuItemClick}>
           <img src={logo} alt="NIICT Logo" className="logo-image" />
           <div className="logo-text-container">
             <div className="main-text-wrapper">
               <span className="logo-text">NIICT<sup className="trademark">TM</sup></span>
-              {/* <span className="logo-subtext">एक विश्‍वास</span> */}
             </div>
           </div>
         </Link>
@@ -55,6 +47,7 @@ function Navbar() {
           className="mobile-menu-toggle" 
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label="Toggle menu"
+          aria-expanded={isMobileMenuOpen}
         >
           {isMobileMenuOpen ? <X size={24} className="menu-icon animated-icon" /> : <MenuIcon size={24} className="menu-icon animated-icon" />}
         </button>
@@ -80,7 +73,9 @@ function Navbar() {
                           <Link
                             to={`/student-portal/${item.id}`}
                             className={`dropdown-item ${active ? 'active' : ''}`}
-                            onClick={handleMenuItemClick}
+                            onClick={() => {
+                              handleMenuItemClick();
+                            }}
                           >
                             <span className="item-icon">{item.icon}</span>
                             {item.label}

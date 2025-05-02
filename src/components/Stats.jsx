@@ -4,28 +4,28 @@ import { Users, Briefcase, Award, BookOpen } from 'lucide-react';
 function Stats() {
   const stats = [
     {
-      icon: <Users size={48} />,
+      icon: <Users size={48} className="stat-icon-glow" />,
       value: 1000,
       suffix: "+",
       label: "Students Trained",
       description: "Join our growing community of successful graduates"
     },
     {
-      icon: <Briefcase size={48} />,
+      icon: <Briefcase size={48} className="stat-icon-glow" />,
       value: 95,
       suffix: "%",
       label: "Placement Rate",
       description: "Our graduates secure positions in top companies"
     },
     {
-      icon: <Award size={48} />,
+      icon: <Award size={48} className="stat-icon-glow" />,
       value: 50,
       suffix: "+",
       label: "Corporate Partners",
       description: "Industry connections for better opportunities"
     },
     {
-      icon: <BookOpen size={48} />,
+      icon: <BookOpen size={48} className="stat-icon-glow" />,
       value: 20,
       suffix: "+",
       label: "Professional Courses",
@@ -65,7 +65,7 @@ function Stats() {
 
         <div className="stats-grid">
           {stats.map((stat, index) => (
-            <div className="stat-card" key={index}>
+            <div className="stat-card stat-card-animate" key={index}>
               <div className="stat-icon">
                 {stat.icon}
               </div>
