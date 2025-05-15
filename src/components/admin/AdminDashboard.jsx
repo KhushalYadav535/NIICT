@@ -19,7 +19,7 @@ const AdminDashboard = () => {
 
   const fetchAdmissions = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/admissions');
+      const response = await fetch('/api/admissions');
       const data = await response.json();
       setAdmissions(data);
     } catch (error) {
@@ -33,7 +33,7 @@ const AdminDashboard = () => {
 
   const handleStatusUpdate = async (id, newStatus) => {
     try {
-      await fetch(`http://localhost:5000/api/admissions/${id}`, {
+      await fetch(`/api/admissions/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

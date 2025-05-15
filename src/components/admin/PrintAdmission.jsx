@@ -12,7 +12,7 @@ const PrintAdmission = () => {
 
   const fetchAdmission = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/admissions/${id}`);
+      const response = await fetch(`/api/admissions/${id}`);
       const data = await response.json();
       setAdmission(data);
     } catch (error) {

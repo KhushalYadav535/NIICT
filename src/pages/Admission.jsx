@@ -142,7 +142,7 @@ function Admission() {
         mothersName: formData.mothersName
       };
 
-      const response = await fetch('http://localhost:5000/api/admissions', {
+      const response = await fetch('/api/admissions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
