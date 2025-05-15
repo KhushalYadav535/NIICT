@@ -47,6 +47,26 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this admission?')) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admissions/${id}`, {
+          method: 'DELETE',
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to delete admission');
+        }
+        
+        await response.json();
+        fetchAdmissions(); // Refresh the list
+      } catch (error) {
+        console.error('Error deleting admission:', error);
+        alert('Failed to delete admission. Please try again.');
+      }
+    }
+  };
+
   // Dashboard summary
   const total = admissions.length;
   const approved = admissions.filter(a => a.status === 'Approved').length;
@@ -203,9 +223,18 @@ const AdminDashboard = () => {
                         admission._id,
                         admission.status === 'Pending' ? 'Approved' : 'Pending'
                       )}
-                      sx={{ borderRadius: 2 }}
+                      sx={{ mr: 1, borderRadius: 2 }}
                     >
                       {admission.status === 'Pending' ? 'Approve' : 'Mark Pending'}
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      size="small"
+                      onClick={() => handleDelete(admission._id)}
+                      sx={{ borderRadius: 2 }}
+                    >
+                      Delete
                     </Button>
                   </TableCell>
                 </TableRow>

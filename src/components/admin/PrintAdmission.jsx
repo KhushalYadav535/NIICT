@@ -44,6 +44,12 @@ const PrintAdmission = () => {
             <Typography><strong>Name:</strong> {admission.name}</Typography>
           </Grid>
           <Grid item xs={6}>
+            <Typography><strong>Father's Name:</strong> {admission.fathersName}</Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography><strong>Mother's Name:</strong> {admission.mothersName}</Typography>
+          </Grid>
+          <Grid item xs={6}>
             <Typography><strong>Email:</strong> {admission.email}</Typography>
           </Grid>
           <Grid item xs={6}>
@@ -66,11 +72,24 @@ const PrintAdmission = () => {
             <Typography><strong>Education:</strong> {admission.education}</Typography>
           </Grid>
           <Grid item xs={6}>
+            <Typography><strong>Date of Admission:</strong> {new Date(admission.dateOfAdmission).toLocaleDateString()}</Typography>
+          </Grid>
+          <Grid item xs={6}>
             <Typography><strong>Application Date:</strong> {new Date(admission.applicationDate).toLocaleDateString()}</Typography>
           </Grid>
           <Grid item xs={6}>
             <Typography><strong>Status:</strong> {admission.status}</Typography>
           </Grid>
+          {admission.image && (
+            <Grid item xs={12}>
+              <Typography variant="h6" sx={{ mt: 2 }}>Photo</Typography>
+              <img 
+                src={admission.image} 
+                alt="Student" 
+                style={{ maxWidth: '200px', marginTop: '10px' }}
+              />
+            </Grid>
+          )}
         </Grid>
 
         <Button

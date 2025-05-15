@@ -128,6 +128,13 @@ function Admission() {
     }
 
     try {
+      // Convert image to base64
+      const imageBase64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(formData.image);
+      });
+
       // Create FormData object to send to backend
       const admissionData = {
         name: formData.candidateName,
@@ -139,7 +146,8 @@ function Admission() {
         education: formData.educationalQualification,
         // Additional fields
         fathersName: formData.fathersName,
-        mothersName: formData.mothersName
+        mothersName: formData.mothersName,
+        image: imageBase64 // Add the base64 image
       };
 
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
