@@ -5,6 +5,7 @@ import { Container, Paper, Typography, Grid, Button } from '@mui/material';
 const PrintAdmission = () => {
   const [admission, setAdmission] = useState(null);
   const { id } = useParams();
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     fetchAdmission();
@@ -12,7 +13,7 @@ const PrintAdmission = () => {
 
   const fetchAdmission = async () => {
     try {
-      const response = await fetch(`/api/admissions/${id}`);
+      const response = await fetch(`${API_BASE_URL}/api/admissions/${id}`);
       const data = await response.json();
       setAdmission(data);
     } catch (error) {

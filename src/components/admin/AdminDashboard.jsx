@@ -12,6 +12,7 @@ const COLORS = ['#4a90e2', '#10b981', '#fbbf24', '#f87171', '#a78bfa', '#22d3ee'
 const AdminDashboard = () => {
   const [admissions, setAdmissions] = useState([]);
   const navigate = useNavigate();
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     fetchAdmissions();
@@ -19,7 +20,7 @@ const AdminDashboard = () => {
 
   const fetchAdmissions = async () => {
     try {
-      const response = await fetch('/api/admissions');
+      const response = await fetch(`${API_BASE_URL}/api/admissions`);
       const data = await response.json();
       setAdmissions(data);
     } catch (error) {
@@ -33,7 +34,7 @@ const AdminDashboard = () => {
 
   const handleStatusUpdate = async (id, newStatus) => {
     try {
-      await fetch(`/api/admissions/${id}`, {
+      await fetch(`${API_BASE_URL}/api/admissions/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

@@ -142,7 +142,8 @@ function Admission() {
         mothersName: formData.mothersName
       };
 
-      const response = await fetch('/api/admissions', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+      const response = await fetch(`${API_BASE_URL}/api/admissions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
