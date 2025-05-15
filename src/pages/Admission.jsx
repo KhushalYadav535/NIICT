@@ -142,13 +142,15 @@ function Admission() {
         phone: formData.contactNo,
         course: formData.course,
         dateOfBirth: formData.dateOfBirth,
+        dateOfAdmission: formData.dateOfAdmission,
         address: formData.permanentAddress,
         education: formData.educationalQualification,
-        // Additional fields
         fathersName: formData.fathersName,
         mothersName: formData.mothersName,
-        image: imageBase64 // Add the base64 image
+        image: imageBase64 // Make sure image is included
       };
+
+      console.log('Submitting admission data:', { ...admissionData, image: 'base64 string...' });
 
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
       const response = await fetch(`${API_BASE_URL}/api/admissions`, {
@@ -160,7 +162,8 @@ function Admission() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit admission');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to submit admission');
       }
 
       const result = await response.json();
@@ -182,7 +185,7 @@ function Admission() {
       setPreviewImage(null);
     } catch (error) {
       console.error('Error submitting form:', error);
-      setErrors({ submit: 'Failed to submit form. Please try again.' });
+      setErrors({ submit: error.message || 'Failed to submit form. Please try again.' });
     }
   };
 
