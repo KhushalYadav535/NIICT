@@ -58,6 +58,7 @@ function Navbar() {
           <Link to="/courses" className={`nav-link ${isActive('/courses')}`} onClick={handleMenuItemClick}>Courses</Link>
           <Link to="/admission" className={`nav-link ${isActive('/admission')}`} onClick={handleMenuItemClick}>Admission</Link>
           <Link to="/contact" className={`nav-link ${isActive('/contact')}`} onClick={handleMenuItemClick}>Contact</Link>
+          <Link to="/admin-login" className={`nav-link ${isActive('/admin/dashboard') || isActive('/admin-login') ? 'active' : ''}`} onClick={handleMenuItemClick}>Admin</Link>
 
           <Menu as="div" className="dropdown">
             {({ open }) => (

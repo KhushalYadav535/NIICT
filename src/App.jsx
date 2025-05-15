@@ -10,6 +10,10 @@ import Courses from './components/Courses';
 import StudentPortal from './pages/StudentPortal';
 import Testimonial from './components/Testimonial';
 import Admission from './pages/Admission';
+import AdminDashboard from './components/admin/AdminDashboard';
+import PrintAdmission from './components/admin/PrintAdmission';
+import AdminLogin from './pages/AdminLogin';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -25,6 +29,23 @@ function App() {
           <Route path="/testimonial" element={<Testimonial />} />
           <Route path="/student-portal" element={<StudentPortal />} />
           <Route path="/student-portal/:section" element={<StudentPortal />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route 
+            path="/admin/dashboard" 
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/print/:id" 
+            element={
+              <ProtectedRoute>
+                <PrintAdmission />
+              </ProtectedRoute>
+            } 
+          />
         </Routes>
         <div className="chat-icons-container">
           <ChatBot />

@@ -128,9 +128,35 @@ function Admission() {
     }
 
     try {
-      // Here you would typically send the form data to your backend
-      console.log('Form submitted:', formData);
+      // Create FormData object to send to backend
+      const admissionData = {
+        name: formData.candidateName,
+        email: formData.contactNo, // Using contact as email for now
+        phone: formData.contactNo,
+        course: formData.course,
+        dateOfBirth: formData.dateOfBirth,
+        address: formData.permanentAddress,
+        education: formData.educationalQualification,
+        // Additional fields
+        fathersName: formData.fathersName,
+        mothersName: formData.mothersName
+      };
+
+      const response = await fetch('http://localhost:5000/api/admissions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(admissionData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit admission');
+      }
+
+      const result = await response.json();
       alert('Application submitted successfully!');
+      
       // Reset form
       setFormData({
         candidateName: '',
