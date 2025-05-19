@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, Clock, Calendar, Book, Users, Award } from 'lucide-react';
+import { Bot, X, Send, Clock, Calendar, Book, Users, Award } from 'lucide-react';
 import './ChatBot.css';
 
 const ChatBot = () => {
@@ -206,7 +206,7 @@ const ChatBot = () => {
         onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? 'Close chat' : 'Open chat'}
       >
-        {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
+        {isOpen ? <X size={24} /> : <Bot size={32} />}
       </button>
 
       {isOpen && (

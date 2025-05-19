@@ -2154,25 +2154,54 @@ section, .admission-content, .about-container, .contact-section, .courses, .feat
   margin-top: 2rem;
 }
 
-.control-button {
-  background: #2563eb !important;
-  color: white !important;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+.carousel-controls .control-button {
+  background: transparent !important;
+  color: var(--primary-color) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  width: auto !important;
+  height: auto !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  transition: none !important;
 }
 
-.control-button:hover {
-  background: #1d4ed8 !important;
-  color: #ffd700 !important;
-  transform: scale(1.1);
+.carousel-controls .control-button svg {
+  color: var(--primary-color) !important;
+  font-size: 2rem !important;
+}
+
+.carousel-controls .control-button:hover,
+.carousel-controls .control-button:focus {
+  background: transparent !important;
+  color: var(--hover-color) !important;
+  box-shadow: none !important;
+}
+
+.carousel-controls .control-button:hover svg,
+.carousel-controls .control-button:focus svg {
+  color: var(--hover-color) !important;
+}
+
+.carousel-controls .dot {
+  background: transparent !important;
+  border: 2px solid var(--primary-color) !important;
+  border-radius: 50% !important;
+  width: 14px !important;
+  height: 14px !important;
+  margin: 0 4px !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  transition: border-color 0.2s, background 0.2s;
+  display: inline-block;
+}
+
+.carousel-controls .dot.active {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
 }
 
 .carousel-dots {
@@ -4084,14 +4113,102 @@ input:disabled {
     left: 0; top: 0; width: 100vw; background: white !important;
     margin: 0 !important; padding: 0 !important;
     box-shadow: none !important;
+    font-family: 'Times New Roman', Times, serif !important;
+    color: #222 !important;
   }
-  /* Hide print button */
-  .MuiButton-root, button, .print-btn {
+  .admission-title {
+    text-align: center !important;
+    font-size: 2.2rem !important;
+    font-weight: bold !important;
+    margin-bottom: 2rem !important;
+    margin-top: 1rem !important;
+  }
+  .admission-form {
+    width: 90% !important;
+    margin: 0 auto !important;
+    background: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  .form-grid {
+    display: table !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-bottom: 2rem !important;
+  }
+  .form-group, .full-width, .image-upload {
+    display: table-row !important;
+    border-bottom: 1px solid #bbb !important;
+    padding: 0 !important;
+  }
+  .form-group label, .full-width label, .image-upload label {
+    display: table-cell !important;
+    font-weight: bold !important;
+    padding: 8px 12px !important;
+    width: 35% !important;
+    text-align: left !important;
+    border-right: 1px solid #bbb !important;
+    background: #f5f5f5 !important;
+    font-size: 1rem !important;
+  }
+  .form-group input, .form-group select, .form-group textarea, .full-width textarea, .image-upload input {
+    display: table-cell !important;
+    border: none !important;
+    background: none !important;
+    box-shadow: none !important;
+    font-size: 1rem !important;
+    padding: 8px 12px !important;
+    width: 100% !important;
+    color: #222 !important;
+    outline: none !important;
+  }
+  .form-group input[type="file"] {
     display: none !important;
   }
-  @page {
-    size: A4;
-    margin: 20mm 15mm 20mm 15mm;
+  .image-preview {
+    display: table-cell !important;
+    padding: 8px 12px !important;
+    vertical-align: middle !important;
+    text-align: left !important;
+  }
+  .image-preview img {
+    width: 120px !important;
+    height: 120px !important;
+    object-fit: cover !important;
+    border: 1px solid #bbb !important;
+    border-radius: 4px !important;
+    margin-top: 0 !important;
+  }
+  .form-actions, .submit-button, .error-message, .success-message {
+    display: none !important;
+  }
+  .form-group.error, .form-group input.error, .form-group select.error, .form-group textarea.error {
+    border: none !important;
+    background: none !important;
+    color: #222 !important;
+  }
+  .form-group label[for="image"] {
+    vertical-align: top !important;
+  }
+  /* Signature box */
+  .signature-box {
+    margin-top: 2.5rem !important;
+    width: 250px !important;
+    height: 60px !important;
+    border-bottom: 1.5px solid #222 !important;
+    margin-left: auto !important;
+    margin-right: 2.5rem !important;
+    font-size: 1rem !important;
+    text-align: right !important;
+    padding-right: 10px !important;
+    line-height: 60px !important;
+  }
+  .signature-label {
+    font-size: 1rem !important;
+    color: #222 !important;
+    margin-right: 2.5rem !important;
+    text-align: right !important;
+    display: block !important;
   }
 }
 
