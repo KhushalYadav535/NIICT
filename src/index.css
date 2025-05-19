@@ -2153,8 +2153,8 @@ section, .admission-content, .about-container, .contact-section, .courses, .feat
 }
 
 .control-button {
-  background: #2563eb;
-  color: white;
+  background: #2563eb !important;
+  color: white !important;
   width: 48px;
   height: 48px;
   border-radius: 50%;
@@ -2164,10 +2164,12 @@ section, .admission-content, .about-container, .contact-section, .courses, .feat
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
 
 .control-button:hover {
-  background: #1d4ed8;
+  background: #1d4ed8 !important;
+  color: #ffd700 !important;
   transform: scale(1.1);
 }
 
@@ -4089,5 +4091,17 @@ input:disabled {
     size: A4;
     margin: 20mm 15mm 20mm 15mm;
   }
+}
+
+.quote-icon {
+  color: #2563eb !important;
+  background: none !important;
+  opacity: 0.15;
+  font-size: 2rem;
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  z-index: 1;
+  pointer-events: none;
 }
 

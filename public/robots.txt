@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /private/
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://www.niict.in/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 10 
