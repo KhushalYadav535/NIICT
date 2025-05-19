@@ -689,23 +689,25 @@ section, .admission-content, .about-container, .contact-section, .courses, .feat
 }
 
 .indicator {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.4);
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 0;
+  width: 12px !important;
+  height: 12px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.4) !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  padding: 0 !important;
+  margin: 0 4px !important;
+  display: inline-block !important;
 }
 
 .indicator.active {
-  background: white;
-  transform: scale(1.2);
+  background: white !important;
+  transform: scale(1.2) !important;
 }
 
 .indicator:hover {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.8) !important;
 }
 
 /* Loading Animation */

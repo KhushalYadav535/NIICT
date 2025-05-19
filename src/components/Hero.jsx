@@ -186,10 +186,6 @@ function Hero() {
           >
             Explore Courses
           </Link>
-          <div className="hero-arrow-right">
-            <FiArrowRight />
-          </div>
-          
           <Link
             to="contact"
             smooth={true}

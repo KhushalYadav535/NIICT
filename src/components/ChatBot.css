@@ -13,21 +13,23 @@
 }
 
 .chatbot-toggle {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
+  width: 56px !important;
+  height: 56px !important;
+  border-radius: 50% !important;
   background: #25D366 !important;
   color: white !important;
-  border: none;
-  cursor: pointer;
-  font-size: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
+  border: none !important;
+  cursor: pointer !important;
+  font-size: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15) !important;
+  z-index: 9999 !important;
+  position: fixed !important;
+  bottom: 2rem !important;
+  right: 2rem !important;
+  overflow: hidden !important;
 }
 
 .chatbot-toggle::before {
