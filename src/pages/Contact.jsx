@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { MapPin, Phone, Mail, Clock, Send, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Phone, Mail, Clock, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import './Contact.css';
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -14,6 +15,26 @@ function Contact() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeField, setActiveField] = useState(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Intersection Observer for animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const element = document.querySelector('.contact-section');
+    if (element) {
+      observer.observe(element);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const validateForm = () => {
     const newErrors = {};
@@ -97,31 +118,31 @@ function Contact() {
 
   const contactInfo = [
     {
-      icon: <MapPin size={24} color="#2563eb" />,
+      icon: <MapPin size={24} color="#00d4ff" />,
       title: 'Visit Us',
       content: 'Janghai Station Road, Besides Nagrik Degree College, Janghai Jaunpur (U.P)',
     },
     {
-      icon: <Phone size={24} color="#2563eb" />,
+      icon: <Phone size={24} color="#00d4ff" />,
       title: 'Call Us',
       content: '+91 8182838680',
       link: 'tel:+918182838680'
     },
     {
-      icon: <Mail size={24} color="#2563eb" />,
+      icon: <Mail size={24} color="#00d4ff" />,
       title: 'Email Us',
       content: 'niict01@gmail.com',
       link: 'mailto:niict01@gmail.com'
     },
     {
-      icon: <Clock size={24} color="#2563eb" />,
+      icon: <Clock size={24} color="#00d4ff" />,
       title: 'Working Hours',
       content: 'Mon - Sat: 9:00 AM - 6:00 PM',
     },
   ];
 
   return (
-    <section className="contact-section">
+    <section className={`contact-section ${isVisible ? 'visible' : ''}`}>
       <div className="contact-container">
         <div className="contact-header">
           <h1 className="contact-title">Get In Touch</h1>
@@ -143,8 +164,14 @@ function Contact() {
                     onChange={handleChange}
                     onFocus={() => handleFocus('name')}
                     onBlur={handleBlur}
+                    placeholder="Enter your full name"
                   />
-                  {errors.name && <span className="error-message">{errors.name}</span>}
+                  {errors.name && (
+                    <span className="error-message">
+                      <AlertCircle size={16} />
+                      {errors.name}
+                    </span>
+                  )}
                 </div>
 
                 <div className={`form-group ${activeField === 'email' ? 'active' : ''} ${errors.email ? 'error' : ''}`}>
@@ -157,8 +184,14 @@ function Contact() {
                     onChange={handleChange}
                     onFocus={() => handleFocus('email')}
                     onBlur={handleBlur}
+                    placeholder="Enter your email address"
                   />
-                  {errors.email && <span className="error-message">{errors.email}</span>}
+                  {errors.email && (
+                    <span className="error-message">
+                      <AlertCircle size={16} />
+                      {errors.email}
+                    </span>
+                  )}
                 </div>
 
                 <div className={`form-group ${activeField === 'phone' ? 'active' : ''} ${errors.phone ? 'error' : ''}`}>
@@ -171,8 +204,14 @@ function Contact() {
                     onChange={handleChange}
                     onFocus={() => handleFocus('phone')}
                     onBlur={handleBlur}
+                    placeholder="Enter your phone number"
                   />
-                  {errors.phone && <span className="error-message">{errors.phone}</span>}
+                  {errors.phone && (
+                    <span className="error-message">
+                      <AlertCircle size={16} />
+                      {errors.phone}
+                    </span>
+                  )}
                 </div>
 
                 <div className={`form-group ${activeField === 'subject' ? 'active' : ''} ${errors.subject ? 'error' : ''}`}>
@@ -185,8 +224,14 @@ function Contact() {
                     onChange={handleChange}
                     onFocus={() => handleFocus('subject')}
                     onBlur={handleBlur}
+                    placeholder="What is this about?"
                   />
-                  {errors.subject && <span className="error-message">{errors.subject}</span>}
+                  {errors.subject && (
+                    <span className="error-message">
+                      <AlertCircle size={16} />
+                      {errors.subject}
+                    </span>
+                  )}
                 </div>
 
                 <div className={`form-group ${activeField === 'message' ? 'active' : ''} ${errors.message ? 'error' : ''}`}>
@@ -199,8 +244,14 @@ function Contact() {
                     onFocus={() => handleFocus('message')}
                     onBlur={handleBlur}
                     rows="5"
+                    placeholder="Tell us more about your inquiry..."
                   ></textarea>
-                  {errors.message && <span className="error-message">{errors.message}</span>}
+                  {errors.message && (
+                    <span className="error-message">
+                      <AlertCircle size={16} />
+                      {errors.message}
+                    </span>
+                  )}
                 </div>
 
                 <button 
@@ -219,13 +270,14 @@ function Contact() {
 
                 {errors.submit && (
                   <div className="error-message submit-error">
+                    <AlertCircle size={16} />
                     {errors.submit}
                   </div>
                 )}
 
                 {submitted && (
                   <div className="success-message">
-                    <CheckCircle size={20} /> Thank you! Your message has been sent.
+                    <CheckCircle size={20} /> Thank you! Your message has been sent successfully.
                   </div>
                 )}
               </form>

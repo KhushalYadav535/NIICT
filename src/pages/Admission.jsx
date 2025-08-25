@@ -1,4 +1,24 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  User, 
+  Phone, 
+  Mail, 
+  Calendar, 
+  BookOpen, 
+  GraduationCap, 
+  MapPin, 
+  Camera, 
+  Upload, 
+  CheckCircle, 
+  AlertCircle, 
+  ArrowRight,
+  Sparkles,
+  Star,
+  Award,
+  Users,
+  Clock
+} from 'lucide-react';
 
 function Admission() {
   const [formData, setFormData] = useState({
@@ -16,9 +36,10 @@ function Admission() {
 
   const [errors, setErrors] = useState({});
   const [previewImage, setPreviewImage] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const courses = [
-    
     'CCC',
     'O Level',
     'ADCA',
@@ -34,8 +55,43 @@ function Admission() {
     'Cloud Computing',
     'Cybersecurity',
     'Digital Marketing'
-
   ];
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  const formVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut"
+      }
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -127,6 +183,8 @@ function Admission() {
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
       // Convert image to base64
       const imageBase64 = await new Promise((resolve) => {
@@ -147,7 +205,7 @@ function Admission() {
         education: formData.educationalQualification,
         fathersName: formData.fathersName,
         mothersName: formData.mothersName,
-        image: imageBase64 // Make sure image is included
+        image: imageBase64
       };
 
       console.log('Submitting admission data:', { ...admissionData, image: 'base64 string...' });
@@ -167,190 +225,553 @@ function Admission() {
       }
 
       const result = await response.json();
-      alert('Application submitted successfully!');
+      setIsSubmitted(true);
       
-      // Reset form
-      setFormData({
-        candidateName: '',
-        fathersName: '',
-        mothersName: '',
-        dateOfBirth: '',
-        dateOfAdmission: new Date().toISOString().split('T')[0],
-        course: '',
-        educationalQualification: '',
-        contactNo: '',
-        permanentAddress: '',
-        image: null
-      });
-      setPreviewImage(null);
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        setFormData({
+          candidateName: '',
+          fathersName: '',
+          mothersName: '',
+          dateOfBirth: '',
+          dateOfAdmission: new Date().toISOString().split('T')[0],
+          course: '',
+          educationalQualification: '',
+          contactNo: '',
+          permanentAddress: '',
+          image: null
+        });
+        setPreviewImage(null);
+        setIsSubmitted(false);
+      }, 3000);
     } catch (error) {
       console.error('Error submitting form:', error);
       setErrors({ submit: error.message || 'Failed to submit form. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  return (
-    <div className="print-admission-container">
-      <div className="admission-container">
-        <div className="admission-content">
-          <h1 className="admission-title">Admission Form</h1>
-          
-          <form onSubmit={handleSubmit} className="admission-form">
-            <div className="form-grid">
-              <div className="form-group">
-                <label htmlFor="candidateName">Candidate Name *</label>
-                <input
-                  type="text"
-                  id="candidateName"
-                  name="candidateName"
-                  value={formData.candidateName}
-                  onChange={handleChange}
-                  className={errors.candidateName ? 'error' : ''}
-                />
-                {errors.candidateName && <span className="error-message">{errors.candidateName}</span>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="fathersName">Father's Name *</label>
-                <input
-                  type="text"
-                  id="fathersName"
-                  name="fathersName"
-                  value={formData.fathersName}
-                  onChange={handleChange}
-                  className={errors.fathersName ? 'error' : ''}
-                />
-                {errors.fathersName && <span className="error-message">{errors.fathersName}</span>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="mothersName">Mother's Name *</label>
-                <input
-                  type="text"
-                  id="mothersName"
-                  name="mothersName"
-                  value={formData.mothersName}
-                  onChange={handleChange}
-                  className={errors.mothersName ? 'error' : ''}
-                />
-                {errors.mothersName && <span className="error-message">{errors.mothersName}</span>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="dateOfBirth">Date of Birth *</label>
-                <input
-                  type="date"
-                  id="dateOfBirth"
-                  name="dateOfBirth"
-                  value={formData.dateOfBirth}
-                  onChange={handleChange}
-                  className={errors.dateOfBirth ? 'error' : ''}
-                />
-                {errors.dateOfBirth && <span className="error-message">{errors.dateOfBirth}</span>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="dateOfAdmission">Date of Admission</label>
-                <input
-                  type="date"
-                  id="dateOfAdmission"
-                  name="dateOfAdmission"
-                  value={formData.dateOfAdmission}
-                  onChange={handleChange}
-                  disabled
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="course">Course *</label>
-                <select
-                  id="course"
-                  name="course"
-                  value={formData.course}
-                  onChange={handleChange}
-                  className={errors.course ? 'error' : ''}
-                >
-                  <option value="">Select a course</option>
-                  {courses.map((course, index) => (
-                    <option key={index} value={course}>{course}</option>
-                  ))}
-                </select>
-                {errors.course && <span className="error-message">{errors.course}</span>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="educationalQualification">Educational Qualification *</label>
-                <input
-                  type="text"
-                  id="educationalQualification"
-                  name="educationalQualification"
-                  value={formData.educationalQualification}
-                  onChange={handleChange}
-                  className={errors.educationalQualification ? 'error' : ''}
-                />
-                {errors.educationalQualification && <span className="error-message">{errors.educationalQualification}</span>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="contactNo">Contact Number *</label>
-                <input
-                  type="tel"
-                  id="contactNo"
-                  name="contactNo"
-                  value={formData.contactNo}
-                  onChange={handleChange}
-                  className={errors.contactNo ? 'error' : ''}
-                />
-                {errors.contactNo && <span className="error-message">{errors.contactNo}</span>}
-              </div>
-
-              <div className="form-group full-width">
-                <label htmlFor="permanentAddress">Permanent Address *</label>
-                <textarea
-                  id="permanentAddress"
-                  name="permanentAddress"
-                  value={formData.permanentAddress}
-                  onChange={handleChange}
-                  rows="3"
-                  className={errors.permanentAddress ? 'error' : ''}
-                ></textarea>
-                {errors.permanentAddress && <span className="error-message">{errors.permanentAddress}</span>}
-              </div>
-
-              <div className="form-group image-upload">
-                <label htmlFor="image">Upload Photo *</label>
-                <input
-                  type="file"
-                  id="image"
-                  name="image"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className={errors.image ? 'error' : ''}
-                />
-                {errors.image && <span className="error-message">{errors.image}</span>}
-                {previewImage && (
-                  <div className="image-preview">
-                    <img src={previewImage} alt="Preview" />
-                  </div>
-                )}
-              </div>
+  if (isSubmitted) {
+    return (
+      <motion.div 
+        className="admission-success"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        <div className="success-content">
+          <motion.div 
+            className="success-icon"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+          >
+            <CheckCircle size={80} />
+          </motion.div>
+          <motion.h2 
+            className="success-title"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            Application Submitted Successfully!
+          </motion.h2>
+          <motion.p 
+            className="success-message"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            Thank you for choosing NIICT. We'll review your application and get back to you soon.
+          </motion.p>
+          <motion.div 
+            className="success-features"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+          >
+            <div className="feature">
+              <Clock size={20} />
+              <span>Response within 24 hours</span>
             </div>
-
-            <div className="form-actions">
-              <button type="submit" className="submit-button">
-                Submit Application
-              </button>
+            <div className="feature">
+              <Users size={20} />
+              <span>Expert guidance</span>
             </div>
-
-            {errors.submit && (
-              <div className="error-message submit-error">
-                {errors.submit}
-              </div>
-            )}
-          </form>
+            <div className="feature">
+              <Award size={20} />
+              <span>Quality education</span>
+            </div>
+          </motion.div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div 
+      className="admission-page"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Hero Section */}
+      <motion.section className="admission-hero" variants={itemVariants}>
+        <div className="hero-background">
+          <div className="hero-overlay"></div>
+        </div>
+        <div className="hero-content">
+          <motion.div 
+            className="hero-badge"
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+          >
+            <Sparkles size={24} />
+            <span>Join NIICT</span>
+          </motion.div>
+          <motion.h1 
+            className="hero-title"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            Start Your Journey
+          </motion.h1>
+          <motion.p 
+            className="hero-subtitle"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            Transform your future with our premium computer training programs
+          </motion.p>
+          <motion.div 
+            className="hero-stats"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <div className="stat">
+              <Star size={20} />
+              <span>500+ Students</span>
+            </div>
+            <div className="stat">
+              <Award size={20} />
+              <span>15+ Courses</span>
+            </div>
+            <div className="stat">
+              <Users size={20} />
+              <span>Expert Instructors</span>
+            </div>
+          </motion.div>
+        </div>
+      </motion.section>
+
+      {/* Form Section */}
+      <motion.section className="admission-form-section" variants={itemVariants}>
+        <div className="form-container">
+          <motion.div 
+            className="form-header"
+            variants={itemVariants}
+          >
+            <h2 className="form-title">Admission Application</h2>
+            <p className="form-subtitle">Complete the form below to begin your learning journey</p>
+          </motion.div>
+
+          <motion.form 
+            onSubmit={handleSubmit} 
+            className="admission-form glass"
+            variants={formVariants}
+          >
+            <div className="form-grid">
+              {/* Personal Information */}
+              <motion.div className="form-section" variants={itemVariants}>
+                <h3 className="section-title">
+                  <User size={20} />
+                  Personal Information
+                </h3>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="candidateName">
+                      <User size={16} />
+                      Candidate Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="candidateName"
+                      name="candidateName"
+                      value={formData.candidateName}
+                      onChange={handleChange}
+                      className={errors.candidateName ? 'error' : ''}
+                      placeholder="Enter your full name"
+                    />
+                    <AnimatePresence>
+                      {errors.candidateName && (
+                        <motion.span 
+                          className="error-message"
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                        >
+                          <AlertCircle size={14} />
+                          {errors.candidateName}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="dateOfBirth">
+                      <Calendar size={16} />
+                      Date of Birth *
+                    </label>
+                    <input
+                      type="date"
+                      id="dateOfBirth"
+                      name="dateOfBirth"
+                      value={formData.dateOfBirth}
+                      onChange={handleChange}
+                      className={errors.dateOfBirth ? 'error' : ''}
+                    />
+                    <AnimatePresence>
+                      {errors.dateOfBirth && (
+                        <motion.span 
+                          className="error-message"
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                        >
+                          <AlertCircle size={14} />
+                          {errors.dateOfBirth}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="fathersName">
+                      <User size={16} />
+                      Father's Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="fathersName"
+                      name="fathersName"
+                      value={formData.fathersName}
+                      onChange={handleChange}
+                      className={errors.fathersName ? 'error' : ''}
+                      placeholder="Enter father's name"
+                    />
+                    <AnimatePresence>
+                      {errors.fathersName && (
+                        <motion.span 
+                          className="error-message"
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                        >
+                          <AlertCircle size={14} />
+                          {errors.fathersName}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="mothersName">
+                      <User size={16} />
+                      Mother's Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="mothersName"
+                      name="mothersName"
+                      value={formData.mothersName}
+                      onChange={handleChange}
+                      className={errors.mothersName ? 'error' : ''}
+                      placeholder="Enter mother's name"
+                    />
+                    <AnimatePresence>
+                      {errors.mothersName && (
+                        <motion.span 
+                          className="error-message"
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                        >
+                          <AlertCircle size={14} />
+                          {errors.mothersName}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Course Information */}
+              <motion.div className="form-section" variants={itemVariants}>
+                <h3 className="section-title">
+                  <BookOpen size={20} />
+                  Course Information
+                </h3>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="course">
+                      <GraduationCap size={16} />
+                      Select Course *
+                    </label>
+                    <div className="select-wrapper">
+                      <select
+                        id="course"
+                        name="course"
+                        value={formData.course}
+                        onChange={handleChange}
+                        className={errors.course ? 'error' : ''}
+                        required
+                      >
+                        <option value="" disabled>Choose your course</option>
+                        {courses.map((course, index) => (
+                          <option key={index} value={course}>{course}</option>
+                        ))}
+                      </select>
+                      <div className="select-arrow">
+                        <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+                          <path d="M1 1L6 6L11 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                    <AnimatePresence>
+                      {errors.course && (
+                        <motion.span 
+                          className="error-message"
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                        >
+                          <AlertCircle size={14} />
+                          {errors.course}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="dateOfAdmission">
+                      <Calendar size={16} />
+                      Date of Admission
+                    </label>
+                    <input
+                      type="date"
+                      id="dateOfAdmission"
+                      name="dateOfAdmission"
+                      value={formData.dateOfAdmission}
+                      onChange={handleChange}
+                      disabled
+                      className="disabled"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="educationalQualification">
+                    <GraduationCap size={16} />
+                    Educational Qualification *
+                  </label>
+                  <input
+                    type="text"
+                    id="educationalQualification"
+                    name="educationalQualification"
+                    value={formData.educationalQualification}
+                    onChange={handleChange}
+                    className={errors.educationalQualification ? 'error' : ''}
+                    placeholder="e.g., 12th Pass, B.Tech, etc."
+                  />
+                  <AnimatePresence>
+                    {errors.educationalQualification && (
+                      <motion.span 
+                        className="error-message"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                      >
+                        <AlertCircle size={14} />
+                        {errors.educationalQualification}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+
+              {/* Contact Information */}
+              <motion.div className="form-section" variants={itemVariants}>
+                <h3 className="section-title">
+                  <Phone size={20} />
+                  Contact Information
+                </h3>
+                
+                <div className="form-group">
+                  <label htmlFor="contactNo">
+                    <Phone size={16} />
+                    Contact Number *
+                  </label>
+                  <input
+                    type="tel"
+                    id="contactNo"
+                    name="contactNo"
+                    value={formData.contactNo}
+                    onChange={handleChange}
+                    className={errors.contactNo ? 'error' : ''}
+                    placeholder="Enter your phone number"
+                  />
+                  <AnimatePresence>
+                    {errors.contactNo && (
+                      <motion.span 
+                        className="error-message"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                      >
+                        <AlertCircle size={14} />
+                        {errors.contactNo}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="permanentAddress">
+                    <MapPin size={16} />
+                    Permanent Address *
+                  </label>
+                  <textarea
+                    id="permanentAddress"
+                    name="permanentAddress"
+                    value={formData.permanentAddress}
+                    onChange={handleChange}
+                    rows="3"
+                    className={errors.permanentAddress ? 'error' : ''}
+                    placeholder="Enter your complete address"
+                  ></textarea>
+                  <AnimatePresence>
+                    {errors.permanentAddress && (
+                      <motion.span 
+                        className="error-message"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                      >
+                        <AlertCircle size={14} />
+                        {errors.permanentAddress}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+
+              {/* Photo Upload */}
+              <motion.div className="form-section" variants={itemVariants}>
+                <h3 className="section-title">
+                  <Camera size={20} />
+                  Photo Upload
+                </h3>
+                
+                <div className="image-upload-container">
+                  <div className="upload-area">
+                    <input
+                      type="file"
+                      id="image"
+                      name="image"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="file-input"
+                    />
+                    <label htmlFor="image" className="upload-label">
+                      <div className="upload-content">
+                        <Upload size={32} />
+                        <span>Click to upload your photo</span>
+                        <small>Max size: 5MB</small>
+                      </div>
+                    </label>
+                  </div>
+                  
+                  <AnimatePresence>
+                    {previewImage && (
+                      <motion.div 
+                        className="image-preview"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                      >
+                        <img src={previewImage} alt="Preview" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  
+                  <AnimatePresence>
+                    {errors.image && (
+                      <motion.span 
+                        className="error-message"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                      >
+                        <AlertCircle size={14} />
+                        {errors.image}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            </div>
+
+            <motion.div 
+              className="form-actions"
+              variants={itemVariants}
+            >
+              <motion.button 
+                type="submit" 
+                className="submit-button"
+                disabled={isSubmitting}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="spinner"></div>
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    Submit Application
+                    <ArrowRight size={20} />
+                  </>
+                )}
+              </motion.button>
+            </motion.div>
+
+            <AnimatePresence>
+              {errors.submit && (
+                <motion.div 
+                  className="error-message submit-error"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <AlertCircle size={16} />
+                  {errors.submit}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.form>
+        </div>
+      </motion.section>
+    </motion.div>
   );
 }
 

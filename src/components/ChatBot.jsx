@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bot, X, Send, Clock, Calendar, Book, Users, Award } from 'lucide-react';
+import { Bot, X, Send, Clock, Calendar, Book, Users, Award, MessageCircle, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import './ChatBot.css';
 
 const ChatBot = () => {
@@ -13,7 +14,6 @@ const ChatBot = () => {
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
-      // Always use 'auto' to prevent smooth scroll causing input to move down unexpectedly
       messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
     }
   };
@@ -112,7 +112,7 @@ const ChatBot = () => {
     setIsTyping(true);
 
     // Simulate bot thinking and typing
-    const thinkingTime = Math.random() * 1000 + 500; // Random delay between 500-1500ms
+    const thinkingTime = Math.random() * 1000 + 500;
     setTimeout(() => {
       const response = getBotResponse(inputMessage);
       setMessages(prev => [...prev, { ...response, sender: 'bot' }]);
@@ -165,94 +165,263 @@ const ChatBot = () => {
     handleSend();
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut"
+      }
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.8,
+      transition: {
+        duration: 0.2,
+        ease: "easeIn"
+      }
+    }
+  };
+
+  const messageVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.4,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  const buttonVariants = {
+    hover: {
+      scale: 1.1,
+      rotate: 5,
+      transition: {
+        duration: 0.2,
+        ease: "easeInOut"
+      }
+    },
+    tap: {
+      scale: 0.95,
+      transition: {
+        duration: 0.1
+      }
+    }
+  };
+
+  const typingVariants = {
+    animate: {
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const dotVariants = {
+    animate: {
+      y: [0, -10, 0],
+      transition: {
+        duration: 0.6,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }
+    }
+  };
+
   const renderMessage = (message, index) => {
     return (
-      <div
+      <motion.div
         key={index}
-        className={`message ${message.sender}-message}`}
-        style={{
-          animationDelay: `${index * 0.1}s`,
-          opacity: isAnimating ? 0 : 1
-        }}
+        className={`message ${message.sender}-message`}
+        variants={messageVariants}
+        initial="hidden"
+        animate="visible"
+        custom={index}
       >
         {message.text}
         {message.options && (
-          <ul className="message-options">
+          <motion.ul 
+            className="message-options"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
             {message.options.map((option, i) => (
-              <li
+              <motion.li
                 key={i}
                 onClick={() => handleOptionClick(option)}
                 role="button"
                 tabIndex={0}
                 onKeyPress={(e) => e.key === 'Enter' && handleOptionClick(option)}
+                whileHover={{ scale: 1.02, x: 5 }}
+                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1 }}
               >
                 {message.icon && <span className="option-icon">{message.icon}</span>}
                 {option}
-              </li>
+              </motion.li>
             ))}
-          </ul>
+          </motion.ul>
         )}
         {message.note && (
-          <p className="message-note">{message.note}</p>
+          <motion.p 
+            className="message-note"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            {message.note}
+          </motion.p>
         )}
-      </div>
+      </motion.div>
     );
   };
 
   return (
     <div className="chatbot-container">
-      <button
-        className="chatbot-toggle"
+      <motion.button
+        className="chatbot-toggle glass"
         onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? 'Close chat' : 'Open chat'}
+        variants={buttonVariants}
+        whileHover="hover"
+        whileTap="tap"
+        animate={isOpen ? { rotate: 180 } : { rotate: 0 }}
+        transition={{ duration: 0.3 }}
       >
-        {isOpen ? <X size={24} /> : <Bot size={32} />}
-      </button>
+        <AnimatePresence mode="wait">
+          {isOpen ? (
+            <motion.div
+              key="close"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <X size={24} />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="bot"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Bot size={32} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.button>
 
-      {isOpen && (
-        <div className="chatbot-window" aria-live="polite">
-          <div className="chatbot-header">
-            <h3>NIICT Assistant</h3>
-            <button
-              className="chatbot-close-button"
-              onClick={() => setIsOpen(false)}
-              aria-label="Close chat"
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            className="chatbot-window glass"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            aria-live="polite"
+          >
+            <motion.div 
+              className="chatbot-header"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
             >
-              <X size={20} />
-            </button>
-          </div>
-          <div className="chatbot-messages">
-            {messages.map(renderMessage)}
-            {isTyping && (
-              <div className="message bot-message typing">
-                <span className="dot"></span>
-                <span className="dot"></span>
-                <span className="dot"></span>
+              <div className="header-content">
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                >
+                  <Bot size={24} className="header-icon" />
+                </motion.div>
+                <h3 className="gradient-text">NIICT Assistant</h3>
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <Sparkles size={16} className="sparkle-icon" />
+                </motion.div>
               </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-          <div className="chatbot-input">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Ask about courses, fees, timings..."
-              aria-label="Chat message"
-              disabled={isTyping}
-            />
-            <button
-              onClick={handleSend}
-              disabled={!inputMessage.trim() || isTyping}
-              aria-label="Send message"
+              <motion.button
+                className="chatbot-close-button glass"
+                onClick={() => setIsOpen(false)}
+                aria-label="Close chat"
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <X size={20} />
+              </motion.button>
+            </motion.div>
+            
+            <motion.div 
+              className="chatbot-messages"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
             >
-              <Send size={20} />
-            </button>
-          </div>
-        </div>
-      )}
+              <AnimatePresence>
+                {messages.map(renderMessage)}
+              </AnimatePresence>
+              
+              {isTyping && (
+                <motion.div 
+                  className="message bot-message typing"
+                  variants={typingVariants}
+                  animate="animate"
+                >
+                  <motion.span className="dot" variants={dotVariants}></motion.span>
+                  <motion.span className="dot" variants={dotVariants}></motion.span>
+                  <motion.span className="dot" variants={dotVariants}></motion.span>
+                </motion.div>
+              )}
+              <div ref={messagesEndRef} />
+            </motion.div>
+            
+            <motion.div 
+              className="chatbot-input"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <motion.input
+                ref={inputRef}
+                type="text"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                placeholder="Ask about courses, fees, timings..."
+                aria-label="Chat message"
+                disabled={isTyping}
+                whileFocus={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
+              />
+              <motion.button
+                onClick={handleSend}
+                disabled={!inputMessage.trim() || isTyping}
+                aria-label="Send message"
+                variants={buttonVariants}
+                whileHover="hover"
+                whileTap="tap"
+                animate={inputMessage.trim() ? { scale: 1 } : { scale: 0.9 }}
+              >
+                <Send size={20} />
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

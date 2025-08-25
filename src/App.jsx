@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ChatBot from './components/ChatBot';
+import WhatsAppChat from './components/WhatsAppChat';
+import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -49,7 +51,9 @@ function App() {
         </Routes>
         <div className="chat-icons-container">
           <ChatBot />
+          <WhatsAppChat />
         </div>
+        <ScrollToTop />
         <Footer />
       </div>
     </Router>
