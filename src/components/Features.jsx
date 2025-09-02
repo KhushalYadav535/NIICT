@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Monitor, Laptop, BookOpen, Users, Award, Rocket, Globe, Lightbulb, ShieldCheck } from 'lucide-react';
+import './Features.css';
 
 const featureData = [
   {
@@ -90,6 +91,7 @@ function Features() {
       <div className="features-grid">
         <div className="features-content">
           <h2 className="features-title">Why Choose NIICT?</h2>
+          <p className="features-subtitle">Premium training, real outcomes. Learn from experts, build projects, and unlock your career potential.</p>
           <ul className="feature-list">
             {featureData.map((feature) => (
               <li

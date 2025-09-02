@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 const COLORS = ['#4a90e2', '#10b981', '#fbbf24', '#f87171', '#a78bfa', '#22d3ee', '#f59e42', '#6366f1'];
@@ -30,6 +31,10 @@ const AdminDashboard = () => {
 
   const handlePrint = (admission) => {
     navigate(`/admin/print/${admission._id}`);
+  };
+
+  const handleCompetitionManagement = () => {
+    navigate('/admin/competition');
   };
 
   const handleStatusUpdate = async (id, newStatus) => {
@@ -106,6 +111,15 @@ const AdminDashboard = () => {
         <Typography variant="h4" fontWeight={700} color="#222">
           Admin Dashboard
         </Typography>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleCompetitionManagement}
+          startIcon={<EmojiEventsIcon />}
+          sx={{ ml: 'auto', borderRadius: 2 }}
+        >
+          Competition Management
+        </Button>
       </Box>
       <Grid container spacing={3} mb={4}>
         <Grid item xs={12} md={4}>

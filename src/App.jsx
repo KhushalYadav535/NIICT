@@ -12,7 +12,10 @@ import Courses from './components/Courses';
 import StudentPortal from './pages/StudentPortal';
 import Testimonial from './components/Testimonial';
 import Admission from './pages/Admission';
+import AdmitCardLookup from './pages/AdmitCardLookup';
+import CompetitionForm from './components/CompetitionForm';
 import AdminDashboard from './components/admin/AdminDashboard';
+import CompetitionManagement from './components/admin/CompetitionManagement';
 import PrintAdmission from './components/admin/PrintAdmission';
 import AdminLogin from './pages/AdminLogin';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -28,6 +31,8 @@ function App() {
           <Route path="/courses" element={<Courses />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/admission" element={<Admission />} />
+          <Route path="/competition" element={<CompetitionForm />} />
+          <Route path="/admit-card" element={<AdmitCardLookup />} />
           <Route path="/testimonial" element={<Testimonial />} />
           <Route path="/student-portal" element={<StudentPortal />} />
           <Route path="/student-portal/:section" element={<StudentPortal />} />
@@ -45,6 +50,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <PrintAdmission />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/competition" 
+            element={
+              <ProtectedRoute>
+                <CompetitionManagement />
               </ProtectedRoute>
             } 
           />

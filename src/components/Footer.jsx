@@ -161,6 +161,12 @@ function Footer() {
               <li>
                 <Link to="/admission" className="footer-link">Admission</Link>
               </li>
+              <li>
+                <Link to="/competition" className="footer-link">GK & Computer Competition</Link>
+              </li>
+              <li>
+                <Link to="/admit-card" className="footer-link">Admit Card</Link>
+              </li>
             </ul>
           </motion.div>
 

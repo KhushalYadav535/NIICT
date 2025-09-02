@@ -3,6 +3,7 @@ import { Quote, ChevronLeft, ChevronRight } from 'lucide-react';
 import student1 from '../assets/sst.jpg';
 import student2 from '../assets/sst3.jpg';
 import student3 from '../assets/sst4.jpg';
+import './Testimonial.css';
 
 function Testimonial() {
   const testimonials = [
@@ -68,7 +69,11 @@ function Testimonial() {
           <p className="section-subtitle">Hear from our alumni about their transformative learning experiences</p>
         </div>
 
-        <div className="testimonial-carousel">
+        <div 
+          className="testimonial-carousel"
+          onMouseEnter={() => setIsAutoPlaying(false)}
+          onMouseLeave={() => setIsAutoPlaying(true)}
+        >
           <div 
             className="testimonial-track"
             style={{ transform: `translateX(-${currentIndex * 100}%)` }}

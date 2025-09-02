@@ -155,6 +155,7 @@ function Navbar() {
             { path: '/courses', label: 'Courses' },
             { path: '/about', label: 'About' },
             { path: '/admission', label: 'Admission' },
+            // removed Competition & Admit Card from navbar
             { path: '/contact', label: 'Contact' }
           ].map((item, i) => (
             <motion.div
@@ -312,6 +313,7 @@ function Navbar() {
                 { path: '/courses', label: 'Courses' },
                 { path: '/about', label: 'About' },
                 { path: '/admission', label: 'Admission' },
+                // removed Competition & Admit Card from mobile nav
                 { path: '/contact', label: 'Contact' }
               ].map((item, i) => (
                 <motion.div
