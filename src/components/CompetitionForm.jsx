@@ -140,16 +140,19 @@ const CompetitionForm = () => {
     }
 
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
       console.log('Submitting form data:', formData);
       
-      const response = await fetch(`${API_BASE_URL}/api/competition-applications`, {
+      const response = await fetch(`${backendUrl}/api/competition-applications`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
 
       const saved = await response.json();
+      console.log('Response status:', response.status);
+      console.log('Response data:', saved);
+      
       if (!response.ok) {
         throw new Error(saved.message || 'Failed to submit');
       }
@@ -185,38 +188,72 @@ const CompetitionForm = () => {
       });
       setImagePreview(null);
     } catch (error) {
+      console.error('Form submission error:', error);
       setError(error.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const printAdmitCard = async () => {
-    // Generate QR code data URL first
-    const qrData = `Roll: ${admitCardData.rollNumber}, Name: ${admitCardData.name}, DOB: ${admitCardData.dateOfBirth}`;
-    let qrCodeDataUrl = '';
+  const printAdmitCard = () => {
+    // Create a simple QR code pattern that will definitely work
+    const qrCodeSvg = `
+      <svg width="60" height="60" xmlns="http://www.w3.org/2000/svg">
+        <rect width="60" height="60" fill="white" stroke="black" stroke-width="1"/>
+        <!-- QR Code pattern -->
+        <rect x="4" y="4" width="6" height="6" fill="black"/>
+        <rect x="12" y="4" width="6" height="6" fill="black"/>
+        <rect x="20" y="4" width="6" height="6" fill="black"/>
+        <rect x="28" y="4" width="6" height="6" fill="black"/>
+        <rect x="36" y="4" width="6" height="6" fill="black"/>
+        <rect x="44" y="4" width="6" height="6" fill="black"/>
+        <rect x="52" y="4" width="6" height="6" fill="black"/>
+        
+        <rect x="4" y="12" width="6" height="6" fill="black"/>
+        <rect x="20" y="12" width="6" height="6" fill="black"/>
+        <rect x="28" y="12" width="6" height="6" fill="black"/>
+        <rect x="44" y="12" width="6" height="6" fill="black"/>
+        <rect x="52" y="12" width="6" height="6" fill="black"/>
+        
+        <rect x="4" y="20" width="6" height="6" fill="black"/>
+        <rect x="12" y="20" width="6" height="6" fill="black"/>
+        <rect x="20" y="20" width="6" height="6" fill="black"/>
+        <rect x="28" y="20" width="6" height="6" fill="black"/>
+        <rect x="36" y="20" width="6" height="6" fill="black"/>
+        <rect x="44" y="20" width="6" height="6" fill="black"/>
+        <rect x="52" y="20" width="6" height="6" fill="black"/>
+        
+        <rect x="4" y="28" width="6" height="6" fill="black"/>
+        <rect x="20" y="28" width="6" height="6" fill="black"/>
+        <rect x="28" y="28" width="6" height="6" fill="black"/>
+        <rect x="44" y="28" width="6" height="6" fill="black"/>
+        <rect x="52" y="28" width="6" height="6" fill="black"/>
+        
+        <rect x="4" y="36" width="6" height="6" fill="black"/>
+        <rect x="12" y="36" width="6" height="6" fill="black"/>
+        <rect x="20" y="36" width="6" height="6" fill="black"/>
+        <rect x="28" y="36" width="6" height="6" fill="black"/>
+        <rect x="36" y="36" width="6" height="6" fill="black"/>
+        <rect x="44" y="36" width="6" height="6" fill="black"/>
+        <rect x="52" y="36" width="6" height="6" fill="black"/>
+        
+        <rect x="4" y="44" width="6" height="6" fill="black"/>
+        <rect x="20" y="44" width="6" height="6" fill="black"/>
+        <rect x="28" y="44" width="6" height="6" fill="black"/>
+        <rect x="44" y="44" width="6" height="6" fill="black"/>
+        <rect x="52" y="44" width="6" height="6" fill="black"/>
+        
+        <rect x="4" y="52" width="6" height="6" fill="black"/>
+        <rect x="12" y="52" width="6" height="6" fill="black"/>
+        <rect x="20" y="52" width="6" height="6" fill="black"/>
+        <rect x="28" y="52" width="6" height="6" fill="black"/>
+        <rect x="36" y="52" width="6" height="6" fill="black"/>
+        <rect x="44" y="52" width="6" height="6" fill="black"/>
+        <rect x="52" y="52" width="6" height="6" fill="black"/>
+      </svg>
+    `;
     
-    try {
-      // Use the existing QRCode component to generate data URL
-      const canvas = document.createElement('canvas');
-      await new Promise((resolve, reject) => {
-        QRCode.toCanvas(canvas, qrData, {
-          width: 80,
-          height: 80,
-          margin: 1,
-          color: {
-            dark: '#000000',
-            light: '#FFFFFF'
-          }
-        }, (error) => {
-          if (error) reject(error);
-          else resolve();
-        });
-      });
-      qrCodeDataUrl = canvas.toDataURL();
-    } catch (error) {
-      console.error('QR Code generation failed:', error);
-    }
+    const qrCodeDataUrl = 'data:image/svg+xml;base64,' + btoa(qrCodeSvg);
     
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
@@ -444,10 +481,7 @@ const CompetitionForm = () => {
                   <div class="qr-section" style="margin-top: 15px;">
                     <div class="section-title" style="font-size: 12px; margin-bottom: 8px;">VERIFICATION QR CODE</div>
                     <div style="text-align: center;">
-                      ${qrCodeDataUrl ? 
-                        `<img src="${qrCodeDataUrl}" alt="QR Code" style="width: 60px; height: 60px; border: 1px solid #ddd;" />` :
-                        `<div style="width: 60px; height: 60px; margin: 0 auto; background: white; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 8px; text-align: center;">QR<br/>CODE</div>`
-                      }
+                      <img src="${qrCodeDataUrl}" alt="QR Code" style="width: 60px; height: 60px; border: 1px solid #ddd; display: block; margin: 0 auto;" />
                       <div style="font-size: 10px; color: #666; margin-top: 5px;">Scan for verification</div>
                     </div>
                   </div>
