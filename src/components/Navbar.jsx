@@ -142,8 +142,7 @@ function Navbar() {
               transition={{ duration: 0.2 }}
             />
             <div className="logo-text-container">
-              <span className="logo-text">NIICT</span>
-              <span className="logo-subtitle">coding school</span>
+              <span className="logo-text" style={{ color: '#FFD700' }}>NIICT<sup style={{ color: '#FFD700' }}>™</sup></span>
             </div>
           </Link>
         </motion.div>

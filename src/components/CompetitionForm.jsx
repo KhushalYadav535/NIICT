@@ -9,23 +9,25 @@ const CompetitionForm = () => {
     name: '',
     email: '',
     phone: '',
-    age: '',
     school: '',
-    class: '',
-    parentName: '',
     parentPhone: '',
     address: '',
     subject: 'GK',
+    fatherName: '',
     motherName: '',
     aadhaar: '',
     dateOfBirth: '',
-    classPassed: ''
+    classPassed: '',
+    image: null
   });
 
   const [loading, setLoading] = useState(false);
   const [showAdmitCard, setShowAdmitCard] = useState(false);
   const [admitCardData, setAdmitCardData] = useState(null);
   const [error, setError] = useState('');
+  const [showPayment, setShowPayment] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Generate unique 4-digit roll number
   const generateRollNumber = () => {
@@ -42,21 +44,81 @@ const CompetitionForm = () => {
     }));
   };
 
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        setError('Image size should be less than 5MB');
+        return;
+      }
+      
+      setUploadingImage(true);
+      setError('');
+      
+      try {
+        // Upload to Cloudinary via backend
+        const uploadFormData = new FormData();
+        uploadFormData.append('image', file);
+        
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+        const response = await fetch(`${backendUrl}/api/upload-image`, {
+          method: 'POST',
+          body: uploadFormData
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+          const errorData = await response.text();
+          console.error('Upload error:', errorData);
+          setError(`Upload failed: ${response.status} - ${errorData}`);
+          return;
+        }
+        
+        const data = await response.json();
+        console.log('Upload success:', data);
+        
+        if (data.secure_url) {
+          setFormData(prev => ({
+            ...prev,
+            image: data.secure_url
+          }));
+          setImagePreview(data.secure_url);
+        } else {
+          setError('Failed to upload image - no URL returned');
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        setError(`Failed to upload image: ${error.message}`);
+      } finally {
+        setUploadingImage(false);
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     // Validate form
-    if (!formData.name || !formData.phone || !formData.age || !formData.school || !formData.class || !formData.parentName || !formData.parentPhone || !formData.address || !formData.motherName || !formData.aadhaar || !formData.dateOfBirth || !formData.classPassed) {
-      setError('Please fill all required fields');
+    console.log('Form data before validation:', formData);
+    if (!formData.name || !formData.phone || !formData.school || !formData.parentPhone || !formData.address || !formData.fatherName || !formData.motherName || !formData.aadhaar || !formData.dateOfBirth || !formData.classPassed || !formData.image) {
+      setError('Please fill all required fields including student image');
       setLoading(false);
       return;
     }
 
-    // Age must be 20 or below
-    const ageNumber = Number(formData.age);
-    if (Number.isNaN(ageNumber) || ageNumber > 20) {
+    // Date of birth validation - must be 20 years or younger
+    const today = new Date();
+    const birthDate = new Date(formData.dateOfBirth);
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    // Check if birthday hasn't occurred this year
+    const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
+    
+    if (actualAge > 20) {
       setError('Only candidates aged 20 or below can register');
       setLoading(false);
       return;
@@ -79,6 +141,8 @@ const CompetitionForm = () => {
 
     try {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+      console.log('Submitting form data:', formData);
+      
       const response = await fetch(`${API_BASE_URL}/api/competition-applications`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -90,28 +154,36 @@ const CompetitionForm = () => {
         throw new Error(saved.message || 'Failed to submit');
       }
 
+      // Calculate age from date of birth
+      const today = new Date();
+      const birthDate = new Date(saved.dateOfBirth);
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
+
       const admitData = {
         ...saved,
+        age: actualAge,
         qrCode: `COMPETITION_${saved.rollNumber}_${saved.name.replace(/\s+/g, '_')}`,
       };
 
       setAdmitCardData(admitData);
-      setShowAdmitCard(true);
+      setShowPayment(true);
       setFormData({
         name: '',
         phone: '',
-        age: '',
         school: '',
-        class: '',
-        parentName: '',
         parentPhone: '',
         address: '',
         subject: 'GK',
+        fatherName: '',
         motherName: '',
         aadhaar: '',
         dateOfBirth: '',
-        classPassed: ''
+        classPassed: '',
+        image: null
       });
+      setImagePreview(null);
     } catch (error) {
       setError(error.message || 'Something went wrong. Please try again.');
     } finally {
@@ -119,78 +191,305 @@ const CompetitionForm = () => {
     }
   };
 
-  const printAdmitCard = () => {
+  const printAdmitCard = async () => {
+    // Generate QR code data URL first
+    const qrData = `Roll: ${admitCardData.rollNumber}, Name: ${admitCardData.name}, DOB: ${admitCardData.dateOfBirth}`;
+    let qrCodeDataUrl = '';
+    
+    try {
+      // Use the existing QRCode component to generate data URL
+      const canvas = document.createElement('canvas');
+      await new Promise((resolve, reject) => {
+        QRCode.toCanvas(canvas, qrData, {
+          width: 80,
+          height: 80,
+          margin: 1,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          }
+        }, (error) => {
+          if (error) reject(error);
+          else resolve();
+        });
+      });
+      qrCodeDataUrl = canvas.toDataURL();
+    } catch (error) {
+      console.error('QR Code generation failed:', error);
+    }
+    
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
       <html>
         <head>
-          <title>Competition Admit Card</title>
+          <title>NIICT Competition Admit Card</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            .admit-card { border: 2px solid #000; padding: 20px; max-width: 600px; margin: 0 auto; }
-            .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-            .qr-code { text-align: center; margin: 20px 0; }
-            .info-row { display: flex; justify-content: space-between; margin: 10px 0; }
-            .label { font-weight: bold; }
-            .exam-details { background: #f0f0f0; padding: 15px; margin: 20px 0; }
-            @media print { body { margin: 0; } }
+            body { 
+              font-family: Arial, sans-serif; 
+              margin: 0; 
+              padding: 20px; 
+              background: white;
+              color: #333;
+            }
+            .admit-card { 
+              border: 2px solid #e0e0e0; 
+              padding: 30px; 
+              max-width: 800px; 
+              margin: 0 auto; 
+              background: white;
+            }
+            .header { 
+              text-align: center; 
+              border-bottom: 2px solid #1976d2; 
+              padding-bottom: 20px; 
+              margin-bottom: 30px; 
+            }
+            .institute-name { 
+              font-size: 28px; 
+              font-weight: bold; 
+              color: #1976d2; 
+              margin-bottom: 10px; 
+            }
+            .institute-details { 
+              font-size: 14px; 
+              color: #666; 
+              margin-bottom: 5px; 
+            }
+            .certification { 
+              font-size: 12px; 
+              font-weight: bold; 
+              color: #1976d2; 
+            }
+            .admit-title { 
+              text-align: center; 
+              font-size: 22px; 
+              font-weight: bold; 
+              color: #1976d2; 
+              margin: 30px 0; 
+            }
+            .candidate-section { 
+              border: 2px solid #e0e0e0; 
+              border-radius: 8px; 
+              padding: 20px; 
+              margin-bottom: 20px; 
+              background: #f9f9f9; 
+            }
+            .candidate-info { 
+              display: flex; 
+              gap: 30px; 
+            }
+            .info-left { 
+              flex: 2; 
+            }
+            .info-right { 
+              flex: 1; 
+              text-align: center; 
+            }
+            .info-item { 
+              margin-bottom: 15px; 
+            }
+            .info-label { 
+              font-size: 12px; 
+              font-weight: bold; 
+              color: #666; 
+              display: block; 
+            }
+            .info-value { 
+              font-size: 16px; 
+              font-weight: 600; 
+              color: #333; 
+              margin-top: 2px; 
+            }
+            .roll-number { 
+              font-size: 18px; 
+              font-weight: bold; 
+              color: #1976d2; 
+            }
+            .photo-section { 
+              border: 2px solid #e0e0e0; 
+              border-radius: 4px; 
+              padding: 10px; 
+              background: white; 
+              display: inline-block; 
+            }
+            .photo-label { 
+              font-size: 10px; 
+              color: #666; 
+              margin-bottom: 5px; 
+            }
+            .candidate-photo { 
+              width: 120px; 
+              height: 150px; 
+              object-fit: cover; 
+              border-radius: 4px; 
+              border: 1px solid #ddd; 
+            }
+            .instructions-section { 
+              border: 2px solid #e0e0e0; 
+              border-radius: 8px; 
+              padding: 20px; 
+              margin-bottom: 20px; 
+              background: #f9f9f9; 
+            }
+            .section-title { 
+              font-size: 16px; 
+              font-weight: bold; 
+              color: #1976d2; 
+              text-align: center; 
+              margin-bottom: 15px; 
+            }
+            .instructions-list { 
+              margin: 0; 
+              padding-left: 20px; 
+            }
+            .instructions-list li { 
+              margin-bottom: 8px; 
+              font-size: 14px; 
+            }
+            .exam-details { 
+              border: 2px solid #e0e0e0; 
+              border-radius: 8px; 
+              padding: 20px; 
+              margin-bottom: 20px; 
+              background: #f9f9f9; 
+            }
+            .exam-grid { 
+              display: grid; 
+              grid-template-columns: 1fr 1fr; 
+              gap: 15px; 
+            }
+            .qr-section { 
+              border: 2px solid #e0e0e0; 
+              border-radius: 8px; 
+              padding: 15px; 
+              margin-bottom: 15px; 
+              background: #f9f9f9; 
+              text-align: center; 
+            }
+            .qr-code-img {
+              width: 80px;
+              height: 80px;
+              margin: 10px auto;
+              display: block;
+            }
+            @media print { 
+              body { margin: 0; padding: 5px; font-size: 12px; } 
+              .admit-card { border: 2px solid #000; padding: 15px; }
+              .institute-name { font-size: 20px; }
+              .admit-title { font-size: 16px; margin: 15px 0; }
+              .candidate-section, .instructions-section, .exam-details, .qr-section { 
+                padding: 10px; margin-bottom: 10px; 
+              }
+              .info-item { margin-bottom: 8px; }
+              .instructions-list li { margin-bottom: 4px; font-size: 11px; }
+              .section-title { font-size: 12px; margin-bottom: 8px; }
+              .candidate-photo { width: 80px; height: 100px; }
+              .photo-section { padding: 5px; }
+            }
           </style>
         </head>
         <body>
           <div class="admit-card">
+            <!-- Header Section -->
             <div class="header">
-              <h1>NIICT COMPETITION ADMIT CARD</h1>
-              <h2>GK & Computer Knowledge Competition</h2>
+              <div class="institute-name">NIICT COMPUTER CENTER</div>
+              <div class="institute-details">A Unit of: NIICT Digital Education Institute Ltd.</div>
+              <div class="institute-details">Registered Under Ministry of Corporate Affairs, Govt. Of India</div>
+              <div class="institute-details">An Autonomous Institute Registered Under the Govt. of NCT Delhi</div>
+              <div class="certification">AN ISO 9001:2015 CERTIFIED ORGANIZATION</div>
             </div>
-            <div class="info-row">
-              <span class="label">Roll Number:</span>
-              <span>${admitCardData.rollNumber}</span>
+
+            <!-- Admit Card Title -->
+            <div class="admit-title">CANDIDATE ADMIT CARD (Competition Exam)</div>
+
+            <!-- Candidate Information Section -->
+            <div class="candidate-section">
+              <div class="candidate-info">
+                <div class="info-left">
+                  <div class="info-item">
+                    <span class="info-label">Roll No:</span>
+                    <div class="info-value roll-number">${admitCardData.rollNumber}</div>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Name:</span>
+                    <div class="info-value">${admitCardData.name}</div>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Date of Birth:</span>
+                    <div class="info-value">${new Date(admitCardData.dateOfBirth).toLocaleDateString('en-GB')}</div>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Father Name:</span>
+                    <div class="info-value">${admitCardData.fatherName}</div>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Subject:</span>
+                    <div class="info-value">${admitCardData.subject} Competition</div>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Center Name:</span>
+                    <div class="info-value">NIICT Computer Centre</div>
+                  </div>
+                </div>
+                <div class="info-right">
+                  <div class="photo-section">
+                    <div class="photo-label">PHOTOGRAPH</div>
+                    ${admitCardData.image ? 
+                      `<img src="${admitCardData.image}" alt="Candidate Photo" class="candidate-photo" />` : 
+                      `<div style="width: 120px; height: 150px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999;">No Photo</div>`
+                    }
+                  </div>
+                  
+                  <!-- QR Code Section -->
+                  <div class="qr-section" style="margin-top: 15px;">
+                    <div class="section-title" style="font-size: 12px; margin-bottom: 8px;">VERIFICATION QR CODE</div>
+                    <div style="text-align: center;">
+                      ${qrCodeDataUrl ? 
+                        `<img src="${qrCodeDataUrl}" alt="QR Code" style="width: 60px; height: 60px; border: 1px solid #ddd;" />` :
+                        `<div style="width: 60px; height: 60px; margin: 0 auto; background: white; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 8px; text-align: center;">QR<br/>CODE</div>`
+                      }
+                      <div style="font-size: 10px; color: #666; margin-top: 5px;">Scan for verification</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="info-row">
-              <span class="label">Name:</span>
-              <span>${admitCardData.name}</span>
+
+            <!-- Instructions Section -->
+            <div class="instructions-section">
+              <div class="section-title">INSTRUCTIONS TO BE FOLLOWED BY CANDIDATES AT EXAMINATION</div>
+              <ol class="instructions-list">
+                <li>Candidates must report half an hour prior to the scheduled examination time.</li>
+                <li>Entry to the examination hall is permitted 15 minutes before commencement, and no entry is allowed after 30 minutes from commencement.</li>
+                <li>Candidates must carry original photo identity proofs (Voter ID, Passport, PAN, Driving Licence, Aadhar, Student ID with photograph, etc.).</li>
+                <li>Candidates should carry only their admit card, an original photo identity card, and a pen.</li>
+                <li>Cell phones or any electronic devices are prohibited and will be confiscated. Pocketbooks, handbags, books, notes, written or printed material, CDs, or data are also prohibited.</li>
+              </ol>
             </div>
-            <div class="info-row">
-              <span class="label">Class:</span>
-              <span>${admitCardData.class}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">School:</span>
-              <span>${admitCardData.school}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">Subject:</span>
-              <span>${admitCardData.subject}</span>
-            </div>
+
+            <!-- Exam Details -->
             <div class="exam-details">
-              <h3>Exam Details:</h3>
-              <div class="info-row">
-                <span class="label">Date:</span>
-                <span>${admitCardData.examDate}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">Time:</span>
-                <span>${admitCardData.examTime}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">Reporting Time:</span>
-                <span>${admitCardData.reportingTime}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">Center:</span>
-                <span>${admitCardData.examCenter}</span>
+              <div class="section-title">EXAMINATION DETAILS</div>
+              <div class="exam-grid">
+                <div class="info-item">
+                  <span class="info-label">Exam Date:</span>
+                  <div class="info-value">${admitCardData.examDate}</div>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Exam Time:</span>
+                  <div class="info-value">${admitCardData.examTime}</div>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Reporting Time:</span>
+                  <div class="info-value">${admitCardData.reportingTime}</div>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Exam Center:</span>
+                  <div class="info-value">${admitCardData.examCenter}</div>
+                </div>
               </div>
             </div>
-            <div class="qr-code">
-              <div id="qr-code-container"></div>
-            </div>
-            <p><strong>Instructions:</strong></p>
-            <ul>
-              <li>Please arrive at the exam center 1 hour before the exam time</li>
-              <li>Bring this admit card and a valid ID proof</li>
-              <li>No electronic devices are allowed in the exam hall</li>
-              <li>Follow all COVID-19 protocols</li>
-            </ul>
+
           </div>
         </body>
       </html>
@@ -198,6 +497,53 @@ const CompetitionForm = () => {
     printWindow.document.close();
     printWindow.print();
   };
+
+  if (showPayment && admitCardData) {
+    const upiId = 'Q425549449@ybl';
+    const upiIntent = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent('NIICT')}&cu=INR&tn=${encodeURIComponent('Competition Fee')}`;
+
+    return (
+      <Container maxWidth="sm" sx={{ mt: 4, mb: 4, paddingTop: '80px' }}>
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <Paper elevation={6} sx={{ p: 4, borderRadius: 4 }}>
+            <Box textAlign="center" mb={2}>
+              <Typography variant="h5" fontWeight={700} color="#1e293b" gutterBottom>
+                Complete Payment
+              </Typography>
+              <Typography variant="body1" color="#64748b">
+                Please pay the registration fee using the UPI below. After payment, click "I have paid" to view your admit card.
+              </Typography>
+            </Box>
+
+            <Box sx={{ background: '#fff', p: 3, borderRadius: 3, boxShadow: 1, textAlign: 'center' }}>
+              <Typography variant="subtitle1" fontWeight={600} color="#1e293b" gutterBottom>
+                UPI ID
+              </Typography>
+              <Typography variant="h6" color="#1e293b" sx={{ wordBreak: 'break-all', mb: 2 }}>
+                {upiId}
+              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                <QRCode value={upiIntent} size={180} level="H" includeMargin />
+              </Box>
+              <Typography variant="body2" color="#64748b" sx={{ mb: 2 }}>
+                Scan to pay via any UPI app
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                <Button variant="outlined" onClick={() => navigator.clipboard.writeText(upiId)}>Copy UPI ID</Button>
+                <Button variant="contained" onClick={() => window.location.href = upiIntent}>Open UPI App</Button>
+              </Box>
+            </Box>
+
+            <Box textAlign="center" mt={4}>
+              <Button variant="contained" color="success" size="large" onClick={() => { setShowPayment(false); setShowAdmitCard(true); }}>
+                I have paid - Show Admit Card
+              </Button>
+            </Box>
+          </Paper>
+        </motion.div>
+      </Container>
+    );
+  }
 
   if (showAdmitCard && admitCardData) {
     return (
@@ -207,155 +553,267 @@ const CompetitionForm = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <Paper elevation={6} sx={{ p: 4, borderRadius: 4, background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' }}>
-            <Box textAlign="center" mb={4}>
-              <FaTrophy size={40} color="#fbbf24" style={{ marginBottom: '10px' }} />
-              <Typography variant="h4" fontWeight={700} color="#1e293b" gutterBottom>
-                Competition Admit Card
+          <Paper elevation={6} sx={{ p: 4, borderRadius: 4, background: 'white', border: '2px solid #e0e0e0' }}>
+            {/* Header Section */}
+            <Box sx={{ textAlign: 'center', mb: 4, borderBottom: '2px solid #1976d2', pb: 2 }}>
+              <Typography variant="h4" fontWeight={700} color="#1976d2" gutterBottom>
+                NIICT COMPUTER CENTER
               </Typography>
-              <Typography variant="h6" color="#64748b">
-                GK & Computer Knowledge Competition (Eligible: Class 8th to Graduation)
+              <Typography variant="body1" color="#666" sx={{ mb: 1 }}>
+                A Unit of: NIICT Digital Education Institute Ltd.
+              </Typography>
+              <Typography variant="body2" color="#666" sx={{ mb: 1 }}>
+                Registered Under Ministry of Corporate Affairs, Govt. Of India
+              </Typography>
+              <Typography variant="body2" color="#666" sx={{ mb: 1 }}>
+                An Autonomous Institute Registered Under the Govt. of NCT Delhi
+              </Typography>
+              <Typography variant="body2" fontWeight={600} color="#1976d2">
+                AN ISO 9001:2015 CERTIFIED ORGANIZATION
               </Typography>
             </Box>
 
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={8}>
-                <Box sx={{ background: 'white', p: 3, borderRadius: 3, boxShadow: 2 }}>
-                  <Typography variant="h6" fontWeight={600} color="#1e293b" gutterBottom>
-                    Candidate Information
-                  </Typography>
+            {/* Admit Card Title */}
+            <Box sx={{ textAlign: 'center', mb: 3 }}>
+              <Typography variant="h5" fontWeight={700} color="#1976d2">
+                CANDIDATE ADMIT CARD (Competition Exam)
+              </Typography>
+            </Box>
+
+            {/* Candidate Information Section */}
+            <Box sx={{ 
+              border: '2px solid #e0e0e0', 
+              borderRadius: 2, 
+              p: 3, 
+              mb: 3,
+              background: '#f9f9f9'
+            }}>
+              <Grid container spacing={3}>
+                {/* Left Column - Candidate Info */}
+                <Grid item xs={8}>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Roll No:</Typography>
+                    <Typography variant="h6" fontWeight={700} color="#1976d2">
+                      {admitCardData.rollNumber}
+                    </Typography>
+                  </Box>
                   
-                  <Grid container spacing={2} mb={3}>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Roll Number</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {admitCardData.rollNumber}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Subject</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {admitCardData.subject}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography variant="body2" color="#64748b">Full Name</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {admitCardData.name}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Class</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {admitCardData.class}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Age</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {admitCardData.age} years
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography variant="body2" color="#64748b">School</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {admitCardData.school}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-
-                  <Box sx={{ background: '#f1f5f9', p: 3, borderRadius: 3, mb: 3 }}>
-                    <Typography variant="h6" fontWeight={600} color="#1e293b" gutterBottom>
-                      <FaCalendarAlt style={{ marginRight: '8px', color: '#3b82f6' }} />
-                      Exam Details
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Name:</Typography>
+                    <Typography variant="h6" fontWeight={600} color="#333">
+                      {admitCardData.name}
                     </Typography>
-                    
-                    <Grid container spacing={2}>
-                      <Grid item xs={6}>
-                        <Typography variant="body2" color="#64748b">Exam Date</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#1e293b">
-                          {admitCardData.examDate}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="body2" color="#64748b">Exam Time</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#1e293b">
-                          <FaClock style={{ marginRight: '4px', color: '#3b82f6' }} />
-                          {admitCardData.examTime}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="body2" color="#64748b">Reporting Time</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#1e293b">
-                          <FaClock style={{ marginRight: '4px', color: '#ef4444' }} />
-                          {admitCardData.reportingTime}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Typography variant="body2" color="#64748b">Exam Center</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#1e293b">
-                          <FaMapMarkerAlt style={{ marginRight: '4px', color: '#10b981' }} />
-                          {admitCardData.examCenter}
-                        </Typography>
-                      </Grid>
-                    </Grid>
                   </Box>
-
-                  <Box sx={{ background: '#fef3c7', p: 3, borderRadius: 3 }}>
-                    <Typography variant="h6" fontWeight={600} color="#92400e" gutterBottom>
-                      Important Instructions
+                  
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Date of Birth:</Typography>
+                    <Typography variant="body1" fontWeight={500} color="#333">
+                      {new Date(admitCardData.dateOfBirth).toLocaleDateString('en-GB')}
                     </Typography>
-                    <ul style={{ margin: 0, paddingLeft: '20px', color: '#92400e' }}>
-                      <li>Please arrive at the exam center 1 hour before the exam time</li>
-                      <li>Bring this admit card and a valid ID proof</li>
-                      <li>No electronic devices are allowed in the exam hall</li>
-                      <li>Follow all COVID-19 protocols</li>
-                      <li>Winners will be announced within 7 days of the exam</li>
-                    </ul>
                   </Box>
-                </Box>
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <Box sx={{ background: 'white', p: 3, borderRadius: 3, boxShadow: 2, textAlign: 'center' }}>
-                  <Typography variant="h6" fontWeight={600} color="#1e293b" gutterBottom>
-                    QR Code
-                  </Typography>
-                  <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                    <QRCode 
-                      value={admitCardData.qrCode}
-                      size={150}
-                      level="H"
-                      includeMargin={true}
-                    />
+                  
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Father Name:</Typography>
+                    <Typography variant="body1" fontWeight={500} color="#333">
+                      {admitCardData.fatherName}
+                    </Typography>
                   </Box>
-                  <Typography variant="body2" color="#64748b">
-                    Scan this QR code for verification
-                  </Typography>
-                </Box>
-
-                <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    onClick={printAdmitCard}
-                    sx={{ borderRadius: 2, py: 1.5 }}
-                  >
-                    Print Admit Card
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    size="large"
-                    onClick={() => setShowAdmitCard(false)}
-                    sx={{ borderRadius: 2, py: 1.5 }}
-                  >
-                    Register Another Student
-                  </Button>
-                </Box>
+                  
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Subject:</Typography>
+                    <Typography variant="body1" fontWeight={500} color="#333">
+                      {admitCardData.subject} Competition
+                    </Typography>
+                  </Box>
+                  
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Center Name:</Typography>
+                    <Typography variant="body1" fontWeight={500} color="#333">
+                      NIICT Computer Centre
+                    </Typography>
+                  </Box>
+                </Grid>
+                
+                {/* Right Column - Photo */}
+                <Grid item xs={4}>
+                  <Box sx={{ 
+                    border: '2px solid #e0e0e0', 
+                    borderRadius: 1, 
+                    p: 1, 
+                    textAlign: 'center',
+                    background: 'white'
+                  }}>
+                    <Typography variant="body2" color="#666" sx={{ mb: 1, fontSize: '12px' }}>
+                      PHOTOGRAPH
+                    </Typography>
+                    {admitCardData.image ? (
+                      <img
+                        src={admitCardData.image}
+                        alt="Candidate Photo"
+                        style={{
+                          width: '120px',
+                          height: '150px',
+                          objectFit: 'cover',
+                          borderRadius: '4px',
+                          border: '1px solid #ddd'
+                        }}
+                      />
+                    ) : (
+                      <Box sx={{ 
+                        width: '120px', 
+                        height: '150px', 
+                        border: '2px dashed #ccc',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mx: 'auto'
+                      }}>
+                        <Typography variant="body2" color="#999">
+                          No Photo
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+                </Grid>
               </Grid>
-            </Grid>
+            </Box>
+
+            {/* Instructions Section */}
+            <Box sx={{ 
+              border: '2px solid #e0e0e0', 
+              borderRadius: 2, 
+              p: 3, 
+              mb: 3,
+              background: '#f9f9f9'
+            }}>
+              <Typography variant="h6" fontWeight={700} color="#1976d2" sx={{ textAlign: 'center', mb: 2 }}>
+                INSTRUCTIONS TO BE FOLLOWED BY CANDIDATES AT EXAMINATION
+              </Typography>
+              
+              <Box component="ol" sx={{ pl: 2, m: 0 }}>
+                <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+                  Candidates must report half an hour prior to the scheduled examination time.
+                </Typography>
+                <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+                  Entry to the examination hall is permitted 15 minutes before commencement, and no entry is allowed after 30 minutes from commencement.
+                </Typography>
+                <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+                  Candidates must carry original photo identity proofs (Voter ID, Passport, PAN, Driving Licence, Aadhar, Student ID with photograph, etc.).
+                </Typography>
+                <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+                  Candidates should carry only their admit card, an original photo identity card, and a pen.
+                </Typography>
+                <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+                  Cell phones or any electronic devices are prohibited and will be confiscated. Pocketbooks, handbags, books, notes, written or printed material, CDs, or data are also prohibited.
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Exam Details */}
+            <Box sx={{ 
+              border: '2px solid #e0e0e0', 
+              borderRadius: 2, 
+              p: 3, 
+              mb: 3,
+              background: '#f9f9f9'
+            }}>
+              <Typography variant="h6" fontWeight={700} color="#1976d2" sx={{ textAlign: 'center', mb: 2 }}>
+                EXAMINATION DETAILS
+              </Typography>
+              
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Exam Date:</Typography>
+                  <Typography variant="body1" fontWeight={500} color="#333">
+                    {admitCardData.examDate}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Exam Time:</Typography>
+                  <Typography variant="body1" fontWeight={500} color="#333">
+                    {admitCardData.examTime}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Reporting Time:</Typography>
+                  <Typography variant="body1" fontWeight={500} color="#333">
+                    {admitCardData.reportingTime}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Exam Center:</Typography>
+                  <Typography variant="body1" fontWeight={500} color="#333">
+                    {admitCardData.examCenter}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Box>
+
+            {/* QR Code Section */}
+            <Box sx={{ 
+              border: '2px solid #e0e0e0', 
+              borderRadius: 2, 
+              p: 3, 
+              mb: 3,
+              background: '#f9f9f9',
+              textAlign: 'center'
+            }}>
+              <Typography variant="h6" fontWeight={700} color="#1976d2" sx={{ mb: 2 }}>
+                VERIFICATION QR CODE
+              </Typography>
+              <Box display="flex" justifyContent="center">
+                <QRCode
+                  value={admitCardData.qrCode}
+                  size={120}
+                  bgColor="#ffffff"
+                  fgColor="#000000"
+                  level="M"
+                  includeMargin={true}
+                />
+              </Box>
+            </Box>
+
+            {/* Action Buttons */}
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+              <Button
+                variant="contained"
+                color="primary"
+                size="large"
+                onClick={printAdmitCard}
+                sx={{ 
+                  px: 4, 
+                  py: 1.5, 
+                  fontSize: '16px', 
+                  fontWeight: 600,
+                  background: '#1976d2',
+                  '&:hover': {
+                    background: '#1565c0',
+                  }
+                }}
+              >
+                🖨️ Print Admit Card
+              </Button>
+              <Button
+                variant="outlined"
+                color="primary"
+                size="large"
+                onClick={() => setShowAdmitCard(false)}
+                sx={{ 
+                  px: 4, 
+                  py: 1.5, 
+                  fontSize: '16px', 
+                  fontWeight: 600,
+                  borderColor: '#1976d2',
+                  color: '#1976d2',
+                  '&:hover': {
+                    borderColor: '#1565c0',
+                    color: '#1565c0',
+                  }
+                }}
+              >
+                Register Another Student
+              </Button>
+            </Box>
           </Paper>
         </motion.div>
       </Container>
@@ -418,6 +876,17 @@ const CompetitionForm = () => {
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
+                  label="Father's Name *"
+                  name="fatherName"
+                  value={formData.fatherName}
+                  onChange={handleInputChange}
+                  required
+                  sx={{ mb: 2 }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
                   label="Mother's Name *"
                   name="motherName"
                   value={formData.motherName}
@@ -457,20 +926,6 @@ const CompetitionForm = () => {
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Age *"
-                  name="age"
-                  type="number"
-                  value={formData.age}
-                  onChange={handleInputChange}
-                  required
-                  inputProps={{ min: 1, max: 20 }}
-                  helperText="Only candidates aged 20 or below can register"
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
                   label="Date of Birth *"
                   name="dateOfBirth"
                   type="date"
@@ -492,26 +947,28 @@ const CompetitionForm = () => {
                   sx={{ mb: 2 }}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Class *"
-                  name="class"
-                  value={formData.class}
-                  onChange={handleInputChange}
-                  required
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={8}>
                 <FormControl fullWidth sx={{ mb: 2 }}>
-                  <InputLabel>Class Passed *</InputLabel>
+                  <InputLabel sx={{ fontSize: '16px', whiteSpace: 'nowrap' }}>Class Passed *</InputLabel>
                   <Select
                     name="classPassed"
                     value={formData.classPassed}
                     onChange={handleInputChange}
                     label="Class Passed *"
                     required
+                    sx={{
+                      height: '56px',
+                      fontSize: '16px',
+                      minWidth: '200px',
+                      '& .MuiSelect-select': {
+                        fontSize: '16px',
+                        padding: '16px 14px'
+                      },
+                      '& .MuiInputLabel-root': {
+                        fontSize: '16px',
+                        whiteSpace: 'nowrap'
+                      }
+                    }}
                   >
                     <MenuItem value="8th">8th</MenuItem>
                     <MenuItem value="9th">9th</MenuItem>
@@ -523,17 +980,6 @@ const CompetitionForm = () => {
                     <MenuItem value="Graduation">Graduation</MenuItem>
                   </Select>
                 </FormControl>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Parent/Guardian Name *"
-                  name="parentName"
-                  value={formData.parentName}
-                  onChange={handleInputChange}
-                  required
-                  sx={{ mb: 2 }}
-                />
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField
@@ -558,6 +1004,52 @@ const CompetitionForm = () => {
                   required
                   sx={{ mb: 2 }}
                 />
+              </Grid>
+              <Grid item xs={12}>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body1" sx={{ mb: 1, fontWeight: 500 }}>
+                    Student Image *
+                  </Typography>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    style={{ display: 'none' }}
+                    id="image-upload"
+                  />
+                  <label htmlFor="image-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      disabled={uploadingImage}
+                      sx={{
+                        width: '100%',
+                        height: '56px',
+                        border: '2px dashed #ccc',
+                        '&:hover': {
+                          border: '2px dashed #1976d2',
+                          backgroundColor: '#f5f5f5'
+                        }
+                      }}
+                    >
+                      {uploadingImage ? 'Uploading...' : 'Upload Student Photo'}
+                    </Button>
+                  </label>
+                  {imagePreview && (
+                    <Box sx={{ mt: 2, textAlign: 'center' }}>
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        style={{
+                          maxWidth: '200px',
+                          maxHeight: '200px',
+                          borderRadius: '8px',
+                          border: '2px solid #e0e0e0'
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Box>
               </Grid>
               {/* Subject field removed as requested; subject remains defaulted in state */}
             </Grid>

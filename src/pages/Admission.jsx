@@ -148,6 +148,19 @@ function Admission() {
     
     if (!formData.dateOfBirth) {
       newErrors.dateOfBirth = 'Date of birth is required';
+    } else {
+      // Date of birth validation - must be 20 years or younger
+      const today = new Date();
+      const birthDate = new Date(formData.dateOfBirth);
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      
+      // Check if birthday hasn't occurred this year
+      const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
+      
+      if (actualAge > 20) {
+        newErrors.dateOfBirth = 'Only candidates aged 20 or below can register';
+      }
     }
     
     if (!formData.course) {
@@ -253,6 +266,9 @@ function Admission() {
   };
 
   if (isSubmitted) {
+    const upiId = 'Q425549449@ybl';
+    const upiIntent = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent('NIICT')}&cu=INR&tn=${encodeURIComponent('Admission Fee')}`;
+
     return (
       <motion.div 
         className="admission-success"
@@ -285,6 +301,30 @@ function Admission() {
           >
             Thank you for choosing NIICT. We'll review your application and get back to you soon.
           </motion.p>
+
+          <motion.div 
+            className="payment-box"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
+            <h3>Complete Payment</h3>
+            <p>Please pay the admission fee using the UPI below.</p>
+            <div style={{ background: '#fff', borderRadius: 12, padding: 16, boxShadow: '0 2px 10px rgba(0,0,0,0.08)' }}>
+              <div style={{ fontWeight: 600, marginBottom: 8 }}>UPI ID</div>
+              <div style={{ fontSize: 18, wordBreak: 'break-all', marginBottom: 12 }}>{upiId}</div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+                {/* QR component available elsewhere; simple img fallback omitted */}
+                {/* You can replace this with <QRCode value={upiIntent} size={160} /> if QRCode is available here */}
+                <img alt="UPI QR" src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiIntent)}`} />
+              </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                <button className="btn" onClick={() => navigator.clipboard.writeText(upiId)}>Copy UPI ID</button>
+                <a className="btn primary" href={upiIntent}>Open UPI App</a>
+              </div>
+            </div>
+          </motion.div>
+
           <motion.div 
             className="success-features"
             initial={{ opacity: 0, y: 20 }}
@@ -297,11 +337,11 @@ function Admission() {
             </div>
             <div className="feature">
               <Users size={20} />
-              <span>Expert guidance</span>
+              <span>Personalized counseling</span>
             </div>
             <div className="feature">
               <Award size={20} />
-              <span>Quality education</span>
+              <span>Industry-recognized certification</span>
             </div>
           </motion.div>
         </div>
