@@ -29,12 +29,6 @@ const CompetitionForm = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  // Generate unique 4-digit roll number
-  const generateRollNumber = () => {
-    const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 1000);
-    return String(timestamp % 10000).padStart(4, '0');
-  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

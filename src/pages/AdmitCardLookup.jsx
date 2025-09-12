@@ -3,7 +3,7 @@ import { Container, Paper, TextField, Button, Box, Typography, Alert } from '@mu
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
 
 const AdmitCardLookup = () => {
-  const [rollNumber, setRollNumber] = useState('');
+  const [aadhaar, setAadhaar] = useState('');
   const [dob, setDob] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -14,9 +14,17 @@ const AdmitCardLookup = () => {
     setError('');
     setLoading(true);
     setApp(null);
+    
+    // Validate Aadhaar format
+    if (!/^\d{12}$/.test(aadhaar)) {
+      setError('Please enter a valid 12-digit Aadhaar number');
+      setLoading(false);
+      return;
+    }
+    
     try {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
-      const url = new URL(`${API_BASE_URL}/api/competition-applications/roll/${encodeURIComponent(rollNumber)}`);
+      const url = new URL(`${API_BASE_URL}/api/competition-applications/aadhaar/${encodeURIComponent(aadhaar)}`);
       if (dob) url.searchParams.set('dob', dob);
       const res = await fetch(url.toString());
       const data = await res.json();
@@ -38,8 +46,21 @@ const AdmitCardLookup = () => {
       <Paper elevation={4} sx={{ p: 3, borderRadius: 3 }}>
         <Typography variant="h5" sx={{ mb: 2 }}>Admit Card Lookup</Typography>
         <Box component="form" onSubmit={handleSearch} sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 2 }}>
-          <TextField label="Roll Number" required value={rollNumber} onChange={(e) => setRollNumber(e.target.value)} />
-          <TextField label="Date of Birth (YYYY-MM-DD)" type="date" InputLabelProps={{ shrink: true }} value={dob} onChange={(e) => setDob(e.target.value)} />
+          <TextField 
+            label="Aadhaar Number" 
+            required 
+            value={aadhaar} 
+            onChange={(e) => setAadhaar(e.target.value)}
+            placeholder="Enter 12-digit Aadhaar number"
+            inputProps={{ maxLength: 12 }}
+          />
+          <TextField 
+            label="Date of Birth (YYYY-MM-DD)" 
+            type="date" 
+            InputLabelProps={{ shrink: true }} 
+            value={dob} 
+            onChange={(e) => setDob(e.target.value)} 
+          />
           <Button type="submit" variant="contained" disabled={loading}>Search</Button>
         </Box>
         {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
