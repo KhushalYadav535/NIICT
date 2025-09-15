@@ -50,34 +50,48 @@ const CompetitionForm = () => {
       setError('');
       
       try {
-        // Upload to Cloudinary via backend
-        const uploadFormData = new FormData();
-        uploadFormData.append('image', file);
-        
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-        const response = await fetch(`${backendUrl}/api/upload-image`, {
+        // 1) Get upload signature from backend
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
+        const publicId = `student_${Date.now()}`;
+        const folder = 'niict/competition';
+
+        const sigRes = await fetch(`${backendUrl}/api/cloudinary-signature`, {
           method: 'POST',
-          body: uploadFormData
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ folder, public_id: publicId })
         });
-        
-        console.log('Response status:', response.status);
-        
-        if (!response.ok) {
-          const errorData = await response.text();
-          console.error('Upload error:', errorData);
-          setError(`Upload failed: ${response.status} - ${errorData}`);
+
+        if (!sigRes.ok) {
+          const msg = await sigRes.text();
+          setError(`Failed to get upload signature: ${sigRes.status} - ${msg}`);
           return;
         }
-        
-        const data = await response.json();
-        console.log('Upload success:', data);
-        
-        if (data.secure_url) {
-          setFormData(prev => ({
-            ...prev,
-            image: data.secure_url
-          }));
-          setImagePreview(data.secure_url);
+
+        const { cloud_name, api_key, timestamp, signature } = await sigRes.json();
+
+        // 2) Upload directly to Cloudinary
+        const form = new FormData();
+        form.append('file', file);
+        form.append('api_key', api_key);
+        form.append('timestamp', String(timestamp));
+        form.append('signature', signature);
+        form.append('folder', folder);
+        form.append('public_id', publicId);
+
+        const uploadUrl = `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`;
+        const uploadRes = await fetch(uploadUrl, { method: 'POST', body: form });
+
+        if (!uploadRes.ok) {
+          const msg = await uploadRes.text();
+          setError(`Upload failed: ${uploadRes.status} - ${msg}`);
+          return;
+        }
+
+        const result = await uploadRes.json();
+
+        if (result.secure_url) {
+          setFormData(prev => ({ ...prev, image: result.secure_url }));
+          setImagePreview(result.secure_url);
         } else {
           setError('Failed to upload image - no URL returned');
         }
