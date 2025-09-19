@@ -50,8 +50,9 @@ const CompetitionForm = () => {
       setError('');
       
       try {
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
-        const uploadStrategy = import.meta.env.VITE_UPLOAD_STRATEGY || (import.meta.env.MODE === 'production' ? 'cloudinary' : 'mongo');
+        const defaultBackend = import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000';
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || defaultBackend;
+        const uploadStrategy = import.meta.env.VITE_UPLOAD_STRATEGY || 'mongo';
         const folder = 'niict/competition';
         const publicId = `student_${Date.now()}`;
 
@@ -277,7 +278,7 @@ const CompetitionForm = () => {
       </svg>
     `;
     
-    const qrCodeDataUrl = 'data:image/svg+xml;base64,' + btoa(qrCodeSvg);
+    const qrInlineSvg = qrCodeSvg; // embed directly to avoid image load timing issues
     
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
@@ -502,7 +503,7 @@ const CompetitionForm = () => {
                   <div class="qr-section" style="margin-top: 15px;">
                     <div class="section-title" style="font-size: 12px; margin-bottom: 8px;">VERIFICATION QR CODE</div>
                     <div style="text-align: center;">
-                      <img src="${qrCodeDataUrl}" alt="QR Code" style="width: 60px; height: 60px; border: 1px solid #ddd; display: block; margin: 0 auto;" />
+                      ${qrInlineSvg}
                       <div style="font-size: 10px; color: #666; margin-top: 5px;">Scan for verification</div>
                     </div>
                   </div>
@@ -550,7 +551,12 @@ const CompetitionForm = () => {
       </html>
     `);
     printWindow.document.close();
-    printWindow.print();
+    printWindow.onload = () => {
+      setTimeout(() => {
+        try { printWindow.focus(); } catch (_) {}
+        printWindow.print();
+      }, 200);
+    };
   };
 
   if (showPayment && admitCardData) {
