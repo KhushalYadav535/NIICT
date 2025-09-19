@@ -18,7 +18,7 @@ const CompetitionManagement = () => {
 
   const loadApplications = async () => {
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000');
       const res = await fetch(`${API_BASE_URL}/api/competition-applications`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to load');
@@ -31,7 +31,7 @@ const CompetitionManagement = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this application?')) return;
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000');
       const res = await fetch(`${API_BASE_URL}/api/competition-applications/${id}`, { method: 'DELETE' });
       if (!res.ok) {
         const err = await res.json();
@@ -52,7 +52,7 @@ const CompetitionManagement = () => {
   const updatePaymentStatus = async (id, status) => {
     try {
       setUpdating(true);
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000');
       const res = await fetch(`${API_BASE_URL}/api/competition-applications/${id}/payment`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -472,7 +472,7 @@ const CompetitionManagement = () => {
                         {application.email}
                       </Typography>
                     </TableCell>
-                    <TableCell>{application.class}</TableCell>
+                    <TableCell>{application.classPassed || application.class}</TableCell>
                     <TableCell>{application.school}</TableCell>
                     <TableCell>
                       <Chip 
