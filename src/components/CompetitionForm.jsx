@@ -165,7 +165,8 @@ const CompetitionForm = () => {
     }
 
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+      const defaultBackend = import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000';
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || defaultBackend;
       console.log('Submitting form data:', formData);
       
       const response = await fetch(`${backendUrl}/api/competition-applications`, {
