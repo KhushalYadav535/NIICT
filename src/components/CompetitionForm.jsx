@@ -452,12 +452,9 @@ const CompetitionForm = () => {
         <body>
           <div class="admit-card">
             <!-- Header Section -->
-            <div class="header">
-              <div class="institute-name">NIICT COMPUTER CENTER</div>
-              <div class="institute-details">A Unit of: NIICT Digital Education Institute Ltd.</div>
-              <div class="institute-details">Registered Under Ministry of Corporate Affairs, Govt. Of India</div>
-              <div class="institute-details">An Autonomous Institute Registered Under the Govt. of NCT Delhi</div>
-              <div class="certification">AN ISO 9001:2015 CERTIFIED ORGANIZATION</div>
+            <div class="header" style="background: linear-gradient(90deg, #1976d2, #0d47a1); color: white; padding: 16px; border-radius: 8px;">
+              <div class="institute-name" style="color: white;">NIICT Computer Institute of IT Management</div>
+              <div class="certification" style="color: #e3f2fd;">AN ISO 9001:2015 CERTIFIED ORGANIZATION</div>
             </div>
 
             <!-- Admit Card Title -->
@@ -517,11 +514,11 @@ const CompetitionForm = () => {
             <div class="instructions-section">
               <div class="section-title">INSTRUCTIONS TO BE FOLLOWED BY CANDIDATES AT EXAMINATION</div>
               <ol class="instructions-list">
-                <li>Candidates must report half an hour prior to the scheduled examination time.</li>
-                <li>Entry to the examination hall is permitted 15 minutes before commencement, and no entry is allowed after 30 minutes from commencement.</li>
-                <li>Candidates must carry original photo identity proofs (Voter ID, Passport, PAN, Driving Licence, Aadhar, Student ID with photograph, etc.).</li>
-                <li>Candidates should carry only their admit card, an original photo identity card, and a pen.</li>
-                <li>Cell phones or any electronic devices are prohibited and will be confiscated. Pocketbooks, handbags, books, notes, written or printed material, CDs, or data are also prohibited.</li>
+                <li>उम्मीदवारों को परीक्षा के निर्धारित समय से आधा घंटा पहले रिपोर्ट करना अनिवार्य है।</li>
+                <li>परीक्षा प्रारंभ होने से 15 मिनट पहले ही परीक्षा कक्ष में प्रवेश की अनुमति है, और प्रारंभ होने के 30 मिनट बाद प्रवेश की अनुमति नहीं होगी।</li>
+                <li>उम्मीदवारों को मूल फोटो पहचान पत्र (मतदाता पहचान पत्र, पासपोर्ट, पैन, ड्राइविंग लाइसेंस, आधार, फोटो सहित छात्र पहचान पत्र आदि) साथ लाना आवश्यक है।</li>
+                <li>उम्मीदवार केवल अपना प्रवेश पत्र, मूल फोटो पहचान पत्र और एक पेन साथ लेकर आएं।</li>
+                <li>मोबाइल फोन या किसी भी प्रकार के इलेक्ट्रॉनिक उपकरण पूर्णतः प्रतिबंधित हैं और जब्त कर लिए जाएंगे। पॉकेटबुक, हैंडबैग, पुस्तकें, नोट्स, लिखित या मुद्रित सामग्री, सीडी या डेटा आदि लाना भी प्रतिबंधित है।</li>
               </ol>
             </div>
 
@@ -613,22 +610,23 @@ const CompetitionForm = () => {
         >
           <Paper elevation={6} sx={{ p: 4, borderRadius: 4, background: 'white', border: '2px solid #e0e0e0' }}>
             {/* Header Section */}
-            <Box sx={{ textAlign: 'center', mb: 4, borderBottom: '2px solid #1976d2', pb: 2 }}>
-              <Typography variant="h4" fontWeight={700} color="#1976d2" gutterBottom>
-                NIICT COMPUTER CENTER
-              </Typography>
-              <Typography variant="body1" color="#666" sx={{ mb: 1 }}>
-                A Unit of: NIICT Digital Education Institute Ltd.
-              </Typography>
-              <Typography variant="body2" color="#666" sx={{ mb: 1 }}>
-                Registered Under Ministry of Corporate Affairs, Govt. Of India
-              </Typography>
-              <Typography variant="body2" color="#666" sx={{ mb: 1 }}>
-                An Autonomous Institute Registered Under the Govt. of NCT Delhi
-              </Typography>
-              <Typography variant="body2" fontWeight={600} color="#1976d2">
-                AN ISO 9001:2015 CERTIFIED ORGANIZATION
-              </Typography>
+            <Box sx={{ textAlign: 'center', mb: 4, pb: 2 }}>
+              <Box sx={{
+                display: 'inline-block',
+                px: 3,
+                py: 2,
+                borderRadius: 2,
+                background: 'linear-gradient(90deg, #1976d2, #0d47a1)',
+                boxShadow: '0 6px 20px rgba(25, 118, 210, 0.2)'
+              }}>
+                <Typography variant="h5" fontWeight={800} color="#ffffff" gutterBottom sx={{ letterSpacing: 0.5 }}>
+                  NIICT Computer Institute of IT Management
+                </Typography>
+                <Typography variant="body2" fontWeight={600} color="#e3f2fd">
+                  AN ISO 9001:2015 CERTIFIED ORGANIZATION
+                </Typography>
+              </Box>
+              <Box sx={{ mt: 2, borderBottom: '2px solid #1976d2' }} />
             </Box>
 
             {/* Admit Card Title */}
@@ -749,21 +747,21 @@ const CompetitionForm = () => {
               </Typography>
               
               <Box component="ol" sx={{ pl: 2, m: 0 }}>
-                <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                  Candidates must report half an hour prior to the scheduled examination time.
-                </Typography>
-                <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                  Entry to the examination hall is permitted 15 minutes before commencement, and no entry is allowed after 30 minutes from commencement.
-                </Typography>
-                <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                  Candidates must carry original photo identity proofs (Voter ID, Passport, PAN, Driving Licence, Aadhar, Student ID with photograph, etc.).
-                </Typography>
-                <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                  Candidates should carry only their admit card, an original photo identity card, and a pen.
-                </Typography>
-                <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                  Cell phones or any electronic devices are prohibited and will be confiscated. Pocketbooks, handbags, books, notes, written or printed material, CDs, or data are also prohibited.
-                </Typography>
+              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+                उम्मीदवारों को परीक्षा के निर्धारित समय से आधा घंटा पहले रिपोर्ट करना अनिवार्य है।
+              </Typography>
+              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+                परीक्षा प्रारंभ होने से 15 मिनट पहले ही परीक्षा कक्ष में प्रवेश की अनुमति है, और प्रारंभ होने के 30 मिनट बाद प्रवेश की अनुमति नहीं होगी।
+              </Typography>
+              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+                उम्मीदवारों को मूल फोटो पहचान पत्र (मतदाता पहचान पत्र, पासपोर्ट, पैन, ड्राइविंग लाइसेंस, आधार, फोटो सहित छात्र पहचान पत्र आदि) साथ लाना आवश्यक है।
+              </Typography>
+              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+                उम्मीदवार केवल अपना प्रवेश पत्र, मूल फोटो पहचान पत्र और एक पेन साथ लेकर आएं।
+              </Typography>
+              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+                मोबाइल फोन या किसी भी प्रकार के इलेक्ट्रॉनिक उपकरण पूर्णतः प्रतिबंधित हैं और जब्त कर लिए जाएंगे। पॉकेटबुक, हैंडबैग, पुस्तकें, नोट्स, लिखित या मुद्रित सामग्री, सीडी या डेटा आदि लाना भी प्रतिबंधित है।
+              </Typography>
               </Box>
             </Box>
 
@@ -906,7 +904,7 @@ const CompetitionForm = () => {
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="body2" color="#64748b">Reporting: 7:00 AM</Typography>
-                  <Typography variant="body2" color="#64748b">Center: SK Modern Intermediate College, Semri, Jaunpur</Typography>
+              <Typography variant="body2" color="#64748b">Center: SK Modern Intermediate College, Semari, Jaunpur</Typography>
                 </Grid>
               </Grid>
             </Box>
