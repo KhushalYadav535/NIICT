@@ -128,7 +128,7 @@ const CompetitionForm = () => {
 
     // Validate form
     console.log('Form data before validation:', formData);
-    if (!formData.name || !formData.phone || !formData.school || !formData.parentPhone || !formData.address || !formData.fatherName || !formData.motherName || !formData.aadhaar || !formData.dateOfBirth || !formData.classPassed || !formData.image) {
+    if (!formData.name || !formData.phone || !formData.school || !formData.address || !formData.fatherName || !formData.motherName || !formData.dateOfBirth || !formData.classPassed || !formData.image) {
       setError('Please fill all required fields including student image');
       setLoading(false);
       return;
@@ -149,8 +149,8 @@ const CompetitionForm = () => {
       return;
     }
 
-    // Aadhaar validation: 12 digits
-    if (!/^\d{12}$/.test(formData.aadhaar)) {
+    // Aadhaar validation: 12 digits (only if provided)
+    if (formData.aadhaar && !/^\d{12}$/.test(formData.aadhaar)) {
       setError('Please enter a valid 12-digit Aadhaar number');
       setLoading(false);
       return;
@@ -973,16 +973,15 @@ const CompetitionForm = () => {
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Aadhaar Number *"
+                  label="Aadhaar Number"
                   name="aadhaar"
                   value={formData.aadhaar}
                   onChange={(e) => {
                     const onlyDigits = e.target.value.replace(/[^0-9]/g, '');
                     setFormData(prev => ({ ...prev, aadhaar: onlyDigits.slice(0, 12) }));
                   }}
-                  required
                   inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 12 }}
-                  helperText="Enter 12-digit Aadhaar number"
+                  helperText="Enter 12-digit Aadhaar number (optional)"
                   sx={{ mb: 2 }}
                 />
               </Grid>
@@ -1047,11 +1046,11 @@ const CompetitionForm = () => {
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Parent/Guardian Phone *"
+                  label="Parent/Guardian Phone"
                   name="parentPhone"
                   value={formData.parentPhone}
                   onChange={handleInputChange}
-                  required
+                  helperText="Optional - if available"
                   sx={{ mb: 2 }}
                 />
               </Grid>
