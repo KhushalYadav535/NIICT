@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Paper, Table, TableBody, TableCell, 
-         TableContainer, TableHead, TableRow, Button, Box, Chip, Grid, Card, CardContent, TextField, InputAdornment } from '@mui/material';
+         TableContainer, TableHead, TableRow, Button, Box, Chip, Grid, Card, CardContent, TextField, InputAdornment, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { motion } from 'framer-motion';
 import { FaTrophy, FaSearch, FaPrint, FaEye, FaTrash, FaDownload } from 'react-icons/fa';
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
@@ -8,6 +8,7 @@ import { QRCodeCanvas as QRCode } from 'qrcode.react';
 const CompetitionManagement = () => {
   const [applications, setApplications] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchType, setSearchType] = useState('all');
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -367,22 +368,40 @@ const CompetitionManagement = () => {
   };
 
   const exportToCSV = () => {
-    const headers = ['Roll Number', 'Name', 'Email', 'Phone', 'Age', 'School', 'Class', 'Subject', 'Parent Name', 'Parent Phone', 'Address', 'Application Date'];
+    const headers = [
+      'Roll Number',
+      'Subject', 
+      'Full Name',
+      'Phone',
+      'Aadhaar Number',
+      'Date of Birth',
+      'Class',
+      'School',
+      'Father\'s Name',
+      'Mother\'s Name',
+      'Parent Phone',
+      'Address',
+      'Application Date',
+      'Payment Status'
+    ];
+    
     const csvContent = [
       headers.join(','),
       ...applications.map(app => [
-        app.rollNumber,
-        app.name,
-        app.email,
-        app.phone,
-        app.age,
-        app.school,
-        app.class,
-        app.subject,
-        app.parentName,
-        app.parentPhone,
-        `"${app.address}"`,
-        app.applicationDate
+        app.rollNumber || '',
+        app.subject || '',
+        app.name || '',
+        app.phone || '',
+        app.aadhaar || 'Not provided',
+        app.dateOfBirth ? new Date(app.dateOfBirth).toLocaleDateString('en-GB') : 'Not provided',
+        app.classPassed || app.class || 'Not provided',
+        app.school || '',
+        app.fatherName || 'Not provided',
+        app.motherName || 'Not provided',
+        app.parentPhone || 'Not provided',
+        `"${app.address || ''}"`,
+        app.createdAt ? new Date(app.createdAt).toLocaleDateString('en-GB') : 'Not available',
+        app.paymentStatus === 'verified' ? 'Verified' : 'Pending'
       ].join(','))
     ].join('\n');
 
@@ -390,17 +409,38 @@ const CompetitionManagement = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `competition_applications_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `competition_applications_detailed_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
 
-  const filteredApplications = applications.filter(app =>
-    app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    app.rollNumber.includes(searchTerm) ||
-    app.school.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    app.subject.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredApplications = applications.filter(app => {
+    if (!searchTerm) return true;
+    
+    const term = searchTerm.toLowerCase();
+    
+    switch (searchType) {
+      case 'name':
+        return app.name.toLowerCase().includes(term);
+      case 'phone':
+        return app.phone && app.phone.includes(searchTerm);
+      case 'aadhaar':
+        return app.aadhaar && app.aadhaar.includes(searchTerm);
+      case 'roll':
+        return app.rollNumber.includes(searchTerm);
+      case 'school':
+        return app.school.toLowerCase().includes(term);
+      case 'subject':
+        return app.subject.toLowerCase().includes(term);
+      default:
+        return app.name.toLowerCase().includes(term) ||
+               app.rollNumber.includes(searchTerm) ||
+               app.school.toLowerCase().includes(term) ||
+               app.subject.toLowerCase().includes(term) ||
+               (app.phone && app.phone.includes(searchTerm)) ||
+               (app.aadhaar && app.aadhaar.includes(searchTerm));
+    }
+  });
 
   const totalApplications = applications.length;
   const gkApplications = applications.filter(app => app.subject === 'GK').length;
@@ -450,27 +490,27 @@ const CompetitionManagement = () => {
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Email</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.email}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
                       <Typography variant="body2" color="#64748b">Phone</Typography>
                       <Typography variant="h6" fontWeight={600} color="#1e293b">
                         {selectedApplication.phone}
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Age</Typography>
+                      <Typography variant="body2" color="#64748b">Aadhaar Number</Typography>
                       <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.age} years
+                        {selectedApplication.aadhaar || 'Not provided'}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="#64748b">Date of Birth</Typography>
+                      <Typography variant="h6" fontWeight={600} color="#1e293b">
+                        {selectedApplication.dateOfBirth ? new Date(selectedApplication.dateOfBirth).toLocaleDateString('en-GB') : 'Not provided'}
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="body2" color="#64748b">Class</Typography>
                       <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.class}
+                        {selectedApplication.classPassed || selectedApplication.class || 'Not provided'}
                       </Typography>
                     </Grid>
                     <Grid item xs={12}>
@@ -480,15 +520,21 @@ const CompetitionManagement = () => {
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Parent Name</Typography>
+                      <Typography variant="body2" color="#64748b">Father's Name</Typography>
                       <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.parentName}
+                        {selectedApplication.fatherName || 'Not provided'}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="#64748b">Mother's Name</Typography>
+                      <Typography variant="h6" fontWeight={600} color="#1e293b">
+                        {selectedApplication.motherName || 'Not provided'}
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="body2" color="#64748b">Parent Phone</Typography>
                       <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.parentPhone}
+                        {selectedApplication.parentPhone || 'Not provided'}
                       </Typography>
                     </Grid>
                     <Grid item xs={12}>
@@ -500,7 +546,7 @@ const CompetitionManagement = () => {
                     <Grid item xs={6}>
                       <Typography variant="body2" color="#64748b">Application Date</Typography>
                       <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.applicationDate}
+                        {selectedApplication.createdAt ? new Date(selectedApplication.createdAt).toLocaleDateString('en-GB') : 'Not available'}
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
@@ -633,31 +679,96 @@ const CompetitionManagement = () => {
           </Grid>
         </Grid>
 
-        {/* Search and Export */}
-        <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-          <TextField
-            placeholder="Search by name, roll number, school, or subject..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{ flexGrow: 1, minWidth: 300 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <FaSearch />
-                </InputAdornment>
-              ),
-            }}
-          />
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={exportToCSV}
-            startIcon={<FaDownload />}
-            sx={{ borderRadius: 2 }}
-          >
-            Export CSV
-          </Button>
-        </Box>
+        {/* Enhanced Search Bar */}
+        <Paper elevation={3} sx={{ p: 3, mb: 3, borderRadius: 3, background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' }}>
+          <Typography variant="h6" fontWeight={600} color="#1e293b" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <FaSearch size={20} />
+            Search Applications
+          </Typography>
+          
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', mt: 2 }}>
+            <FormControl sx={{ minWidth: 160 }}>
+              <InputLabel>Search By</InputLabel>
+              <Select
+                value={searchType}
+                label="Search By"
+                onChange={(e) => {
+                  setSearchType(e.target.value);
+                  setSearchTerm('');
+                }}
+                sx={{ borderRadius: 2 }}
+              >
+                <MenuItem value="all">🔍 All Fields</MenuItem>
+                <MenuItem value="name">👤 Name</MenuItem>
+                <MenuItem value="phone">📱 Phone Number</MenuItem>
+                <MenuItem value="aadhaar">🆔 Aadhaar Number</MenuItem>
+                <MenuItem value="roll">🎫 Roll Number</MenuItem>
+                <MenuItem value="school">🏫 School</MenuItem>
+                <MenuItem value="subject">📚 Subject</MenuItem>
+              </Select>
+            </FormControl>
+            
+            <TextField
+              placeholder={
+                searchType === 'all' ? "🔍 Search by name, roll number, school, subject, phone, or Aadhaar..." :
+                searchType === 'name' ? "👤 Search by name..." :
+                searchType === 'phone' ? "📱 Search by phone number..." :
+                searchType === 'aadhaar' ? "🆔 Search by Aadhaar number..." :
+                searchType === 'roll' ? "🎫 Search by roll number..." :
+                searchType === 'school' ? "🏫 Search by school..." :
+                "📚 Search by subject..."
+              }
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              sx={{ 
+                flexGrow: 1, 
+                minWidth: 320,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  backgroundColor: 'white',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  },
+                }
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <FaSearch color="#64748b" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            
+            {searchTerm && (
+              <Button
+                variant="outlined"
+                onClick={() => setSearchTerm('')}
+                sx={{ borderRadius: 2, minWidth: 100 }}
+              >
+                Clear
+              </Button>
+            )}
+            
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={exportToCSV}
+              startIcon={<FaDownload />}
+              sx={{ borderRadius: 2, minWidth: 140 }}
+            >
+              Export CSV
+            </Button>
+          </Box>
+          
+          {searchTerm && (
+            <Box sx={{ mt: 2, p: 2, backgroundColor: 'rgba(59, 130, 246, 0.1)', borderRadius: 2, border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+              <Typography variant="body2" color="#1e40af" fontWeight={500}>
+                🔍 Searching for "{searchTerm}" in {searchType === 'all' ? 'all fields' : searchType} • Found {filteredApplications.length} result{filteredApplications.length !== 1 ? 's' : ''}
+              </Typography>
+            </Box>
+          )}
+        </Paper>
 
         {/* Applications Table */}
         <Paper elevation={4} sx={{ borderRadius: 4, overflow: 'hidden', boxShadow: 6 }}>
