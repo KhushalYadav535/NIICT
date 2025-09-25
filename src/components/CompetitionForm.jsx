@@ -127,7 +127,6 @@ const CompetitionForm = () => {
     setError('');
 
     // Validate form
-    console.log('Form data before validation:', formData);
     if (!formData.name || !formData.phone || !formData.school || !formData.address || !formData.fatherName || !formData.motherName || !formData.dateOfBirth || !formData.classPassed || !formData.image) {
       setError('Please fill all required fields including student image');
       setLoading(false);
@@ -421,14 +420,6 @@ const CompetitionForm = () => {
               grid-template-columns: 1fr 1fr; 
               gap: 15px; 
             }
-            .qr-section { 
-              border: 2px solid #e0e0e0; 
-              border-radius: 8px; 
-              padding: 15px; 
-              margin-bottom: 15px; 
-              background: #f9f9f9; 
-              text-align: center; 
-            }
             .qr-code-img {
               width: 80px;
               height: 80px;
@@ -436,18 +427,29 @@ const CompetitionForm = () => {
               display: block;
             }
             @media print { 
-              body { margin: 0; padding: 5px; font-size: 12px; } 
-              .admit-card { border: 2px solid #000; padding: 15px; }
-              .institute-name { font-size: 20px; }
-              .admit-title { font-size: 16px; margin: 15px 0; }
-              .candidate-section, .instructions-section, .exam-details, .qr-section { 
-                padding: 10px; margin-bottom: 10px; 
+              body { margin: 0; padding: 5px; font-size: 11px; } 
+              .admit-card { 
+                border: 2px solid #000; 
+                padding: 10px; 
+                max-width: 100%;
+                page-break-inside: avoid;
               }
-              .info-item { margin-bottom: 8px; }
-              .instructions-list li { margin-bottom: 4px; font-size: 11px; }
-              .section-title { font-size: 12px; margin-bottom: 8px; }
-              .candidate-photo { width: 80px; height: 100px; }
-              .photo-section { padding: 5px; }
+              .institute-name { font-size: 16px; }
+              .admit-title { font-size: 14px; margin: 10px 0; }
+              .candidate-section, .instructions-section, .exam-details { 
+                padding: 8px; margin-bottom: 8px; 
+              }
+              .info-item { margin-bottom: 6px; }
+              .info-label { font-size: 10px; }
+              .info-value { font-size: 11px; }
+              .instructions-list li { margin-bottom: 3px; font-size: 9px; line-height: 1.2; }
+              .section-title { font-size: 11px; margin-bottom: 6px; }
+              .candidate-photo { width: 70px; height: 90px; }
+              .photo-section { padding: 3px; }
+              .exam-grid { gap: 8px; }
+              .result-info { padding: 8px; margin: 8px 0; }
+              .result-info h3 { font-size: 10px; margin-bottom: 4px; }
+              .result-info p { font-size: 9px; }
             }
           </style>
         </head>
@@ -500,27 +502,20 @@ const CompetitionForm = () => {
                     }
                   </div>
                   
-                  <!-- QR Code Section -->
-                  <div class="qr-section" style="margin-top: 15px;">
-                    <div class="section-title" style="font-size: 12px; margin-bottom: 8px;">VERIFICATION QR CODE</div>
-                    <div style="text-align: center;">
-                      ${qrInlineSvg}
-                      <div style="font-size: 10px; color: #666; margin-top: 5px;">Scan for verification</div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Instructions Section -->
             <div class="instructions-section">
-              <div class="section-title">INSTRUCTIONS TO BE FOLLOWED BY CANDIDATES AT EXAMINATION</div>
+              <div class="section-title">अभ्यर्थी हेतु आवश्यकता निर्देश</div>
               <ol class="instructions-list">
-                <li>उम्मीदवारों को परीक्षा के निर्धारित समय से आधा घंटा पहले रिपोर्ट करना अनिवार्य है।</li>
-                <li>परीक्षा प्रारंभ होने से 15 मिनट पहले ही परीक्षा कक्ष में प्रवेश की अनुमति है, और प्रारंभ होने के 30 मिनट बाद प्रवेश की अनुमति नहीं होगी।</li>
-                <li>उम्मीदवारों को मूल फोटो पहचान पत्र (मतदाता पहचान पत्र, पासपोर्ट, पैन, ड्राइविंग लाइसेंस, आधार, फोटो सहित छात्र पहचान पत्र आदि) साथ लाना आवश्यक है।</li>
-                <li>उम्मीदवार केवल अपना प्रवेश पत्र, मूल फोटो पहचान पत्र और एक पेन साथ लेकर आएं।</li>
-                <li>मोबाइल फोन या किसी भी प्रकार के इलेक्ट्रॉनिक उपकरण पूर्णतः प्रतिबंधित हैं और जब्त कर लिए जाएंगे। पॉकेटबुक, हैंडबैग, पुस्तकें, नोट्स, लिखित या मुद्रित सामग्री, सीडी या डेटा आदि लाना भी प्रतिबंधित है।</li>
+                <li>कृपया परीक्षा की तिथि से पर्यात समय पूर्व परीक्षा केंद्र का सही पता मालूम अवश्य कर लें ।</li>
+                <li>अभ्यर्थी रिपोर्टिंग समय से 25 मिनट पहले परीक्षा केंद्र पर अवश्य पहुचें ।</li>
+                <li>अभ्यर्थी परीक्षा हॉल में अपने साथ एडमिट कार्ड, आधार कार्ड, बॉल पेन अवय लेकर आएं ।</li>
+                <li>परीक्षा हाल में किसी भी प्रकार की नकल सामग्री ( मोबाइल, स्मार्ट watch,calculator, डिजिटल पेन आदि) लाना सख्त मना हैं।</li>
+                <li>परीक्षा केंद्र के अंदर किसी भी प्रकार की सामग्री ( मोबाइल, बैग, घड़ी आदि मूल्यवान वस्तु) रखने की व्यवस्था नहीं है, अतः अभ्यर्थी अपने अभिभावक को साथ ले आए।</li>
+                <li>किसी भी अभ्यर्थी द्वारा अनुचित व्यावहार किए जाने पर उनकी परीक्षा रद्द कर दी जाएगी, जिसका जिम्मेदार अभ्यर्थी स्वयम होगा।</li>
               </ol>
             </div>
 
@@ -529,22 +524,30 @@ const CompetitionForm = () => {
               <div class="section-title">EXAMINATION DETAILS</div>
               <div class="exam-grid">
                 <div class="info-item">
-                  <span class="info-label">Exam Date:</span>
-                  <div class="info-value">${admitCardData.examDate}</div>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Exam Time:</span>
-                  <div class="info-value">${admitCardData.examTime}</div>
+                  <span class="info-label">Examination Date:</span>
+                  <div class="info-value">12 Oct 2025 Sunday</div>
                 </div>
                 <div class="info-item">
                   <span class="info-label">Reporting Time:</span>
-                  <div class="info-value">${admitCardData.reportingTime}</div>
+                  <div class="info-value">08:00 AM</div>
                 </div>
                 <div class="info-item">
-                  <span class="info-label">Exam Center:</span>
-                  <div class="info-value">${admitCardData.examCenter}</div>
+                  <span class="info-label">Gate Closing Time:</span>
+                  <div class="info-value">09:15 AM</div>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Examination Time:</span>
+                  <div class="info-value">10:00 AM</div>
                 </div>
               </div>
+            </div>
+
+            <!-- Result Information -->
+            <div class="result-info" style="background: #e8f5e8; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 5px solid #4caf50; text-align: center;">
+              <h3 style="color: #2e7d32; margin-bottom: 10px; font-size: 16px;">परीक्षा परिणाम की तिथि</h3>
+              <p style="color: #333; font-weight: 600; margin: 0;">
+                18 Oct 2025 को Niict computer Classes के यूट्यूब चैनल के माध्यम से घोषित किया जाएगा।
+              </p>
             </div>
 
           </div>

@@ -77,68 +77,287 @@ const CompetitionManagement = () => {
         <head>
           <title>Competition Admit Card - ${application.name}</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            .admit-card { border: 2px solid #000; padding: 20px; max-width: 600px; margin: 0 auto; }
-            .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-            .qr-code { text-align: center; margin: 20px 0; }
-            .info-row { display: flex; justify-content: space-between; margin: 10px 0; }
-            .label { font-weight: bold; }
-            .exam-details { background: #f0f0f0; padding: 15px; margin: 20px 0; }
-            @media print { body { margin: 0; } }
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+              background: #f5f5f5; 
+              padding: 20px;
+            }
+            .admit-card { 
+              background: white; 
+              border: 3px solid #1976d2; 
+              border-radius: 15px; 
+              padding: 0; 
+              max-width: 800px; 
+              margin: 0 auto; 
+              box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+              overflow: hidden;
+            }
+            .header { 
+              background: linear-gradient(135deg, #1976d2, #0d47a1); 
+              color: white; 
+              padding: 25px; 
+              text-align: center; 
+              position: relative;
+            }
+            .institute-name { 
+              font-size: 18px; 
+              font-weight: bold; 
+              margin-bottom: 5px;
+            }
+            .certification { 
+              font-size: 12px; 
+              opacity: 0.9; 
+              margin-bottom: 15px;
+            }
+            .admit-title { 
+              font-size: 24px; 
+              font-weight: bold; 
+              text-transform: uppercase; 
+              letter-spacing: 1px;
+              border-top: 2px solid rgba(255,255,255,0.3);
+              padding-top: 15px;
+            }
+            .main-content { 
+              display: flex; 
+              padding: 30px;
+            }
+            .candidate-info { 
+              flex: 2; 
+              padding-right: 30px;
+            }
+            .photo-section { 
+              flex: 1; 
+              text-align: center;
+            }
+            .info-item { 
+              display: flex; 
+              margin-bottom: 15px; 
+              align-items: center;
+            }
+            .info-label { 
+              font-weight: bold; 
+              color: #333; 
+              min-width: 120px; 
+              font-size: 14px;
+            }
+            .info-value { 
+              color: #1976d2; 
+              font-weight: 600; 
+              font-size: 15px;
+            }
+            .roll-number { 
+              font-size: 18px; 
+              color: #0d47a1; 
+              font-weight: bold;
+            }
+            .photo-box { 
+              border: 2px solid #ddd; 
+              width: 120px; 
+              height: 150px; 
+              margin: 0 auto 20px; 
+              display: flex; 
+              align-items: center; 
+              justify-content: center; 
+              background: #f9f9f9;
+              border-radius: 8px;
+            }
+            .photo-placeholder { 
+              color: #999; 
+              font-size: 12px; 
+              text-align: center;
+            }
+            .instructions { 
+              background: #fff3e0; 
+              padding: 25px; 
+              margin: 0 30px 30px;
+              border-radius: 10px;
+              border-left: 5px solid #ff9800;
+            }
+            .instructions h3 { 
+              color: #e65100; 
+              margin-bottom: 15px; 
+              font-size: 18px;
+              text-align: center;
+            }
+            .instructions ol { 
+              padding-left: 20px;
+            }
+            .instructions li { 
+              margin-bottom: 8px; 
+              line-height: 1.5;
+              color: #333;
+            }
+            .exam-details { 
+              background: linear-gradient(135deg, #e3f2fd, #bbdefb); 
+              padding: 25px; 
+              margin: 0 30px 30px;
+              border-radius: 10px;
+              border: 2px solid #1976d2;
+            }
+            .exam-details h3 { 
+              color: #0d47a1; 
+              margin-bottom: 20px; 
+              font-size: 20px;
+              text-align: center;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+            }
+            .exam-grid { 
+              display: grid; 
+              grid-template-columns: 1fr 1fr; 
+              gap: 15px;
+            }
+            .exam-item { 
+              display: flex; 
+              justify-content: space-between; 
+              align-items: center;
+              padding: 8px 0;
+              border-bottom: 1px solid rgba(25, 118, 210, 0.2);
+            }
+            .exam-label { 
+              font-weight: bold; 
+              color: #0d47a1;
+            }
+            .exam-value { 
+              color: #1976d2; 
+              font-weight: 600;
+            }
+            @media print { 
+              body { margin: 0; background: white; font-size: 12px; }
+              .admit-card { 
+                box-shadow: none; 
+                border: 2px solid #000; 
+                max-width: 100%; 
+                padding: 0;
+                page-break-inside: avoid;
+              }
+              .header { padding: 15px; }
+              .institute-name { font-size: 14px; }
+              .certification { font-size: 10px; }
+              .admit-title { font-size: 16px; padding-top: 10px; }
+              .main-content { padding: 15px; }
+              .info-item { margin-bottom: 8px; }
+              .info-label { font-size: 11px; min-width: 100px; }
+              .info-value { font-size: 12px; }
+              .photo-box { width: 80px; height: 100px; }
+              .instructions { padding: 15px; margin: 0 15px 15px; }
+              .instructions h3 { font-size: 14px; margin-bottom: 10px; }
+              .instructions li { margin-bottom: 4px; font-size: 10px; line-height: 1.3; }
+              .exam-details { padding: 15px; margin: 0 15px 15px; }
+              .exam-details h3 { font-size: 14px; margin-bottom: 10px; }
+              .exam-item { padding: 4px 0; }
+              .exam-label, .exam-value { font-size: 11px; }
+              .result-info { padding: 10px; margin: 0 15px 15px; }
+              .result-info h3 { font-size: 12px; margin-bottom: 5px; }
+              .result-info p { font-size: 11px; }
+            }
           </style>
         </head>
         <body>
           <div class="admit-card">
+            <!-- Header Section -->
             <div class="header">
-              <h1>NIICT COMPETITION ADMIT CARD</h1>
-              <h2>GK & Computer Knowledge Competition</h2>
+              <div class="institute-name">NIICT Computer Institute of IT Management</div>
+              <div class="certification">AN ISO 9001:2015 CERTIFIED ORGANIZATION</div>
+              <div class="admit-title">Candidate Admit Card (Competition Exam)</div>
             </div>
-            <div class="info-row">
-              <span class="label">Roll Number:</span>
-              <span>${application.rollNumber}</span>
+
+            <!-- Main Content -->
+            <div class="main-content">
+              <!-- Candidate Information -->
+              <div class="candidate-info">
+                <div class="info-item">
+                  <span class="info-label">Roll No:</span>
+                  <span class="info-value roll-number">${application.rollNumber}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Name:</span>
+                  <span class="info-value">${application.name}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Date of Birth:</span>
+                  <span class="info-value">${new Date(application.dateOfBirth).toLocaleDateString('en-GB')}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Father Name:</span>
+                  <span class="info-value">${application.fatherName}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Class:</span>
+                  <span class="info-value">${application.classPassed}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">School:</span>
+                  <span class="info-value">${application.school}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Subject:</span>
+                  <span class="info-value">${application.subject} Competition</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Center Name:</span>
+                  <span class="info-value">NIICT Computer Centre</span>
+                </div>
+              </div>
+
+              <!-- Photo Section -->
+              <div class="photo-section">
+                <div class="photo-box">
+                  <div class="photo-placeholder">
+                    ${application.image ? 
+                      `<img src="${application.image}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px; display: block;" onload="this.style.display='block'" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                       <div style="display: none; font-size: 10px; color: #999;">PHOTOGRAPH</div>` : 
+                      'PHOTOGRAPH'
+                    }
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="info-row">
-              <span class="label">Name:</span>
-              <span>${application.name}</span>
+
+            <!-- Instructions Section -->
+            <div class="instructions">
+              <h3>अभ्यर्थी हेतु आवश्यकता निर्देश</h3>
+              <ol>
+                <li>कृपया परीक्षा की तिथि से पर्यात समय पूर्व परीक्षा केंद्र का सही पता मालूम अवश्य कर लें ।</li>
+                <li>अभ्यर्थी रिपोर्टिंग समय से 25 मिनट पहले परीक्षा केंद्र पर अवश्य पहुचें ।</li>
+                <li>अभ्यर्थी परीक्षा हॉल में अपने साथ एडमिट कार्ड, आधार कार्ड, बॉल पेन अवय लेकर आएं ।</li>
+                <li>परीक्षा हाल में किसी भी प्रकार की नकल सामग्री ( मोबाइल, स्मार्ट watch,calculator, डिजिटल पेन आदि) लाना सख्त मना हैं।</li>
+                <li>परीक्षा केंद्र के अंदर किसी भी प्रकार की सामग्री ( मोबाइल, बैग, घड़ी आदि मूल्यवान वस्तु) रखने की व्यवस्था नहीं है, अतः अभ्यर्थी अपने अभिभावक को साथ ले आए।</li>
+                <li>किसी भी अभ्यर्थी द्वारा अनुचित व्यावहार किए जाने पर उनकी परीक्षा रद्द कर दी जाएगी, जिसका जिम्मेदार अभ्यर्थी स्वयम होगा।</li>
+              </ol>
             </div>
-            <div class="info-row">
-              <span class="label">Class:</span>
-              <span>${application.class}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">School:</span>
-              <span>${application.school}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">Subject:</span>
-              <span>${application.subject}</span>
-            </div>
+
+            <!-- Exam Details -->
             <div class="exam-details">
-              <h3>Exam Details:</h3>
-              <div class="info-row">
-                <span class="label">Date:</span>
-                <span>${application.examDate}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">Time:</span>
-                <span>${application.examTime}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">Reporting Time:</span>
-                <span>${application.reportingTime}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">Center:</span>
-                <span>${application.examCenter}</span>
+              <h3>Examination Details</h3>
+              <div class="exam-grid">
+                <div class="exam-item">
+                  <span class="exam-label">Examination Date:</span>
+                  <span class="exam-value">12 Oct 2025 Sunday</span>
+                </div>
+                <div class="exam-item">
+                  <span class="exam-label">Reporting Time:</span>
+                  <span class="exam-value">08:00 AM</span>
+                </div>
+                <div class="exam-item">
+                  <span class="exam-label">Gate Closing Time:</span>
+                  <span class="exam-value">09:15 AM</span>
+                </div>
+                <div class="exam-item">
+                  <span class="exam-label">Examination Time:</span>
+                  <span class="exam-value">10:00 AM</span>
+                </div>
               </div>
             </div>
-            <p><strong>Instructions:</strong></p>
-            <ul>
-              <li>Please arrive at the exam center 1 hour before the exam time</li>
-              <li>Bring this admit card and a valid ID proof</li>
-              <li>No electronic devices are allowed in the exam hall</li>
-              <li>Follow all COVID-19 protocols</li>
-            </ul>
+
+            <!-- Result Information -->
+            <div class="result-info" style="background: #e8f5e8; padding: 20px; margin: 0 30px 30px; border-radius: 10px; border-left: 5px solid #4caf50; text-align: center;">
+              <h3 style="color: #2e7d32; margin-bottom: 10px; font-size: 16px;">परीक्षा परिणाम की तिथि</h3>
+              <p style="color: #333; font-weight: 600; margin: 0;">
+                18 Oct 2025 को Niict computer Classes के यूट्यूब चैनल के माध्यम से घोषित किया जाएगा।
+              </p>
+            </div>
           </div>
         </body>
       </html>
