@@ -231,6 +231,7 @@ const AdmitCardLookup = () => {
                     <Typography><b>Reporting Time:</b> 08:00 AM</Typography>
                     <Typography><b>Gate Closing Time:</b> 09:15 AM</Typography>
                     <Typography><b>Examination Time:</b> 10:00 AM</Typography>
+                    <Typography><b>Exam Center:</b> S K Modern Intermediate College Semari Janghai Jaunpur</Typography>
                   </Box>
                 </Box>
                 <Box sx={{ textAlign: 'center' }}>

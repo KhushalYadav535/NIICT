@@ -298,7 +298,7 @@ const CompetitionManagement = () => {
                 </div>
                 <div class="info-item">
                   <span class="info-label">Center Name:</span>
-                  <span class="info-value">NIICT Computer Centre</span>
+                  <span class="info-value">S K Modern Intermediate College Semari Janghai Jaunpur</span>
                 </div>
               </div>
 
