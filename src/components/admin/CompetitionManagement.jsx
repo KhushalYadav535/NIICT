@@ -372,6 +372,7 @@ const CompetitionManagement = () => {
       'Roll Number',
       'Subject', 
       'Full Name',
+      'Photo URL',
       'Phone',
       'Aadhaar Number',
       'Date of Birth',
@@ -391,6 +392,7 @@ const CompetitionManagement = () => {
         app.rollNumber || '',
         app.subject || '',
         app.name || '',
+        app.image || 'No Photo',
         app.phone || '',
         app.aadhaar || 'Not provided',
         app.dateOfBirth ? new Date(app.dateOfBirth).toLocaleDateString('en-GB') : 'Not provided',
@@ -778,6 +780,7 @@ const CompetitionManagement = () => {
                 <TableRow>
                   <TableCell sx={{ fontWeight: 700 }}>Roll Number</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Photo</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Class</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>School</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Subject</TableCell>
@@ -801,6 +804,44 @@ const CompetitionManagement = () => {
                       <Typography variant="body2" color="#64748b">
                         {application.email}
                       </Typography>
+                    </TableCell>
+                    <TableCell>
+                      {application.image ? (
+                        <Box
+                          component="img"
+                          src={application.image}
+                          alt={`${application.name} photo`}
+                          sx={{
+                            width: 50,
+                            height: 50,
+                            borderRadius: 2,
+                            objectFit: 'cover',
+                            border: '2px solid #e5e7eb',
+                            boxShadow: 1
+                          }}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <Box
+                        sx={{
+                          width: 50,
+                          height: 50,
+                          borderRadius: 2,
+                          backgroundColor: '#f3f4f6',
+                          border: '2px solid #e5e7eb',
+                          display: application.image ? 'none' : 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '12px',
+                          color: '#6b7280',
+                          fontWeight: 500
+                        }}
+                      >
+                        No Photo
+                      </Box>
                     </TableCell>
                     <TableCell>{application.classPassed || application.class}</TableCell>
                     <TableCell>{application.school}</TableCell>
