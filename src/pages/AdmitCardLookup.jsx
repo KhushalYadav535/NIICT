@@ -46,6 +46,10 @@ const AdmitCardLookup = () => {
     setApp(null);
     
     try {
+      // Get backend URL
+      const defaultBackend = import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000';
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || defaultBackend;
+      
       let url = '';
       
       if (searchMethod === 'aadhaar') {
@@ -55,11 +59,11 @@ const AdmitCardLookup = () => {
           setLoading(false);
           return;
         }
-        url = `/api/competition-applications/aadhaar/${encodeURIComponent(aadhaar)}${dob ? `?dob=${encodeURIComponent(dob)}` : ''}`;
+        url = `${backendUrl}/api/competition-applications/aadhaar/${encodeURIComponent(aadhaar)}${dob ? `?dob=${encodeURIComponent(dob)}` : ''}`;
       } else if (searchMethod === 'mobile') {
-        // Validate mobile format
-        if (!/^\d{10}$/.test(mobile)) {
-          setError('Please enter a valid 10-digit mobile number');
+        // Validate mobile format - allow 10 or 11 digits (with or without leading 0)
+        if (!/^\d{10,11}$/.test(mobile)) {
+          setError('Please enter a valid 10 or 11-digit mobile number');
           setLoading(false);
           return;
         }
@@ -68,7 +72,7 @@ const AdmitCardLookup = () => {
           setLoading(false);
           return;
         }
-        url = `/api/competition-applications/mobile/${encodeURIComponent(mobile)}?dob=${encodeURIComponent(dob)}`;
+        url = `${backendUrl}/api/competition-applications/mobile/${encodeURIComponent(mobile)}?dob=${encodeURIComponent(dob)}`;
       } else if (searchMethod === 'name') {
         // Validate name
         if (!name.trim()) {
@@ -81,7 +85,7 @@ const AdmitCardLookup = () => {
           setLoading(false);
           return;
         }
-        url = `/api/competition-applications/name/${encodeURIComponent(name)}?dob=${encodeURIComponent(dob)}`;
+        url = `${backendUrl}/api/competition-applications/name/${encodeURIComponent(name)}?dob=${encodeURIComponent(dob)}`;
       } else if (searchMethod === 'name-phone') {
         // Validate name and phone
         if (!namePhone.trim()) {
@@ -89,15 +93,22 @@ const AdmitCardLookup = () => {
           setLoading(false);
           return;
         }
-        if (!/^\d{10}$/.test(phone)) {
-          setError('Please enter a valid 10-digit phone number');
+        if (!/^\d{10,11}$/.test(phone)) {
+          setError('Please enter a valid 10 or 11-digit phone number');
           setLoading(false);
           return;
         }
-        url = `/api/competition-applications/name-phone?name=${encodeURIComponent(namePhone)}&phone=${encodeURIComponent(phone)}`;
+        url = `${backendUrl}/api/competition-applications/name-phone?name=${encodeURIComponent(namePhone)}&phone=${encodeURIComponent(phone)}`;
       }
       
       const res = await fetch(url);
+      
+      // Check if response is JSON
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Server returned invalid response. Please check if the backend is running properly.');
+      }
+      
       const data = await res.json();
       if (!res.ok) {
         if (res.status === 404) {
@@ -107,7 +118,12 @@ const AdmitCardLookup = () => {
       }
       setApp(data);
     } catch (err) {
-      setError(err.message || 'Lookup failed');
+      console.error('Lookup error:', err);
+      if (err.message.includes('fetch')) {
+        setError('Unable to connect to server. Please check your internet connection and try again.');
+      } else {
+        setError(err.message || 'Lookup failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -459,8 +475,8 @@ const AdmitCardLookup = () => {
                 required 
                 value={mobile} 
                 onChange={(e) => setMobile(e.target.value)}
-                placeholder="Enter 10-digit mobile number"
-                inputProps={{ maxLength: 10 }}
+                placeholder="Enter 10 or 11-digit mobile number"
+                inputProps={{ maxLength: 11 }}
               />
             )}
             {searchMethod === 'name' && (
@@ -501,8 +517,8 @@ const AdmitCardLookup = () => {
                 required 
                 value={phone} 
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="Enter 10-digit phone number"
-                inputProps={{ maxLength: 10 }}
+                placeholder="Enter 10 or 11-digit phone number"
+                inputProps={{ maxLength: 11 }}
               />
             )}
             <Button type="submit" variant="contained" disabled={loading}>Search</Button>
