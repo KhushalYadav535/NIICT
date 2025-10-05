@@ -127,8 +127,8 @@ const CompetitionForm = () => {
     setError('');
 
     // Validate form
-    if (!formData.name || !formData.phone || !formData.school || !formData.address || !formData.fatherName || !formData.motherName || !formData.dateOfBirth || !formData.classPassed || !formData.image) {
-      setError('Please fill all required fields including student image');
+    if (!formData.name || !formData.phone || !formData.school || !formData.address || !formData.fatherName || !formData.motherName || !formData.dateOfBirth || !formData.classPassed) {
+      setError('Please fill all required fields');
       setLoading(false);
       return;
     }
@@ -1073,7 +1073,7 @@ const CompetitionForm = () => {
               <Grid item xs={12}>
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="body1" sx={{ mb: 1, fontWeight: 500 }}>
-                    Student Image *
+                    Student Image (Optional)
                   </Typography>
                   <input
                     type="file"
