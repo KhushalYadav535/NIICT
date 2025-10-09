@@ -780,12 +780,9 @@ const CompetitionManagement = () => {
                 <TableRow>
                   <TableCell sx={{ fontWeight: 700 }}>Roll Number</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Father's Name</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Photo</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Class</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>School</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Subject</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Payment</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Phone</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Signature</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -805,6 +802,7 @@ const CompetitionManagement = () => {
                         {application.email}
                       </Typography>
                     </TableCell>
+                    <TableCell>{application.fatherName || 'Not provided'}</TableCell>
                     <TableCell>
                       {application.image ? (
                         <Box
@@ -843,28 +841,17 @@ const CompetitionManagement = () => {
                         No Photo
                       </Box>
                     </TableCell>
-                    <TableCell>{application.classPassed || application.class}</TableCell>
-                    <TableCell>{application.school}</TableCell>
                     <TableCell>
-                      <Chip 
-                        label={application.subject}
-                        color={
-                          application.subject === 'GK' ? 'primary' : 
-                          application.subject === 'Computer' ? 'secondary' : 'success'
-                        }
-                        variant="filled"
-                        sx={{ fontWeight: 600 }}
+                      <Box
+                        sx={{
+                          width: 120,
+                          height: 40,
+                          border: '2px solid #e5e7eb',
+                          borderRadius: 1,
+                          backgroundColor: '#ffffff'
+                        }}
                       />
                     </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={application.paymentStatus === 'verified' ? 'Verified' : 'Pending'}
-                        color={application.paymentStatus === 'verified' ? 'success' : 'warning'}
-                        variant="filled"
-                        sx={{ fontWeight: 600 }}
-                      />
-                    </TableCell>
-                    <TableCell>{application.phone}</TableCell>
                     <TableCell>
                       <Button 
                         variant="contained" 
