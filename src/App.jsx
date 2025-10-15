@@ -14,8 +14,10 @@ import Testimonial from './components/Testimonial';
 import Admission from './pages/Admission';
 import AdmitCardLookup from './pages/AdmitCardLookup';
 import CompetitionForm from './components/CompetitionForm';
+import Results from './pages/Results';
 import AdminDashboard from './components/admin/AdminDashboard';
 import CompetitionManagement from './components/admin/CompetitionManagement';
+import ResultManagement from './components/admin/ResultManagement';
 import PrintAdmission from './components/admin/PrintAdmission';
 import AdminLogin from './pages/AdminLogin';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -32,6 +34,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/admission" element={<Admission />} />
           <Route path="/competition" element={<CompetitionForm />} />
+          <Route path="/results" element={<Results />} />
           <Route path="/admit-card" element={<AdmitCardLookup />} />
           <Route path="/testimonial" element={<Testimonial />} />
           <Route path="/student-portal" element={<StudentPortal />} />
@@ -58,6 +61,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <CompetitionManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/results" 
+            element={
+              <ProtectedRoute>
+                <ResultManagement />
               </ProtectedRoute>
             } 
           />

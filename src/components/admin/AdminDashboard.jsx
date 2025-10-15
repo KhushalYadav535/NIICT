@@ -6,6 +6,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import SchoolIcon from '@mui/icons-material/School';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 const COLORS = ['#4a90e2', '#10b981', '#fbbf24', '#f87171', '#a78bfa', '#22d3ee', '#f59e42', '#6366f1'];
@@ -35,6 +36,10 @@ const AdminDashboard = () => {
 
   const handleCompetitionManagement = () => {
     navigate('/admin/competition');
+  };
+
+  const handleResultManagement = () => {
+    navigate('/admin/results');
   };
 
   const handleStatusUpdate = async (id, newStatus) => {
@@ -116,9 +121,18 @@ const AdminDashboard = () => {
           color="secondary"
           onClick={handleCompetitionManagement}
           startIcon={<EmojiEventsIcon />}
-          sx={{ ml: 'auto', borderRadius: 2 }}
+          sx={{ borderRadius: 2 }}
         >
           Competition Management
+        </Button>
+        <Button
+          variant="contained"
+          color="success"
+          onClick={handleResultManagement}
+          startIcon={<SchoolIcon />}
+          sx={{ ml: 2, borderRadius: 2 }}
+        >
+          Result Management
         </Button>
       </Box>
       <Grid container spacing={3} mb={4}>

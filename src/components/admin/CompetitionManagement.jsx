@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Container, Typography, Paper, Table, TableBody, TableCell, 
          TableContainer, TableHead, TableRow, Button, Box, Chip, Grid, Card, CardContent, TextField, InputAdornment, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { motion } from 'framer-motion';
@@ -12,6 +12,10 @@ const CompetitionManagement = () => {
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [libsLoaded, setLibsLoaded] = useState(false);
+  const attendanceContainerId = 'attendance-export-container';
+  const html2canvasRef = useRef(null);
+  const jsPDFRef = useRef(null);
 
   useEffect(() => {
     loadApplications();
@@ -416,6 +420,211 @@ const CompetitionManagement = () => {
     window.URL.revokeObjectURL(url);
   };
 
+  // Ensure html2canvas and jsPDF are available via CDN globals only (avoid bundler imports)
+  const ensureExportLibs = async () => {
+    if (libsLoaded && html2canvasRef.current && jsPDFRef.current) return true;
+
+    const tryLoadScript = (src) => new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.defer = true;
+      s.crossOrigin = 'anonymous';
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+
+    const ensureHtml2Canvas = async () => {
+      if (window.html2canvas) return true;
+      try {
+        await tryLoadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');
+      } catch (_) {
+        await tryLoadScript('https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js');
+      }
+      await new Promise(r => setTimeout(r, 50));
+      return !!window.html2canvas;
+    };
+
+    const ensureJsPDF = async () => {
+      if ((window.jspdf && window.jspdf.jsPDF) || window.jsPDF) return true;
+      try {
+        await tryLoadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js');
+      } catch (_) {
+        await tryLoadScript('https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js');
+      }
+      await new Promise(r => setTimeout(r, 50));
+      return !!((window.jspdf && window.jspdf.jsPDF) || window.jsPDF);
+    };
+
+    const [h2cOk, jsPdfOk] = await Promise.all([ensureHtml2Canvas(), ensureJsPDF()]);
+
+    // Capture globals to refs (support multiple UMD shapes)
+    if (h2cOk && window.html2canvas) html2canvasRef.current = window.html2canvas;
+    const possibleJsPDF = jsPdfOk ? ((window.jspdf && window.jspdf.jsPDF) || window.jsPDF || null) : null;
+    if (possibleJsPDF) jsPDFRef.current = possibleJsPDF;
+
+    if (!html2canvasRef.current || !jsPDFRef.current) {
+      alert('Export libraries failed to load. Please check internet access to jsPDF/html2canvas CDNs.');
+      return false;
+    }
+
+    setLibsLoaded(true);
+    return true;
+  };
+
+  // Build a single attendance page DOM node with up to 15 students
+  const buildAttendancePage = (slice, pageNumber) => {
+    const container = document.createElement('div');
+    container.style.width = '794px'; // ~A4 width at 96dpi
+    container.style.padding = '16px';
+    container.style.background = '#ffffff';
+    container.style.color = '#111827';
+    container.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+
+    const title = document.createElement('div');
+    title.style.textAlign = 'center';
+    title.style.marginBottom = '8px';
+    title.style.fontWeight = '700';
+    title.style.fontSize = '18px';
+    title.innerText = 'Competition Attendance Sheet';
+    container.appendChild(title);
+
+    const sub = document.createElement('div');
+    sub.style.textAlign = 'center';
+    sub.style.marginBottom = '12px';
+    sub.style.fontSize = '12px';
+    sub.innerText = `Page ${pageNumber}`;
+    container.appendChild(sub);
+
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
+    table.style.fontSize = '12px';
+
+    const thead = document.createElement('thead');
+    const headRow = document.createElement('tr');
+    const headers = ['S.No', 'Roll No', 'Name', "Father's Name", 'Signature'];
+    headers.forEach(text => {
+      const th = document.createElement('th');
+      th.innerText = text;
+      th.style.border = '1px solid #000000';
+      th.style.padding = '6px 8px';
+      th.style.background = '#f3f4f6';
+      th.style.textAlign = 'left';
+      th.style.fontWeight = '700';
+      headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    slice.forEach((app, idx) => {
+      const tr = document.createElement('tr');
+      const cells = [
+        String(idx + 1),
+        app.rollNumber || '',
+        app.name || '',
+        app.fatherName || '',
+        ''
+      ];
+      cells.forEach((val, ci) => {
+        const td = document.createElement('td');
+        td.style.border = '1px solid #000000';
+        td.style.padding = '8px';
+        if (ci === 4) {
+          td.style.height = '40px';
+        }
+        td.innerText = val;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    container.appendChild(table);
+
+    return container;
+  };
+
+  const chunkArray = (arr, size) => {
+    const chunks = [];
+    for (let i = 0; i < arr.length; i += size) chunks.push(arr.slice(i, i + size));
+    return chunks;
+  };
+
+  const getAttendancePagesAsCanvases = async (data) => {
+    // Prepare a hidden staging area
+    let staging = document.getElementById(attendanceContainerId);
+    if (!staging) {
+      staging = document.createElement('div');
+      staging.id = attendanceContainerId;
+      staging.style.position = 'fixed';
+      staging.style.left = '-10000px';
+      staging.style.top = '0';
+      staging.style.zIndex = '-1';
+      document.body.appendChild(staging);
+    }
+    staging.innerHTML = '';
+
+    const pages = chunkArray(data, 15);
+    const canvases = [];
+    for (let p = 0; p < pages.length; p++) {
+      const pageNode = buildAttendancePage(pages[p], p + 1);
+      staging.appendChild(pageNode);
+      // eslint-disable-next-line no-await-in-loop
+      const canvas = await html2canvasRef.current(pageNode, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+      canvases.push(canvas);
+      // Safely clear contents instead of removing a potentially reparented node
+      staging.innerHTML = '';
+    }
+    return canvases;
+  };
+
+  const exportAttendancePDF = async () => {
+    try {
+      const ok = await ensureExportLibs();
+      if (!ok) throw new Error('Libraries not loaded');
+      const canvases = await getAttendancePagesAsCanvases(filteredApplications);
+      const PDFCtor = jsPDFRef.current;
+      if (!PDFCtor) throw new Error('jsPDF not available');
+      const pdf = new PDFCtor('p', 'pt', 'a4');
+      canvases.forEach((canvas, idx) => {
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+
+        // Fit image into page keeping aspect ratio
+        const imgWidth = pageWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        const yOffset = Math.max(0, (pageHeight - imgHeight) / 2);
+        pdf.addImage(imgData, 'JPEG', 0, yOffset, imgWidth, imgHeight, undefined, 'FAST');
+        if (idx < canvases.length - 1) pdf.addPage();
+      });
+      pdf.save(`attendance_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (e) {
+      console.error(e);
+      alert(`Failed to export PDF: ${e && e.message ? e.message : 'Unknown error'}`);
+    }
+  };
+
+  const exportAttendanceJPG = async () => {
+    try {
+      const ok = await ensureExportLibs();
+      if (!ok) return;
+      const canvases = await getAttendancePagesAsCanvases(filteredApplications);
+      canvases.forEach((canvas, idx) => {
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/jpeg', 0.95);
+        a.download = `attendance_page_${idx + 1}.jpg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      });
+    } catch (e) {
+      console.error(e);
+      alert(`Failed to export JPG: ${e && e.message ? e.message : 'Unknown error'}`);
+    }
+  };
+
   const filteredApplications = applications.filter(app => {
     if (!searchTerm) return true;
     
@@ -760,6 +969,24 @@ const CompetitionManagement = () => {
               sx={{ borderRadius: 2, minWidth: 140 }}
             >
               Export CSV
+            </Button>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={exportAttendancePDF}
+              startIcon={<FaDownload />}
+              sx={{ borderRadius: 2, minWidth: 160 }}
+            >
+              Export PDF
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={exportAttendanceJPG}
+              startIcon={<FaDownload />}
+              sx={{ borderRadius: 2, minWidth: 160 }}
+            >
+              Export JPG
             </Button>
           </Box>
           

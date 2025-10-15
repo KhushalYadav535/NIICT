@@ -154,6 +154,7 @@ function Navbar() {
             { path: '/courses', label: 'Courses' },
             { path: '/admission', label: 'Admission' },
             { path: '/competition', label: 'Competition' },
+            { path: '/results', label: 'Results' },
             { path: '/admit-card', label: 'Admit Card' },
             { path: '/contact', label: 'Contact' }
           ].map((item, i) => (
@@ -312,6 +313,7 @@ function Navbar() {
                 { path: '/courses', label: 'Courses' },
                 { path: '/admission', label: 'Admission' },
                 { path: '/competition', label: 'Competition' },
+                { path: '/results', label: 'Results' },
                 { path: '/admit-card', label: 'Admit Card' },
                 { path: '/contact', label: 'Contact' }
               ].map((item, i) => (
