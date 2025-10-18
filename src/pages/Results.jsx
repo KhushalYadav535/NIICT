@@ -8,6 +8,8 @@ const Results = () => {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [top3Students, setTop3Students] = useState([]);
+  const [loadingTop3, setLoadingTop3] = useState(false);
 
   // Sample inspirational quotes
   const quotes = [
@@ -24,6 +26,29 @@ const Results = () => {
   ];
 
   const [currentQuote] = useState(quotes[Math.floor(Math.random() * quotes.length)]);
+
+  // Fetch top 3 students on component mount
+  useEffect(() => {
+    fetchTop3Students();
+  }, []);
+
+  const fetchTop3Students = async () => {
+    setLoadingTop3(true);
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000');
+      
+      const response = await fetch(`${API_BASE_URL}/api/results/top3`);
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        setTop3Students(data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching top 3 students:', err);
+    } finally {
+      setLoadingTop3(false);
+    }
+  };
 
   const handleSearch = async () => {
     if (!rollNumber.trim()) {
@@ -546,6 +571,196 @@ const Results = () => {
                     Your dedication and hard work have paid off. Keep up the great work!
                   </Typography>
                 </Box>
+              </Box>
+            </Paper>
+          </motion.div>
+        )}
+
+        {/* Top 3 Students Display */}
+        {top3Students.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+          >
+            <Paper elevation={8} sx={{ 
+              p: 5, 
+              mb: 5, 
+              borderRadius: 6, 
+              background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+              border: '2px solid rgba(255, 215, 0, 0.3)',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+            }}>
+              <Typography variant="h3" fontWeight={800} color="white" gutterBottom sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 3,
+                mb: 5,
+                textAlign: 'center',
+                justifyContent: 'center',
+                textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+                fontSize: { xs: '2rem', md: '2.5rem' }
+              }}>
+                <Box sx={{ 
+                  p: 2,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+                  color: 'white',
+                  boxShadow: '0 8px 20px rgba(255, 215, 0, 0.4)'
+                }}>
+                  <FaTrophy size={36} />
+                </Box>
+                🏆 Top 3 Performers 🏆
+              </Typography>
+              
+              <Grid container spacing={3}>
+                {top3Students.map((student, index) => (
+                  <Grid item xs={12} md={4} key={student.rollNumber}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.1 * index }}
+                    >
+                      <Card sx={{ 
+                        height: '100%', 
+                        background: index === 0 
+                          ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)'
+                          : index === 1 
+                          ? 'linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%)'
+                          : 'linear-gradient(135deg, #CD7F32 0%, #B8860B 100%)',
+                        color: 'white',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+                        '&:hover': {
+                          transform: 'translateY(-5px)',
+                          boxShadow: '0 12px 40px rgba(0,0,0,0.3)',
+                          transition: 'all 0.3s ease'
+                        }
+                      }}>
+                        {/* Rank Badge */}
+                        <Box sx={{
+                          position: 'absolute',
+                          top: 16,
+                          right: 16,
+                          background: 'rgba(255, 255, 255, 0.2)',
+                          borderRadius: '50%',
+                          width: 50,
+                          height: 50,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backdropFilter: 'blur(10px)',
+                          border: '2px solid rgba(255, 255, 255, 0.3)'
+                        }}>
+                          <Typography variant="h6" fontWeight={800}>
+                            #{student.rank}
+                          </Typography>
+                        </Box>
+
+                        <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                          {/* Medal Icon */}
+                          <Box sx={{ mb: 3 }}>
+                            {index === 0 && <FaTrophy size={50} style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />}
+                            {index === 1 && <FaMedal size={50} style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />}
+                            {index === 2 && <FaMedal size={50} style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />}
+                          </Box>
+
+                          {/* Student Name */}
+                          <Typography variant="h4" fontWeight={800} gutterBottom sx={{ 
+                            textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+                            mb: 2,
+                            fontSize: { xs: '1.5rem', md: '1.8rem' }
+                          }}>
+                            {student.name}
+                          </Typography>
+
+                          {/* Father's Name */}
+                          <Typography variant="h6" fontWeight={600} sx={{ 
+                            textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+                            mb: 3,
+                            opacity: 0.95,
+                            fontSize: { xs: '1rem', md: '1.2rem' }
+                          }}>
+                            Son/Daughter of: {student.fatherName}
+                          </Typography>
+
+                          {/* Roll Number */}
+                          <Box sx={{ 
+                            mb: 3,
+                            background: 'rgba(255, 255, 255, 0.25)',
+                            borderRadius: 3,
+                            p: 2,
+                            backdropFilter: 'blur(10px)',
+                            border: '1px solid rgba(255, 255, 255, 0.3)'
+                          }}>
+                            <Typography variant="body1" sx={{ 
+                              opacity: 1,
+                              fontWeight: 600,
+                              fontSize: '1.1rem'
+                            }}>
+                              Roll Number: {student.rollNumber}
+                            </Typography>
+                          </Box>
+
+                          {/* Marks */}
+                          <Typography variant="h3" fontWeight={900} sx={{ 
+                            textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+                            mb: 2,
+                            fontSize: { xs: '2rem', md: '2.5rem' }
+                          }}>
+                            {student.marks}/100
+                          </Typography>
+
+                          {/* Subject */}
+                          <Chip 
+                            label={student.subject} 
+                            sx={{ 
+                              background: 'rgba(255, 255, 255, 0.3)',
+                              color: 'white',
+                              fontWeight: 700,
+                              fontSize: '1rem',
+                              backdropFilter: 'blur(10px)',
+                              border: '2px solid rgba(255, 255, 255, 0.4)',
+                              px: 2,
+                              py: 1
+                            }}
+                          />
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  </Grid>
+                ))}
+              </Grid>
+
+              {/* Congratulations Message */}
+              <Box sx={{ 
+                mt: 5, 
+                p: 4, 
+                background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.2) 100%)', 
+                borderRadius: 4, 
+                textAlign: 'center',
+                backdropFilter: 'blur(15px)',
+                border: '2px solid rgba(255, 215, 0, 0.4)',
+                boxShadow: '0 8px 25px rgba(255, 215, 0, 0.2)'
+              }}>
+                <Typography variant="h5" fontWeight={700} sx={{ 
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+                  mb: 2,
+                  color: 'white',
+                  fontSize: { xs: '1.3rem', md: '1.5rem' }
+                }}>
+                  🎉 Congratulations to our Top Performers! 🎉
+                </Typography>
+                <Typography variant="h6" sx={{ 
+                  opacity: 0.95,
+                  textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+                  color: 'white',
+                  fontWeight: 500,
+                  fontSize: { xs: '1rem', md: '1.1rem' }
+                }}>
+                  These students have shown exceptional dedication and achieved outstanding results in the competition.
+                </Typography>
               </Box>
             </Paper>
           </motion.div>
