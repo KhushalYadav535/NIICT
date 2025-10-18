@@ -610,12 +610,12 @@ const Results = () => {
                 }}>
                   <FaTrophy size={36} />
                 </Box>
-                🏆 Top 3 Performers 🏆
+                🏆 Top 3 Computer Performers 🏆
               </Typography>
               
               <Grid container spacing={3}>
                 {top3Students.map((student, index) => (
-                  <Grid item xs={12} md={4} key={student.rollNumber}>
+                  <Grid item xs={12} md={4} key={`${student.rollNumber}-${index}`}>
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
