@@ -146,7 +146,7 @@ const Results = () => {
               p: 5, 
               mb: 5, 
               borderRadius: 6, 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+              background: 'linear-gradient(135deg, #10b981 0%, #22d3ee 50%, #06b6d4 100%)',
               color: 'white',
               textAlign: 'center',
               position: 'relative',
@@ -225,7 +225,7 @@ const Results = () => {
                   textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
                   fontSize: { xs: '2rem', md: '3rem' }
                 }}>
-                  🎉 Results Coming Soon! 🎉
+                  🎉 Results Are Now Available! 🎉
                 </Typography>
               </motion.div>
               
@@ -243,7 +243,7 @@ const Results = () => {
                   border: '1px solid rgba(255, 255, 255, 0.2)'
                 }}>
                   <Typography variant="h4" fontWeight={700} sx={{ mb: 1, textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}>
-                    📅 18th October 2024
+                    📅 Published on 18th October 2024
                   </Typography>
                   <Typography variant="h5" sx={{ textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}>
                     🕐 12:00 PM
@@ -264,8 +264,8 @@ const Results = () => {
                   lineHeight: 1.6,
                   fontWeight: 400
                 }}>
-                  Stay tuned! Competition results will be announced soon. 
-                  Check back on the specified date and time to view your results.
+                  🏆 Competition results are now live! Enter your roll number below to view your result. 
+                  Congratulations to all participants for their hard work and dedication!
                 </Typography>
               </motion.div>
             </Box>
@@ -336,7 +336,7 @@ const Results = () => {
               <TextField
                 fullWidth
                 label="Enter Roll Number"
-                placeholder="e.g., COMP001, GK002"
+                placeholder="e.g., 1158, GK1158, 1134"
                 value={rollNumber}
                 onChange={(e) => setRollNumber(e.target.value.toUpperCase())}
                 sx={{ 
@@ -593,11 +593,11 @@ const Results = () => {
                 }
               }
             }}>
-              <li>Results will be announced on <strong>18th October 2024 at 12:00 PM</strong></li>
-              <li>You can search for your result using your roll number</li>
+              <li>Results were announced on <strong>18th October 2024 at 12:00 PM</strong></li>
+              <li>You can search for your result using your roll number (format: 1158 or GK1158)</li>
               <li>Make sure you have your correct roll number ready</li>
               <li>If you don't remember your roll number, contact the institute</li>
-              <li>Results will be available immediately after announcement</li>
+              <li>Results are now live and available for viewing</li>
             </Box>
           </Paper>
         </motion.div>
