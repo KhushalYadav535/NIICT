@@ -21,6 +21,8 @@ import ResultManagement from './components/admin/ResultManagement';
 import PrintAdmission from './components/admin/PrintAdmission';
 import AdminLogin from './pages/AdminLogin';
 import ProtectedRoute from './components/ProtectedRoute';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsAndConditions from './pages/TermsAndConditions';
 
 function App() {
   return (
@@ -40,6 +42,8 @@ function App() {
           <Route path="/student-portal" element={<StudentPortal />} />
           <Route path="/student-portal/:section" element={<StudentPortal />} />
           <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsAndConditions />} />
           <Route 
             path="/admin/dashboard" 
             element={
