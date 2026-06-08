@@ -218,46 +218,85 @@ const About = () => {
       </section>
 
       {/* The Journey Timeline (Hyper Cinematic Advanced) */}
-      <section className="py-32 relative bg-slate-900 text-white overflow-hidden">
-        {/* Dark Mode Timeline Ambient */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-full bg-blue-900/20 blur-[150px] pointer-events-none"></div>
+      <section className="py-40 relative bg-[#0B1120] text-white overflow-hidden border-y border-slate-800">
+        {/* Deep Cinematic Ambient Lights */}
+        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-[radial-gradient(circle,rgba(56,189,248,0.15)_0%,rgba(11,17,32,0)_70%)] pointer-events-none blur-[100px]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-[radial-gradient(circle,rgba(167,139,250,0.15)_0%,rgba(11,17,32,0)_70%)] pointer-events-none blur-[100px]"></div>
         
-        <div className="max-w-5xl mx-auto px-6 relative z-10">
-          <div className="text-center mb-24">
-            <h2 className="text-5xl md:text-7xl font-display uppercase tracking-tight text-white mb-6">
-              The <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Journey</span>
+        {/* Moving Grid Background */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_20%,transparent_100%)] opacity-30"></div>
+
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-32 relative">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1 }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-500/20 blur-[80px] rounded-full z-0"
+            />
+            <h2 className="relative z-10 text-5xl md:text-8xl font-display uppercase tracking-tighter text-white mb-6 drop-shadow-[0_0_30px_rgba(56,189,248,0.3)]">
+              The <span className="text-transparent bg-clip-text bg-gradient-to-br from-cyan-300 via-blue-500 to-purple-600">Journey</span>
             </h2>
-            <p className="text-slate-400 font-sans text-lg">A legacy built on relentless innovation and student success.</p>
+            <p className="relative z-10 text-slate-400 font-sans text-xl md:text-2xl max-w-2xl mx-auto tracking-wide">A legacy forged in code, driven by relentless innovation.</p>
           </div>
 
           <div className="relative">
-            {/* Center Line */}
-            <div className="absolute left-[20px] md:left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-blue-500/0 via-blue-500/50 to-blue-500/0 -translate-x-1/2"></div>
+            {/* Animated Center Glowing Line */}
+            <motion.div 
+              initial={{ height: 0 }}
+              whileInView={{ height: '100%' }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.5, ease: "easeInOut" }}
+              className="absolute left-[30px] md:left-1/2 top-0 w-[2px] bg-gradient-to-b from-transparent via-cyan-400 to-transparent -translate-x-1/2 shadow-[0_0_15px_rgba(34,211,238,0.8)]"
+            ></motion.div>
             
             {timeline.map((event, idx) => (
               <motion.div 
                 key={idx}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 100, rotateX: 20 }}
+                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8 }}
-                className={`relative flex md:justify-between items-center mb-16 md:mb-24 ${idx % 2 === 0 ? 'md:flex-row-reverse' : ''}`}
+                transition={{ duration: 0.8, delay: idx * 0.1, ease: [0.21, 1.11, 0.81, 0.99] }}
+                className={`relative flex md:justify-between items-center mb-24 md:mb-32 ${idx % 2 === 0 ? 'md:flex-row-reverse' : ''}`}
+                style={{ perspective: 1000 }}
               >
-                {/* Timeline Dot */}
-                <div className="absolute left-[20px] md:left-1/2 w-4 h-4 rounded-full bg-cyan-400 -translate-x-1/2 shadow-[0_0_20px_rgba(34,211,238,0.8)] border-4 border-slate-900 z-10"></div>
+                {/* Glowing Timeline Node */}
+                <div className="absolute left-[30px] md:left-1/2 w-6 h-6 rounded-full bg-[#0B1120] -translate-x-1/2 z-20 border-4 border-cyan-400 shadow-[0_0_30px_rgba(34,211,238,1)] flex items-center justify-center">
+                  <motion.div 
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-2 h-2 bg-cyan-300 rounded-full"
+                  />
+                </div>
                 
-                {/* Empty Space for Grid Alignment (Desktop) */}
+                {/* Connection Line to Card (Desktop Only) */}
+                <div className={`hidden md:block absolute top-1/2 w-[calc(50%-40px)] h-[1px] bg-gradient-to-r ${idx % 2 === 0 ? 'from-cyan-500/0 to-cyan-500/50 right-1/2' : 'from-cyan-500/50 to-cyan-500/0 left-1/2'} -translate-y-1/2 z-0`}></div>
+
                 <div className="hidden md:block w-[45%]"></div>
                 
-                {/* Content Card */}
-                <div className="w-full md:w-[45%] pl-12 md:pl-0">
-                  <div className={`p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-colors duration-500 ${idx % 2 === 0 ? 'md:text-right' : 'text-left'}`}>
-                    <div className={`font-mono text-cyan-400 text-lg tracking-widest mb-2 ${idx % 2 === 0 ? 'md:justify-end' : ''} flex items-center gap-2`}>
-                      <Milestone size={18} /> {event.year}
+                {/* 3D Glassmorphism Content Card */}
+                <div className="w-full md:w-[45%] pl-20 md:pl-0 relative z-10">
+                  <motion.div 
+                    whileHover={{ scale: 1.05, rotateY: idx % 2 === 0 ? -5 : 5 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className={`group p-8 md:p-12 rounded-[2.5rem] bg-slate-900/40 backdrop-blur-2xl border border-white/5 hover:border-cyan-400/50 transition-all duration-500 shadow-[0_0_40px_rgba(0,0,0,0.5)] hover:shadow-[0_0_50px_rgba(34,211,238,0.2)] hover:bg-slate-800/60 ${idx % 2 === 0 ? 'md:text-right' : 'text-left'}`}
+                  >
+                    {/* Corner Accent Glow */}
+                    <div className={`absolute top-0 w-32 h-32 bg-cyan-500/20 blur-[50px] rounded-full pointer-events-none transition-opacity duration-500 opacity-0 group-hover:opacity-100 ${idx % 2 === 0 ? 'right-0' : 'left-0'}`}></div>
+
+                    <div className={`font-mono text-cyan-400 text-xl tracking-[0.2em] mb-4 ${idx % 2 === 0 ? 'md:justify-end' : ''} flex items-center gap-3 font-bold drop-shadow-md`}>
+                      <Milestone size={24} className="text-cyan-300 group-hover:animate-pulse" /> {event.year}
                     </div>
-                    <h3 className="text-3xl font-display uppercase tracking-wide mb-4">{event.title}</h3>
-                    <p className="text-slate-400 font-sans leading-relaxed">{event.description}</p>
-                  </div>
+                    
+                    <h3 className="text-4xl font-display uppercase tracking-widest mb-4 text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-cyan-200 transition-all duration-300">
+                      {event.title}
+                    </h3>
+                    
+                    <p className="text-slate-400 font-sans text-lg leading-relaxed group-hover:text-slate-300 transition-colors duration-300">
+                      {event.description}
+                    </p>
+                  </motion.div>
                 </div>
               </motion.div>
             ))}
