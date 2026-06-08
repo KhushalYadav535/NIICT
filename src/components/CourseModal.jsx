@@ -1,99 +1,155 @@
-import React from 'react';
-import { X, Clock, Users, Award, Calendar, CheckCircle, ArrowRight } from 'lucide-react';
-import './CourseModal.css';
+import React, { useEffect } from 'react';
+import { X, Clock, Users, Star, CheckCircle, Award, Play, TrendingUp, Zap } from 'lucide-react';
 
-const CourseModal = ({ course, onClose }) => {
-  if (!course) return null;
+const CourseModal = ({ isOpen, onClose, course }) => {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  if (!isOpen || !course) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2 className="modal-title">{course.title}</h2>
-          <p className="modal-subtitle">Take your skills to the next level with our professional course</p>
-          <button className="close-button" onClick={onClose} aria-label="Close course details">
-            <X size={20} />
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-bg border border-border rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between p-6 border-b border-border">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">{course.title}</h2>
+            <div className="flex items-center gap-4 text-sm text-secondary">
+              <div className="flex items-center gap-1">
+                <Clock size={16} />
+                <span>{course.duration}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Users size={16} />
+                <span>{course.students}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Star size={16} className="text-yellow-500 fill-yellow-500" />
+                <span>{course.rating}</span>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-secondary rounded-lg transition-colors"
+          >
+            <X size={24} />
           </button>
         </div>
 
-        <div className="modal-body">
-          <p className="modal-description">{course.description}</p>
-
-          <div className="modal-grid">
-            <div className="modal-info-item">
-              <Clock size={20} className="info-icon" aria-hidden="true" />
-              <span>Duration: {course.duration}</span>
-            </div>
-            <div className="modal-info-item">
-              <Users size={20} className="info-icon" aria-hidden="true" />
-              <span>{course.students}+ enrolled</span>
-            </div>
-            <div className="modal-info-item">
-              <Award size={20} className="info-icon" aria-hidden="true" />
-              <span>Level: {course.level}</span>
-            </div>
-            <div className="modal-info-item">
-              <Calendar size={20} className="info-icon" aria-hidden="true" />
-              <span>Starts: {course.startDate}</span>
+        {/* Modal Content */}
+        <div className="p-6">
+          {/* Course Image */}
+          <div className="relative mb-6">
+            <img 
+              src={course.image} 
+              alt={course.title}
+              className="w-full h-64 object-cover rounded-lg"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <button className="w-16 h-16 bg-accent text-white rounded-full flex items-center justify-center hover:bg-accent/90 transition-colors">
+                <Play size={24} />
+              </button>
             </div>
           </div>
 
-          <div className="modal-features">
-            <h3>What you'll learn</h3>
-            <ul className="feature-list">
-              {[
-                'Comprehensive course materials',
-                'Hands-on practical sessions',
-                'Industry-relevant projects',
-                'Expert instructors',
-                'Flexible timing options',
-                'Placement assistance'
-              ].map((feature, index) => (
-                <li key={index} className="feature-item">
-                  <CheckCircle size={16} className="feature-icon" aria-hidden="true" />
+          {/* Course Description */}
+          <div className="mb-6">
+            <h3 className="text-xl font-bold mb-3">About this course</h3>
+            <p className="text-secondary">{course.description}</p>
+          </div>
+
+          {/* What You'll Learn */}
+          <div className="mb-6">
+            <h3 className="text-xl font-bold mb-3">What You'll Learn</h3>
+            <div className="space-y-2">
+              {course.features.map((feature, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <CheckCircle size={20} className="text-green-500 flex-shrink-0" />
                   <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="course-syllabus">
-            <h3>Course Syllabus</h3>
-            <div className="syllabus-modules">
-              {/* Example modules - you can customize these based on your needs */}
-              <div className="module">
-                <h4>Module 1: Introduction</h4>
-                <p>Foundation concepts and setup</p>
-              </div>
-              <div className="module">
-                <h4>Module 2: Core Concepts</h4>
-                <p>Essential principles and techniques</p>
-              </div>
-              <div className="module">
-                <h4>Module 3: Advanced Topics</h4>
-                <p>Advanced implementations and best practices</p>
-              </div>
-              <div className="module">
-                <h4>Module 4: Projects</h4>
-                <p>Hands-on projects and practical applications</p>
-              </div>
-              {course.syllabus && course.syllabus.map((module, index) => (
-                <div key={index} className="module">
-                  <h4>{module.title}</h4>
-                  <p>{module.description}</p>
                 </div>
               ))}
             </div>
           </div>
+
+          {/* Course Highlights */}
+          <div className="mb-6">
+            <h3 className="text-xl font-bold mb-3">Course Highlights</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="card">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center text-accent">
+                    <Award size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Certificate</h4>
+                    <p className="text-sm text-secondary">Industry recognized</p>
+                  </div>
+                </div>
+              </div>
+              <div className="card">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center text-accent">
+                    <Zap size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Fast Track</h4>
+                    <p className="text-sm text-secondary">Complete in {course.duration}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="card">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center text-accent">
+                    <Users size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Community</h4>
+                    <p className="text-sm text-secondary">{course.students}+ students</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="modal-footer">
-          <button className="enroll-button">
-            Enroll Now <ArrowRight size={20} className="enroll-icon" aria-hidden="true" />
-          </button>
-          <p className="modal-note">
-            * Course fees and schedule will be discussed during enrollment
-          </p>
+        {/* Modal Footer */}
+        <div className="flex items-center justify-between p-6 border-t border-border">
+          <div>
+            {course.discount > 0 && (
+              <div className="flex items-center gap-2 text-sm text-green-500 mb-1">
+                <TrendingUp size={16} />
+                <span>{course.discount}% OFF</span>
+              </div>
+            )}
+            <div className="flex items-center gap-3">
+              <div className="text-2xl font-bold">₹{course.price.toLocaleString()}</div>
+              {course.originalPrice && (
+                <div className="text-lg text-secondary line-through">₹{course.originalPrice.toLocaleString()}</div>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onClose}
+              className="btn btn-outline"
+            >
+              Close
+            </button>
+            <button className="btn btn-primary">
+              <span>Enroll Now</span>
+              <Zap size={16} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

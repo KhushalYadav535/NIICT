@@ -1,430 +1,150 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Laptop,
-  GraduationCap,
-  MonitorSmartphone,
-  Calculator,
-  Printer,
-  Clock,
-  Users,
-  Award,
-  Calendar,
-  ArrowRight,
-  Star,
-  Play,
-  Sparkles,
-  TrendingUp,
-  Zap
-} from 'lucide-react';
-import CourseModal from './CourseModal';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import './Courses.css';
-
-const courses = [
-  {
-    id: 1,
-    title: 'CCC - Course on Computer Concepts',
-    description: 'Master the fundamentals of computers and essential software applications. Perfect for beginners looking to start their IT journey.',
-    duration: '3 Months',
-    level: 'Beginner',
-    students: 1200,
-    startDate: 'Monthly',
-    image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97',
-    rating: 4.8,
-    price: '₹5,000',
-    originalPrice: '₹7,000',
-    discount: '28% OFF',
-    features: ['Live Classes', 'Certificate', 'Job Support', 'Lifetime Access'],
-    syllabus: [
-      { title: 'Module 1: Basic Computer Operations', description: 'Introduction to hardware, software, and operating systems.' },
-      { title: 'Module 2: Word Processing', description: 'Creating and editing documents using a word processor.' },
-      { title: 'Module 3: Spreadsheets', description: 'Working with data and performing calculations.' },
-      { title: 'Module 4: Presentations', description: 'Designing and delivering effective presentations.' },
-      { title: 'Module 5: Internet and Digital Literacy', description: 'Navigating the internet and understanding digital safety.' },
-    ],
-  },
-  {
-    id: 2,
-    title: 'O Level - Foundation Level Course',
-    description: 'Comprehensive foundation course covering computer fundamentals, programming basics, and digital literacy.',
-    duration: '6 Months',
-    level: 'Beginner',
-    students: 850,
-    startDate: 'Monthly',
-    image: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6',
-    rating: 4.9,
-    price: '₹8,000',
-    originalPrice: '₹12,000',
-    discount: '33% OFF',
-    features: ['Live Classes', 'Certificate', 'Job Support', 'Lifetime Access'],
-    syllabus: [
-      { title: 'Module 1: Computer Fundamentals', description: 'Understanding computer architecture and basic operations.' },
-      { title: 'Module 2: Programming Concepts', description: 'Introduction to programming logic and algorithms.' },
-      { title: 'Module 3: Database Management', description: 'Working with databases and data management.' },
-      { title: 'Module 4: Web Technologies', description: 'Introduction to HTML, CSS, and web development.' },
-      { title: 'Module 5: Digital Marketing', description: 'Understanding digital marketing concepts and tools.' },
-    ],
-  },
-  {
-    id: 3,
-    title: 'ADCA - Advanced Diploma in Computer Applications',
-    description: 'Advanced diploma program covering comprehensive computer applications and software development.',
-    duration: '12 Months',
-    level: 'Intermediate',
-    students: 650,
-    startDate: 'Quarterly',
-    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3',
-    rating: 4.7,
-    price: '₹15,000',
-    originalPrice: '₹20,000',
-    discount: '25% OFF',
-    features: ['Live Classes', 'Certificate', 'Job Support', 'Lifetime Access'],
-    syllabus: [
-      { title: 'Module 1: Advanced Programming', description: 'Advanced programming concepts and techniques.' },
-      { title: 'Module 2: Database Design', description: 'Database design and management systems.' },
-      { title: 'Module 3: Web Development', description: 'Full-stack web development with modern technologies.' },
-      { title: 'Module 4: Software Engineering', description: 'Software development lifecycle and methodologies.' },
-      { title: 'Module 5: Project Management', description: 'IT project management and team collaboration.' },
-    ],
-  },
-  {
-    id: 4,
-    title: 'Full Stack Web Development',
-    description: 'Complete web development course covering frontend, backend, and database technologies.',
-    duration: '8 Months',
-    level: 'Advanced',
-    students: 450,
-    startDate: 'Monthly',
-    image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085',
-    rating: 4.9,
-    price: '₹25,000',
-    originalPrice: '₹35,000',
-    discount: '28% OFF',
-    features: ['Live Classes', 'Certificate', 'Job Support', 'Lifetime Access'],
-    syllabus: [
-      { title: 'Module 1: Frontend Development', description: 'HTML, CSS, JavaScript, and modern frameworks.' },
-      { title: 'Module 2: Backend Development', description: 'Server-side programming and API development.' },
-      { title: 'Module 3: Database Integration', description: 'Database design and integration with applications.' },
-      { title: 'Module 4: DevOps & Deployment', description: 'Deployment strategies and cloud platforms.' },
-      { title: 'Module 5: Project Portfolio', description: 'Building real-world projects and portfolio development.' },
-    ],
-  },
-  {
-    id: 5,
-    title: 'Data Science & Analytics',
-    description: 'Learn data science, machine learning, and analytics to become a data-driven professional.',
-    duration: '10 Months',
-    level: 'Advanced',
-    students: 320,
-    startDate: 'Quarterly',
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71',
-    rating: 4.8,
-    price: '₹30,000',
-    originalPrice: '₹40,000',
-    discount: '25% OFF',
-    features: ['Live Classes', 'Certificate', 'Job Support', 'Lifetime Access'],
-    syllabus: [
-      { title: 'Module 1: Data Fundamentals', description: 'Understanding data types, structures, and analysis.' },
-      { title: 'Module 2: Statistical Analysis', description: 'Statistical methods and data interpretation.' },
-      { title: 'Module 3: Machine Learning', description: 'Machine learning algorithms and applications.' },
-      { title: 'Module 4: Data Visualization', description: 'Creating compelling data visualizations.' },
-      { title: 'Module 5: Real-world Projects', description: 'Industry projects and case studies.' },
-    ],
-  },
-  {
-    id: 6,
-    title: 'Digital Marketing & SEO',
-    description: 'Master digital marketing strategies, SEO, and social media marketing for business growth.',
-    duration: '6 Months',
-    level: 'Intermediate',
-    students: 580,
-    startDate: 'Monthly',
-    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f',
-    rating: 4.6,
-    price: '₹12,000',
-    originalPrice: '₹18,000',
-    discount: '33% OFF',
-    features: ['Live Classes', 'Certificate', 'Job Support', 'Lifetime Access'],
-    syllabus: [
-      { title: 'Module 1: Digital Marketing Fundamentals', description: 'Core concepts and digital marketing landscape.' },
-      { title: 'Module 2: SEO & SEM', description: 'Search engine optimization and marketing strategies.' },
-      { title: 'Module 3: Social Media Marketing', description: 'Social media platforms and marketing techniques.' },
-      { title: 'Module 4: Content Marketing', description: 'Content strategy and creation for digital platforms.' },
-      { title: 'Module 5: Analytics & ROI', description: 'Measuring performance and return on investment.' },
-    ],
-  },
-];
+import { ArrowRight } from 'lucide-react';
 
 const Courses = () => {
-  const [selectedCourse, setSelectedCourse] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [loading, setLoading] = useState(false); // Changed to false initially
-  const [activeTab, setActiveTab] = useState('all');
-  const [filteredCourses, setFilteredCourses] = useState(courses);
-  const [isVisible, setIsVisible] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
-  // Intersection Observer for animations
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
-      { threshold: 0.1 }
-    );
+  const categories = [
+    { id: 'all', label: 'All Programs' },
+    { id: 'degree', label: 'Degree' },
+    { id: 'diploma', label: 'Diploma' },
+    { id: 'certification', label: 'Certification' },
+    { id: 'programming', label: 'Development' },
+    { id: 'data', label: 'AI & Data' },
+    { id: 'design', label: 'Design & Media' },
+    { id: 'business', label: 'Business & Finance' }
+  ];
 
-    const element = document.querySelector('.courses-container');
-    if (element) {
-      observer.observe(element);
-    }
+  const courses = [
+    { id: 1, title: 'BCA (Bachelor of Computer Applications)', category: 'degree', level: 'Degree', price: 45000, image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2000&auto=format&fit=crop', description: 'Full-time undergraduate program in computer applications and software development.', features: ['3 Years', 'University Degree', 'Placement Support'] },
+    { id: 2, title: 'O-LEVEL', category: 'certification', level: 'Certification', price: 15000, image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2000&auto=format&fit=crop', description: 'Foundation course in computer applications recognized by the government.', features: ['1 Year', 'Govt. Recognized', 'IT Tools'] },
+    { id: 3, title: 'DIT (Diploma in IT)', category: 'diploma', level: 'Diploma', price: 12000, image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=2000&auto=format&fit=crop', description: 'Comprehensive diploma in information technology basics and software.', features: ['6 Months', 'Practical Labs', 'Certification'] },
+    { id: 4, title: 'Web Development', category: 'programming', level: 'Advanced', price: 25000, image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80', description: 'Master full-stack web development using modern frameworks like React and Node.js.', features: ['React', 'Node.js', 'MongoDB'] },
+    { id: 5, title: 'Data Analytics', category: 'data', level: 'Intermediate', price: 30000, image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80', description: 'Learn to analyze data and build visualizations using Python and PowerBI.', features: ['Python', 'SQL', 'PowerBI'] },
+    { id: 6, title: 'Android Development', category: 'programming', level: 'Intermediate', price: 28000, image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&q=80', description: 'Build native and cross-platform mobile apps for Android devices.', features: ['Java/Kotlin', 'React Native', 'App Store'] },
+    { id: 7, title: 'Video Editing', category: 'design', level: 'Beginner', price: 18000, image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?q=80&w=2000&auto=format&fit=crop', description: 'Professional video editing and motion graphics creation.', features: ['Premiere Pro', 'After Effects', 'Color Grading'] },
+    { id: 8, title: 'Agentic AI', category: 'data', level: 'Advanced', price: 40000, image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=2000&auto=format&fit=crop', description: 'Build autonomous AI agents and integrate large language models.', features: ['LLMs', 'LangChain', 'Autonomous Agents'] },
+    { id: 9, title: 'ADCA', category: 'diploma', level: 'Diploma', price: 18000, image: 'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?q=80&w=2000&auto=format&fit=crop', description: 'Advanced Diploma in Computer Applications covering advanced IT skills.', features: ['1 Year', 'Advanced Tools', 'Project Work'] },
+    { id: 10, title: 'CCC', category: 'certification', level: 'Beginner', price: 5000, image: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=2000&auto=format&fit=crop', description: 'Course on Computer Concepts, essential for government jobs.', features: ['3 Months', 'Basic IT', 'Govt. Approved'] },
+    { id: 11, title: 'BCC', category: 'certification', level: 'Beginner', price: 4000, image: 'https://images.unsplash.com/photo-1587614382346-4ec70e388b28?q=80&w=2000&auto=format&fit=crop', description: 'Basic Computer Course for absolute beginners in digital literacy.', features: ['2 Months', 'Fundamentals', 'Internet'] },
+    { id: 12, title: 'Accounting Tally', category: 'business', level: 'Intermediate', price: 12000, image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=2000&auto=format&fit=crop', description: 'Computerized accounting and taxation using Tally Prime.', features: ['Tally Prime', 'GST', 'Taxation'] }
+  ];
 
-    return () => observer.disconnect();
-  }, []);
-
-  const handleCourseClick = (course) => {
-    setIsAnimating(true);
-    setTimeout(() => {
-      setSelectedCourse(course);
-      setIsModalOpen(true);
-      setIsAnimating(false);
-    }, 300);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedCourse(null);
-  };
-
-  // Removed the loading timer since we don't need it
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     setLoading(false);
-  //   }, 1000);
-  //   return () => clearTimeout(timer);
-  // }, []);
-
-  useEffect(() => {
-    if (activeTab === 'all') {
-      setFilteredCourses(courses);
-    } else {
-      const filtered = courses.filter(course => course.level.toLowerCase() === activeTab);
-      setFilteredCourses(filtered);
-    }
-  }, [activeTab]);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        duration: 0.8,
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut"
-      }
-    }
-  };
-
-  const cardVariants = {
-    hover: {
-      y: -10,
-      transition: {
-        duration: 0.3,
-        ease: "easeInOut"
-      }
-    }
-  };
-
-  // Only show loading if actually loading (which we're not doing)
-  if (loading) {
-    return (
-      <motion.section
-        className="courses-container loading"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="loading-content">
-          <div className="spinner"></div>
-          <p className="loading-text">Loading Premium Courses...</p>
-        </div>
-      </motion.section>
-    );
-  }
+  const filteredCourses = courses.filter(course => 
+    selectedCategory === 'all' || course.category === selectedCategory
+  );
 
   return (
-    <>
-      <motion.section
-        className={`courses-container ${isVisible ? 'visible' : ''}`}
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      >
-        <div className="section-title">
-          <motion.div variants={itemVariants} className="title-decoration">
-            <Sparkles size={24} color="#00d4ff" />
-            <span>Premium Learning</span>
-            <Sparkles size={24} color="#00d4ff" />
+    <section className="bg-white text-slate-900 py-32 relative overflow-hidden" id="courses">
+      
+      {/* Premium Ambient Background */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-[500px] bg-blue-100 rounded-full blur-[150px] pointer-events-none opacity-50 mix-blend-multiply"></div>
+      
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="flex flex-col items-center mb-16 text-center">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-xs md:text-sm font-sans tracking-[0.2em] text-blue-600 uppercase mb-6 border border-blue-200 px-4 py-1 rounded-full bg-blue-50/50 backdrop-blur-md font-semibold shadow-sm"
+          >
+            Elite Programs
           </motion.div>
-          <motion.h2 variants={itemVariants} className="gradient-text">
-            Explore Our Professional Courses
+          <motion.h2 
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="text-5xl md:text-7xl font-display uppercase tracking-tight text-slate-900 mb-6 drop-shadow-sm"
+          >
+            Curated <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-400">Curriculum</span>
           </motion.h2>
-          <motion.p variants={itemVariants} className="section-subtitle">
-            Invest in your future with our expertly designed training programs.
-          </motion.p>
         </div>
 
+        {/* Filter Tabs */}
         <motion.div 
-          className="course-filter"
-          variants={itemVariants}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="flex flex-wrap justify-center gap-3 mb-16"
         >
-          <div className="filter-tabs">
-            {[
-              { id: 'all', label: 'All Courses', count: courses.length, icon: <TrendingUp size={16} /> },
-              { id: 'beginner', label: 'Beginner', count: courses.filter(c => c.level === 'Beginner').length, icon: <Zap size={16} /> },
-              { id: 'intermediate', label: 'Intermediate', count: courses.filter(c => c.level === 'Intermediate').length, icon: <GraduationCap size={16} /> },
-              { id: 'advanced', label: 'Advanced', count: courses.filter(c => c.level === 'Advanced').length, icon: <Award size={16} /> }
-            ].map((tab) => (
-              <motion.button
-                key={tab.id}
-                className={`filter-tab ${activeTab === tab.id ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab.id)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <div className="tab-icon">{tab.icon}</div>
-                <span className="tab-label">{tab.label}</span>
-                <span className="tab-count">{tab.count}</span>
-              </motion.button>
-            ))}
-          </div>
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => setSelectedCategory(category.id)}
+              className={`px-6 py-2.5 rounded-full font-mono text-[11px] uppercase tracking-[2px] transition-all duration-500 ${
+                selectedCategory === category.id 
+                ? 'bg-slate-900 text-white shadow-[0_10px_20px_rgba(15,23,42,0.2)] font-bold scale-105 border border-slate-900' 
+                : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm'
+              }`}
+            >
+              {category.label}
+            </button>
+          ))}
         </motion.div>
 
-        <motion.div 
-          className="courses-grid"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <AnimatePresence mode="wait">
-            {filteredCourses.map((course, index) => (
-              <motion.div
-                key={course.id}
-                className="course-card glass"
-                variants={cardVariants}
-                whileHover="hover"
-                onClick={() => handleCourseClick(course)}
-                initial={{ opacity: 0, scale: 0.9 }}
+        {/* Course Grid */}
+        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <AnimatePresence>
+            {filteredCourses.map((course) => (
+              <motion.div 
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ delay: index * 0.1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                key={course.id} 
+                className="group relative rounded-3xl border border-slate-200/60 bg-white/60 backdrop-blur-2xl overflow-hidden hover:border-blue-400/50 transition-all duration-500 hover:shadow-[0_20px_40px_rgba(0,102,255,0.08)] hover:-translate-y-2 flex flex-col"
               >
-                <div className="course-image">
-                  <img src={course.image} alt={course.title} />
-                  <div className="course-overlay">
-                    <motion.button
-                      className="play-button glass"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                    >
-                      <Play size={24} />
-                    </motion.button>
+                <div className="relative h-64 overflow-hidden rounded-t-3xl m-2 mb-0">
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent z-10 transition-opacity group-hover:opacity-80"></div>
+                  <img 
+                    src={course.image} 
+                    alt={course.title} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-[0.16,1,0.3,1]" 
+                  />
+                  
+                  <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md border border-white/20 px-4 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-[1px] z-20 text-slate-800 font-bold shadow-sm">
+                    {course.level}
                   </div>
-                  <div className="course-badge">
-                    <span className={`level-badge ${course.level.toLowerCase()}`}>
-                      {course.level}
-                    </span>
-                  </div>
-                  {course.discount && (
-                    <div className="discount-badge">
-                      <span className="discount-text">{course.discount}</span>
-                    </div>
-                  )}
                 </div>
 
-                <div className="course-content">
-                  <div className="course-header">
-                    <h3 className="course-title">{course.title}</h3>
-                    <div className="course-rating">
-                      <div className="stars">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            size={16}
-                            fill={i < Math.floor(course.rating) ? "#ffd700" : "none"}
-                            color={i < Math.floor(course.rating) ? "#ffd700" : "#666"}
-                          />
-                        ))}
+                <div className="p-8 relative z-20 flex-grow flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-xl md:text-2xl font-display uppercase tracking-[1px] text-slate-900 group-hover:text-blue-600 transition-colors mb-4 font-bold leading-tight">
+                      {course.title}
+                    </h3>
+
+                    <p className="text-slate-500 text-sm leading-relaxed mb-6 font-sans">
+                      {course.description}
+                    </p>
+                    
+                    <div className="flex flex-wrap gap-2 mb-8">
+                      {course.features.map((feature, idx) => (
+                        <span key={idx} className="text-[10px] font-mono uppercase tracking-[1px] border border-slate-200 bg-slate-50 rounded-md px-2.5 py-1 text-slate-600 shadow-sm">
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-6 border-t border-slate-100">
+                    <div>
+                      <div className="text-[10px] font-mono uppercase tracking-[2px] text-slate-400 mb-1">Tuition</div>
+                      <div className="text-xl font-bold text-slate-900">
+                        ₹{course.price.toLocaleString()}
                       </div>
-                      <span className="rating-text">{course.rating}</span>
                     </div>
-                  </div>
-
-                  <p className="course-description">{course.description}</p>
-
-                  <div className="course-features">
-                    {course.features.map((feature, index) => (
-                      <span key={index} className="feature-tag">
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="course-meta">
-                    <div className="meta-item">
-                      <Clock size={16} />
-                      <span>{course.duration}</span>
-                    </div>
-                    <div className="meta-item">
-                      <Users size={16} />
-                      <span>{course.students.toLocaleString()} students</span>
-                    </div>
-                    <div className="meta-item">
-                      <Calendar size={16} />
-                      <span>{course.startDate}</span>
-                    </div>
-                  </div>
-
-                  <div className="course-footer">
-                    <div className="course-price">
-                      <span className="current-price">{course.price}</span>
-                      <span className="original-price">{course.originalPrice}</span>
-                    </div>
-                    <motion.button
-                      className="enroll-button"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <span>Enroll Now</span>
-                      <ArrowRight size={16} />
-                    </motion.button>
+                    <button className="w-12 h-12 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-900 group-hover:bg-blue-600 group-hover:border-blue-600 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-[0_10px_20px_rgba(0,102,255,0.3)]">
+                      <ArrowRight size={20} className="group-hover:-rotate-45 transition-transform duration-300" />
+                    </button>
                   </div>
                 </div>
               </motion.div>
             ))}
           </AnimatePresence>
         </motion.div>
-      </motion.section>
-
-      <CourseModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        course={selectedCourse}
-      />
-    </>
+      </div>
+    </section>
   );
 };
 

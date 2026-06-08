@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronUp } from 'lucide-react';
 
 const ScrollToTop = () => {
@@ -25,70 +24,16 @@ const ScrollToTop = () => {
     });
   };
 
-  const buttonVariants = {
-    hidden: { 
-      opacity: 0, 
-      scale: 0,
-      y: 20
-    },
-    visible: { 
-      opacity: 1, 
-      scale: 1,
-      y: 0,
-      transition: {
-        duration: 0.3,
-        ease: "easeOut"
-      }
-    },
-    hover: {
-      scale: 1.1,
-      y: -5,
-      transition: {
-        duration: 0.2,
-        ease: "easeInOut"
-      }
-    },
-    tap: {
-      scale: 0.95,
-      transition: {
-        duration: 0.1
-      }
-    }
-  };
-
-  const iconVariants = {
-    hover: {
-      y: -2,
-      transition: {
-        duration: 0.2,
-        ease: "easeInOut"
-      }
-    }
-  };
+  if (!isVisible) return null;
 
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.button
-          className="scroll-to-top glass"
-          onClick={scrollToTop}
-          variants={buttonVariants}
-          initial="hidden"
-          animate="visible"
-          exit="hidden"
-          whileHover="hover"
-          whileTap="tap"
-          aria-label="Scroll to top"
-        >
-          <motion.div
-            variants={iconVariants}
-            whileHover="hover"
-          >
-            <ChevronUp size={24} />
-          </motion.div>
-        </motion.button>
-      )}
-    </AnimatePresence>
+    <button
+      onClick={scrollToTop}
+      className="fixed bottom-24 right-6 w-12 h-12 bg-accent text-white rounded-full flex items-center justify-center shadow-lg hover:bg-accent/90 transition-colors z-30"
+      aria-label="Scroll to top"
+    >
+      <ChevronUp size={20} />
+    </button>
   );
 };
 

@@ -7,6 +7,12 @@ import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SchoolIcon from '@mui/icons-material/School';
+import WorkIcon from '@mui/icons-material/Work';
+import NewspaperIcon from '@mui/icons-material/Newspaper';
+import PeopleIcon from '@mui/icons-material/People';
+import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
+import DescriptionIcon from '@mui/icons-material/Description';
+import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 const COLORS = ['#4a90e2', '#10b981', '#fbbf24', '#f87171', '#a78bfa', '#22d3ee', '#f59e42', '#6366f1'];
@@ -133,6 +139,67 @@ const AdminDashboard = () => {
           sx={{ ml: 2, borderRadius: 2 }}
         >
           Result Management
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate('/admin/courses')}
+          startIcon={<SchoolIcon />}
+          sx={{ ml: 2, borderRadius: 2 }}
+        >
+          Course Management
+        </Button>
+        <Button
+          variant="contained"
+          color="info"
+          onClick={() => navigate('/admin/jobs')}
+          startIcon={<WorkIcon />}
+          sx={{ ml: 2, borderRadius: 2 }}
+        >
+          Job Management
+        </Button>
+        <Button
+          variant="contained"
+          sx={{ ml: 2, borderRadius: 2, backgroundColor: '#f59e42' }}
+          onClick={() => navigate('/admin/news')}
+          startIcon={<NewspaperIcon />}
+        >
+          News Management
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          sx={{ ml: 2, borderRadius: 2 }}
+          onClick={() => navigate('/admin/mentors')}
+          startIcon={<PeopleIcon />}
+        >
+          Mentor Management
+        </Button>
+        <Button
+          variant="contained"
+          color="success"
+          sx={{ ml: 2, borderRadius: 2 }}
+          onClick={() => navigate('/admin/flashcards')}
+          startIcon={<ViewCarouselIcon />}
+        >
+          Flashcards
+        </Button>
+        <Button
+          variant="contained"
+          sx={{ ml: 2, borderRadius: 2, backgroundColor: '#8b5cf6' }}
+          onClick={() => navigate('/admin/papers')}
+          startIcon={<DescriptionIcon />}
+        >
+          Papers
+        </Button>
+        <Button
+          variant="contained"
+          color="warning"
+          sx={{ ml: 2, borderRadius: 2 }}
+          onClick={() => navigate('/admin/interview')}
+          startIcon={<QuestionAnswerIcon />}
+        >
+          Interview Prep
         </Button>
       </Box>
       <Grid container spacing={3} mb={4}>

@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import Hero from '../components/Hero';
 import Stats from '../components/Stats';
+import CourseMarquee from '../components/CourseMarquee';
 
 // Lazy load components for better performance
 const Courses = lazy(() => import('../components/Courses'));
@@ -20,6 +21,7 @@ function Home() {
   return (
     <div className="home-container">
       <Hero />
+      <CourseMarquee />
       <Suspense fallback={<LoadingFallback />}>
         <Courses />
       </Suspense>

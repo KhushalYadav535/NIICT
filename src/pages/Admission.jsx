@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  User, 
-  Phone, 
-  Mail, 
-  Calendar, 
-  BookOpen, 
-  GraduationCap, 
-  MapPin, 
-  Camera, 
-  Upload, 
-  CheckCircle, 
-  AlertCircle, 
+import {
+  User,
+  Phone,
+  Mail,
+  Calendar,
+  BookOpen,
+  GraduationCap,
+  MapPin,
+  Camera,
+  Upload,
+  CheckCircle,
+  AlertCircle,
   ArrowRight,
   Sparkles,
   Star,
@@ -133,19 +133,19 @@ function Admission() {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.candidateName.trim()) {
       newErrors.candidateName = 'Candidate name is required';
     }
-    
+
     if (!formData.fathersName.trim()) {
       newErrors.fathersName = 'Father\'s name is required';
     }
-    
+
     if (!formData.mothersName.trim()) {
       newErrors.mothersName = 'Mother\'s name is required';
     }
-    
+
     if (!formData.dateOfBirth) {
       newErrors.dateOfBirth = 'Date of birth is required';
     } else {
@@ -154,33 +154,33 @@ function Admission() {
       const birthDate = new Date(formData.dateOfBirth);
       const age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
-      
+
       // Check if birthday hasn't occurred this year
       const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
-      
+
       if (actualAge > 20) {
         newErrors.dateOfBirth = 'Only candidates aged 20 or below can register';
       }
     }
-    
+
     if (!formData.course) {
       newErrors.course = 'Please select a course';
     }
-    
+
     if (!formData.educationalQualification.trim()) {
       newErrors.educationalQualification = 'Educational qualification is required';
     }
-    
+
     if (!formData.contactNo.trim()) {
       newErrors.contactNo = 'Contact number is required';
     } else if (!/^\+?[\d\s-]{10,}$/.test(formData.contactNo)) {
       newErrors.contactNo = 'Please enter a valid contact number';
     }
-    
+
     if (!formData.permanentAddress.trim()) {
       newErrors.permanentAddress = 'Permanent address is required';
     }
-    
+
     if (!formData.image) {
       newErrors.image = 'Please upload your photo';
     }
@@ -191,7 +191,7 @@ function Admission() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -239,7 +239,7 @@ function Admission() {
 
       const result = await response.json();
       setIsSubmitted(true);
-      
+
       // Reset form after 3 seconds
       setTimeout(() => {
         setFormData({
@@ -270,14 +270,14 @@ function Admission() {
     const upiIntent = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent('NIICT')}&cu=INR&tn=${encodeURIComponent('Admission Fee')}`;
 
     return (
-      <motion.div 
+      <motion.div
         className="admission-success"
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
         <div className="success-content">
-          <motion.div 
+          <motion.div
             className="success-icon"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -285,7 +285,7 @@ function Admission() {
           >
             <CheckCircle size={80} />
           </motion.div>
-          <motion.h2 
+          <motion.h2
             className="success-title"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -293,7 +293,7 @@ function Admission() {
           >
             Application Submitted Successfully!
           </motion.h2>
-          <motion.p 
+          <motion.p
             className="success-message"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -302,7 +302,7 @@ function Admission() {
             Thank you for choosing NIICT. We'll review your application and get back to you soon.
           </motion.p>
 
-          <motion.div 
+          <motion.div
             className="payment-box"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -325,7 +325,7 @@ function Admission() {
             </div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="success-features"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -350,7 +350,7 @@ function Admission() {
   }
 
   return (
-    <motion.div 
+    <motion.div
       className="admission-page"
       variants={containerVariants}
       initial="hidden"
@@ -362,7 +362,7 @@ function Admission() {
           <div className="hero-overlay"></div>
         </div>
         <div className="hero-content">
-          <motion.div 
+          <motion.div
             className="hero-badge"
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
@@ -371,7 +371,7 @@ function Admission() {
             <Sparkles size={24} />
             <span>Join NIICT</span>
           </motion.div>
-          <motion.h1 
+          <motion.h1
             className="hero-title"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -379,7 +379,7 @@ function Admission() {
           >
             Start Your Journey
           </motion.h1>
-          <motion.p 
+          <motion.p
             className="hero-subtitle"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -387,7 +387,7 @@ function Admission() {
           >
             Transform your future with our premium computer training programs
           </motion.p>
-          <motion.div 
+          <motion.div
             className="hero-stats"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -412,7 +412,7 @@ function Admission() {
       {/* Form Section */}
       <motion.section className="admission-form-section" variants={itemVariants}>
         <div className="form-container">
-          <motion.div 
+          <motion.div
             className="form-header"
             variants={itemVariants}
           >
@@ -420,8 +420,8 @@ function Admission() {
             <p className="form-subtitle">Complete the form below to begin your learning journey</p>
           </motion.div>
 
-          <motion.form 
-            onSubmit={handleSubmit} 
+          <motion.form
+            onSubmit={handleSubmit}
             className="admission-form glass"
             variants={formVariants}
           >
@@ -432,7 +432,7 @@ function Admission() {
                   <User size={20} />
                   Personal Information
                 </h3>
-                
+
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="candidateName">
@@ -450,7 +450,7 @@ function Admission() {
                     />
                     <AnimatePresence>
                       {errors.candidateName && (
-                        <motion.span 
+                        <motion.span
                           className="error-message"
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -478,7 +478,7 @@ function Admission() {
                     />
                     <AnimatePresence>
                       {errors.dateOfBirth && (
-                        <motion.span 
+                        <motion.span
                           className="error-message"
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -509,7 +509,7 @@ function Admission() {
                     />
                     <AnimatePresence>
                       {errors.fathersName && (
-                        <motion.span 
+                        <motion.span
                           className="error-message"
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -538,7 +538,7 @@ function Admission() {
                     />
                     <AnimatePresence>
                       {errors.mothersName && (
-                        <motion.span 
+                        <motion.span
                           className="error-message"
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -559,7 +559,7 @@ function Admission() {
                   <BookOpen size={20} />
                   Course Information
                 </h3>
-                
+
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="course">
@@ -582,13 +582,13 @@ function Admission() {
                       </select>
                       <div className="select-arrow">
                         <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-                          <path d="M1 1L6 6L11 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M1 1L6 6L11 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </div>
                     </div>
                     <AnimatePresence>
                       {errors.course && (
-                        <motion.span 
+                        <motion.span
                           className="error-message"
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -634,7 +634,7 @@ function Admission() {
                   />
                   <AnimatePresence>
                     {errors.educationalQualification && (
-                      <motion.span 
+                      <motion.span
                         className="error-message"
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -654,7 +654,7 @@ function Admission() {
                   <Phone size={20} />
                   Contact Information
                 </h3>
-                
+
                 <div className="form-group">
                   <label htmlFor="contactNo">
                     <Phone size={16} />
@@ -671,7 +671,7 @@ function Admission() {
                   />
                   <AnimatePresence>
                     {errors.contactNo && (
-                      <motion.span 
+                      <motion.span
                         className="error-message"
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -700,7 +700,7 @@ function Admission() {
                   ></textarea>
                   <AnimatePresence>
                     {errors.permanentAddress && (
-                      <motion.span 
+                      <motion.span
                         className="error-message"
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -720,7 +720,7 @@ function Admission() {
                   <Camera size={20} />
                   Photo Upload
                 </h3>
-                
+
                 <div className="image-upload-container">
                   <div className="upload-area">
                     <input
@@ -739,10 +739,10 @@ function Admission() {
                       </div>
                     </label>
                   </div>
-                  
+
                   <AnimatePresence>
                     {previewImage && (
-                      <motion.div 
+                      <motion.div
                         className="image-preview"
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -752,10 +752,10 @@ function Admission() {
                       </motion.div>
                     )}
                   </AnimatePresence>
-                  
+
                   <AnimatePresence>
                     {errors.image && (
-                      <motion.span 
+                      <motion.span
                         className="error-message"
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -770,12 +770,12 @@ function Admission() {
               </motion.div>
             </div>
 
-            <motion.div 
+            <motion.div
               className="form-actions"
               variants={itemVariants}
             >
-              <motion.button 
-                type="submit" 
+              <motion.button
+                type="submit"
                 className="submit-button"
                 disabled={isSubmitting}
                 whileHover={{ scale: 1.02 }}
@@ -797,7 +797,7 @@ function Admission() {
 
             <AnimatePresence>
               {errors.submit && (
-                <motion.div 
+                <motion.div
                   className="error-message submit-error"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
