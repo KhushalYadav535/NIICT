@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Paper, Table, TableBody, TableCell, 
-         TableContainer, TableHead, TableRow, Button, Box, TextField, Grid, IconButton, CircularProgress } from '@mui/material';
+         TableContainer, TableHead, TableRow, Button, Box, TextField, Grid, IconButton, CircularProgress, Chip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import SchoolIcon from '@mui/icons-material/School';
 
 const CourseManagement = () => {
   const [courses, setCourses] = useState([]);
@@ -139,104 +140,130 @@ const CourseManagement = () => {
     }
   };
 
+  const inputSx = {
+    input: { color: '#fff' },
+    label: { color: '#94a3b8' },
+    '& label.Mui-focused': { color: '#38bdf8' },
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
+      '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+      '&.Mui-focused fieldset': { borderColor: '#38bdf8', boxShadow: '0 0 10px rgba(56,189,248,0.2)' },
+    },
+    '& .MuiInputBase-inputMultiline': { color: '#fff' }
+  };
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4, paddingTop: '80px' }}>
-      <Typography variant="h4" fontWeight={700} color="#222" mb={4}>
-        Course Management
-      </Typography>
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#0B1120', pt: 12, pb: 8 }}>
+      <Box sx={{ position: 'fixed', top: '-10%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(56,189,248,0.1) 0%, rgba(11,17,32,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
+      <Box sx={{ position: 'fixed', bottom: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(167,139,250,0.1) 0%, rgba(11,17,32,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
 
-      <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
-        <Typography variant="h6" mb={3}>Add New Course</Typography>
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <TextField fullWidth label="Title" name="title" value={formData.title} onChange={handleInputChange} required />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField fullWidth label="Level (Beginner, Intermediate, Advanced)" name="level" value={formData.level} onChange={handleInputChange} required />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField fullWidth label="Description" name="description" value={formData.description} onChange={handleInputChange} multiline rows={3} required />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <TextField fullWidth label="Duration (e.g., 3 Months)" name="duration" value={formData.duration} onChange={handleInputChange} required />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <TextField fullWidth label="Current Price (e.g., ₹5,000)" name="price" value={formData.price} onChange={handleInputChange} required />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <TextField fullWidth label="Original Price (e.g., ₹7,000)" name="originalPrice" value={formData.originalPrice} onChange={handleInputChange} />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField fullWidth label="Discount (e.g., 28% OFF)" name="discount" value={formData.discount} onChange={handleInputChange} />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField fullWidth label="Features (comma separated)" name="features" value={formData.features} onChange={handleInputChange} placeholder="Live Classes, Certificate, Job Support" />
-            </Grid>
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+        <Box display="flex" alignItems="center" mb={6} gap={2}>
+          <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #38bdf8, #3b82f6)', boxShadow: '0 0 20px rgba(56,189,248,0.4)', display: 'flex' }}>
+            <SchoolIcon sx={{ fontSize: 32, color: '#fff' }} />
+          </Box>
+          <Box>
+            <Typography variant="h3" fontWeight={800} color="#fff" sx={{ letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Saira Condensed", sans-serif', lineHeight: 1 }}>
+              Course <span style={{ color: '#38bdf8' }}>Management</span>
+            </Typography>
+          </Box>
+        </Box>
 
-            {/* Media Uploads */}
-            <Grid item xs={12} md={6}>
-              <Typography variant="subtitle1" gutterBottom>Thumbnail Image (Required)</Typography>
-              <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} required />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Typography variant="subtitle1" gutterBottom>Promo Video (Optional)</Typography>
-              <input type="file" accept="video/*" onChange={(e) => setVideoFile(e.target.files[0])} />
-            </Grid>
+        <Paper elevation={0} sx={{ p: 4, mb: 6, borderRadius: 4, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+          <Typography variant="h6" mb={4} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif', textTransform: 'uppercase', letterSpacing: '1px' }}>Add New Course</Typography>
+          <form onSubmit={handleSubmit}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <TextField sx={inputSx} fullWidth label="Title" name="title" value={formData.title} onChange={handleInputChange} required />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField sx={inputSx} fullWidth label="Level (Beginner, Intermediate, Advanced)" name="level" value={formData.level} onChange={handleInputChange} required />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField sx={inputSx} fullWidth label="Description" name="description" value={formData.description} onChange={handleInputChange} multiline rows={3} required />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TextField sx={inputSx} fullWidth label="Duration (e.g., 3 Months)" name="duration" value={formData.duration} onChange={handleInputChange} required />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TextField sx={inputSx} fullWidth label="Current Price (e.g., ₹5,000)" name="price" value={formData.price} onChange={handleInputChange} required />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TextField sx={inputSx} fullWidth label="Original Price (e.g., ₹7,000)" name="originalPrice" value={formData.originalPrice} onChange={handleInputChange} />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField sx={inputSx} fullWidth label="Discount (e.g., 28% OFF)" name="discount" value={formData.discount} onChange={handleInputChange} />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField sx={inputSx} fullWidth label="Features (comma separated)" name="features" value={formData.features} onChange={handleInputChange} placeholder="Live Classes, Certificate, Job Support" />
+              </Grid>
 
-            {/* Syllabus Builder */}
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" fontWeight={600} gutterBottom>Syllabus Modules</Typography>
-              <Box display="flex" gap={2} mb={2}>
-                <TextField label="Module Title" name="syllabusTitle" value={formData.syllabusTitle} onChange={handleInputChange} sx={{ flex: 1 }} />
-                <TextField label="Module Description" name="syllabusDesc" value={formData.syllabusDesc} onChange={handleInputChange} sx={{ flex: 2 }} />
-                <Button variant="outlined" onClick={addSyllabusItem}>Add</Button>
-              </Box>
-              {syllabus.map((item, index) => (
-                <Box key={index} display="flex" justifyContent="space-between" alignItems="center" p={1} bgcolor="#f5f5f5" mb={1} borderRadius={1}>
-                  <Typography><strong>{item.title}:</strong> {item.description}</Typography>
-                  <IconButton onClick={() => removeSyllabusItem(index)} color="error"><DeleteIcon /></IconButton>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" sx={{ color: '#94a3b8', mb: 1, textTransform: 'uppercase', letterSpacing: '1px' }}>Thumbnail Image (Required)</Typography>
+                <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} required style={{ color: '#cbd5e1' }} />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" sx={{ color: '#94a3b8', mb: 1, textTransform: 'uppercase', letterSpacing: '1px' }}>Promo Video (Optional)</Typography>
+                <input type="file" accept="video/*" onChange={(e) => setVideoFile(e.target.files[0])} style={{ color: '#cbd5e1' }} />
+              </Grid>
+
+              <Grid item xs={12}>
+                <Typography variant="subtitle2" sx={{ color: '#94a3b8', mb: 2, mt: 2, textTransform: 'uppercase', letterSpacing: '1px' }}>Syllabus Modules</Typography>
+                <Box display="flex" gap={2} mb={2}>
+                  <TextField sx={inputSx} label="Module Title" name="syllabusTitle" value={formData.syllabusTitle} onChange={handleInputChange} sx={{ ...inputSx, flex: 1 }} />
+                  <TextField sx={inputSx} label="Module Description" name="syllabusDesc" value={formData.syllabusDesc} onChange={handleInputChange} sx={{ ...inputSx, flex: 2 }} />
+                  <Button variant="outlined" onClick={addSyllabusItem} sx={{ color: '#38bdf8', borderColor: '#38bdf8', '&:hover': { background: 'rgba(56,189,248,0.1)' } }}>Add</Button>
                 </Box>
-              ))}
-            </Grid>
+                {syllabus.map((item, index) => (
+                  <Box key={index} display="flex" justifyContent="space-between" alignItems="center" p={2} mb={1} borderRadius={2} sx={{ background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <Typography sx={{ color: '#cbd5e1' }}><strong style={{ color: '#fff' }}>{item.title}:</strong> {item.description}</Typography>
+                    <IconButton onClick={() => removeSyllabusItem(index)} sx={{ color: '#f87171' }}><DeleteIcon /></IconButton>
+                  </Box>
+                ))}
+              </Grid>
 
-            <Grid item xs={12}>
-              <Button type="submit" variant="contained" color="primary" disabled={uploading} size="large" fullWidth>
-                {uploading ? <CircularProgress size={24} /> : 'Create Course'}
-              </Button>
+              <Grid item xs={12} mt={2}>
+                <Button type="submit" variant="contained" disabled={uploading} size="large" fullWidth sx={{ background: 'linear-gradient(135deg, #38bdf8, #3b82f6)', color: '#fff', py: 1.5, fontSize: '1.1rem', letterSpacing: '1px', '&:hover': { boxShadow: '0 0 20px rgba(56,189,248,0.4)' } }}>
+                  {uploading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : 'Create Course'}
+                </Button>
+              </Grid>
             </Grid>
-          </Grid>
-        </form>
-      </Paper>
+          </form>
+        </Paper>
 
-      <Typography variant="h5" fontWeight={600} mb={3}>Existing Courses</Typography>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Level</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {courses.map((course) => (
-              <TableRow key={course._id}>
-                <TableCell>{course.title}</TableCell>
-                <TableCell>{course.level}</TableCell>
-                <TableCell>{course.price}</TableCell>
-                <TableCell>
-                  <IconButton color="error" onClick={() => handleDelete(course._id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Container>
+        <Typography variant="h6" mb={3} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif', textTransform: 'uppercase', letterSpacing: '1px' }}>Existing Courses</Typography>
+        <Paper sx={{ borderRadius: 4, overflow: 'hidden', background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+          <TableContainer>
+            <Table>
+              <TableHead sx={{ background: 'rgba(15,23,42,0.6)' }}>
+                <TableRow>
+                  <TableCell sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>Title</TableCell>
+                  <TableCell sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>Level</TableCell>
+                  <TableCell sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>Price</TableCell>
+                  <TableCell sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {courses.map((course) => (
+                  <TableRow key={course._id} hover sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.02) !important' } }}>
+                    <TableCell sx={{ color: '#f8fafc', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{course.title}</TableCell>
+                    <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <Chip label={course.level} size="small" sx={{ background: 'rgba(56,189,248,0.1)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.2)' }} />
+                    </TableCell>
+                    <TableCell sx={{ color: '#34d399', fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{course.price}</TableCell>
+                    <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <IconButton onClick={() => handleDelete(course._id)} sx={{ color: '#f87171', background: 'rgba(248,113,113,0.1)', '&:hover': { background: 'rgba(248,113,113,0.2)' } }}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      </Container>
+    </Box>
   );
 };
 

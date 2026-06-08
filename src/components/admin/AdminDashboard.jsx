@@ -15,7 +15,7 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
-const COLORS = ['#4a90e2', '#10b981', '#fbbf24', '#f87171', '#a78bfa', '#22d3ee', '#f59e42', '#6366f1'];
+const COLORS = ['#38bdf8', '#34d399', '#fbbf24', '#f87171', '#a78bfa', '#22d3ee', '#f472b6', '#818cf8'];
 
 const AdminDashboard = () => {
   const [admissions, setAdmissions] = useState([]);
@@ -40,14 +40,6 @@ const AdminDashboard = () => {
     navigate(`/admin/print/${admission._id}`);
   };
 
-  const handleCompetitionManagement = () => {
-    navigate('/admin/competition');
-  };
-
-  const handleResultManagement = () => {
-    navigate('/admin/results');
-  };
-
   const handleStatusUpdate = async (id, newStatus) => {
     try {
       await fetch(`${API_BASE_URL}/api/admissions/${id}`, {
@@ -57,7 +49,7 @@ const AdminDashboard = () => {
         },
         body: JSON.stringify({ status: newStatus }),
       });
-      fetchAdmissions(); // Refresh the list
+      fetchAdmissions();
     } catch (error) {
       console.error('Error updating status:', error);
     }
@@ -75,7 +67,7 @@ const AdminDashboard = () => {
         }
         
         await response.json();
-        fetchAdmissions(); // Refresh the list
+        fetchAdmissions();
       } catch (error) {
         console.error('Error deleting admission:', error);
         alert('Failed to delete admission. Please try again.');
@@ -83,13 +75,10 @@ const AdminDashboard = () => {
     }
   };
 
-  // Dashboard summary
   const total = admissions.length;
   const approved = admissions.filter(a => a.status === 'Approved').length;
   const pending = admissions.filter(a => a.status === 'Pending').length;
 
-  // --- Chart Data Processing ---
-  // 1. Admissions per month
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const admissionsByMonth = {};
   admissions.forEach(a => {
@@ -101,13 +90,11 @@ const AdminDashboard = () => {
   });
   const monthChartData = Object.entries(admissionsByMonth).map(([month, count]) => ({ month, count }));
   monthChartData.sort((a, b) => {
-    // Sort by year then month
     const [ma, ya] = a.month.split(' ');
     const [mb, yb] = b.month.split(' ');
     return ya !== yb ? ya - yb : monthNames.indexOf(ma) - monthNames.indexOf(mb);
   });
 
-  // 2. Admissions per course
   const admissionsByCourse = {};
   admissions.forEach(a => {
     const course = a.course || 'Unknown';
@@ -115,230 +102,253 @@ const AdminDashboard = () => {
   });
   const courseChartData = Object.entries(admissionsByCourse).map(([course, value]) => ({ name: course, value }));
 
+  const quickActions = [
+    { title: 'Competitions', icon: <EmojiEventsIcon />, path: '/admin/competition', color: '#fbbf24' },
+    { title: 'Results', icon: <SchoolIcon />, path: '/admin/results', color: '#34d399' },
+    { title: 'Courses', icon: <SchoolIcon />, path: '/admin/courses', color: '#38bdf8' },
+    { title: 'Jobs', icon: <WorkIcon />, path: '/admin/jobs', color: '#a78bfa' },
+    { title: 'News', icon: <NewspaperIcon />, path: '/admin/news', color: '#f472b6' },
+    { title: 'Mentors', icon: <PeopleIcon />, path: '/admin/mentors', color: '#22d3ee' },
+    { title: 'Flashcards', icon: <ViewCarouselIcon />, path: '/admin/flashcards', color: '#4ade80' },
+    { title: 'Papers', icon: <DescriptionIcon />, path: '/admin/papers', color: '#c084fc' },
+    { title: 'Interviews', icon: <QuestionAnswerIcon />, path: '/admin/interview', color: '#f87171' }
+  ];
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4, paddingTop: '80px' }}>
-      <Box display="flex" alignItems="center" mb={4} gap={2}>
-        <DashboardIcon sx={{ fontSize: 40, color: '#4a90e2' }} />
-        <Typography variant="h4" fontWeight={700} color="#222">
-          Admin Dashboard
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#0B1120', pt: 12, pb: 8 }}>
+      {/* Background Ambient Glows */}
+      <Box sx={{
+        position: 'fixed', top: '-10%', left: '-10%', width: '50vw', height: '50vw',
+        background: 'radial-gradient(circle, rgba(56,189,248,0.1) 0%, rgba(11,17,32,0) 70%)',
+        zIndex: 0, pointerEvents: 'none'
+      }} />
+      <Box sx={{
+        position: 'fixed', bottom: '-10%', right: '-10%', width: '50vw', height: '50vw',
+        background: 'radial-gradient(circle, rgba(167,139,250,0.1) 0%, rgba(11,17,32,0) 70%)',
+        zIndex: 0, pointerEvents: 'none'
+      }} />
+
+      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
+        
+        {/* Header */}
+        <Box display="flex" alignItems="center" mb={6} gap={2}>
+          <Box sx={{ 
+            p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #38bdf8, #3b82f6)',
+            boxShadow: '0 0 20px rgba(56,189,248,0.4)', display: 'flex'
+          }}>
+            <DashboardIcon sx={{ fontSize: 32, color: '#fff' }} />
+          </Box>
+          <Box>
+            <Typography variant="h3" fontWeight={800} color="#fff" sx={{ letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Saira Condensed", sans-serif', lineHeight: 1 }}>
+              Command <span style={{ color: '#38bdf8' }}>Center</span>
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: '#94a3b8', letterSpacing: '4px', textTransform: 'uppercase', fontFamily: 'monospace' }}>
+              System Administration
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Quick Actions Grid */}
+        <Typography variant="h6" sx={{ color: '#fff', mb: 3, fontFamily: '"Saira Condensed", sans-serif', letterSpacing: '1px', textTransform: 'uppercase' }}>
+          Quick Actions
         </Typography>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={handleCompetitionManagement}
-          startIcon={<EmojiEventsIcon />}
-          sx={{ borderRadius: 2 }}
-        >
-          Competition Management
-        </Button>
-        <Button
-          variant="contained"
-          color="success"
-          onClick={handleResultManagement}
-          startIcon={<SchoolIcon />}
-          sx={{ ml: 2, borderRadius: 2 }}
-        >
-          Result Management
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => navigate('/admin/courses')}
-          startIcon={<SchoolIcon />}
-          sx={{ ml: 2, borderRadius: 2 }}
-        >
-          Course Management
-        </Button>
-        <Button
-          variant="contained"
-          color="info"
-          onClick={() => navigate('/admin/jobs')}
-          startIcon={<WorkIcon />}
-          sx={{ ml: 2, borderRadius: 2 }}
-        >
-          Job Management
-        </Button>
-        <Button
-          variant="contained"
-          sx={{ ml: 2, borderRadius: 2, backgroundColor: '#f59e42' }}
-          onClick={() => navigate('/admin/news')}
-          startIcon={<NewspaperIcon />}
-        >
-          News Management
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          sx={{ ml: 2, borderRadius: 2 }}
-          onClick={() => navigate('/admin/mentors')}
-          startIcon={<PeopleIcon />}
-        >
-          Mentor Management
-        </Button>
-        <Button
-          variant="contained"
-          color="success"
-          sx={{ ml: 2, borderRadius: 2 }}
-          onClick={() => navigate('/admin/flashcards')}
-          startIcon={<ViewCarouselIcon />}
-        >
-          Flashcards
-        </Button>
-        <Button
-          variant="contained"
-          sx={{ ml: 2, borderRadius: 2, backgroundColor: '#8b5cf6' }}
-          onClick={() => navigate('/admin/papers')}
-          startIcon={<DescriptionIcon />}
-        >
-          Papers
-        </Button>
-        <Button
-          variant="contained"
-          color="warning"
-          sx={{ ml: 2, borderRadius: 2 }}
-          onClick={() => navigate('/admin/interview')}
-          startIcon={<QuestionAnswerIcon />}
-        >
-          Interview Prep
-        </Button>
-      </Box>
-      <Grid container spacing={3} mb={4}>
-        <Grid item xs={12} md={4}>
-          <Card sx={{ background: 'linear-gradient(135deg, #4a90e2 60%, #2563eb 100%)', color: 'white', boxShadow: 3 }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>Total Admissions</Typography>
-              <Typography variant="h4" fontWeight={700}>{total}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card sx={{ background: 'linear-gradient(135deg, #10b981 60%, #22d3ee 100%)', color: 'white', boxShadow: 3 }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={1}>
-                <AssignmentTurnedInIcon />
-                <Typography variant="h6" gutterBottom>Approved</Typography>
+        <Grid container spacing={2} mb={6}>
+          {quickActions.map((action, idx) => (
+            <Grid item xs={6} sm={4} md={2.66} lg={1.33} key={idx} sx={{ display: 'flex' }}>
+              <Box 
+                onClick={() => navigate(action.path)}
+                sx={{
+                  width: '100%',
+                  background: 'rgba(30, 41, 59, 0.5)',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  borderRadius: 3,
+                  p: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 1.5,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  backdropFilter: 'blur(10px)',
+                  '&:hover': {
+                    background: 'rgba(30, 41, 59, 0.8)',
+                    transform: 'translateY(-4px)',
+                    borderColor: action.color,
+                    boxShadow: `0 10px 20px -10px ${action.color}60`
+                  }
+                }}
+              >
+                <Box sx={{ color: action.color, display: 'flex' }}>
+                  {React.cloneElement(action.icon, { sx: { fontSize: 28 } })}
+                </Box>
+                <Typography sx={{ color: '#cbd5e1', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', textAlign: 'center' }}>
+                  {action.title}
+                </Typography>
               </Box>
-              <Typography variant="h4" fontWeight={700}>{approved}</Typography>
-            </CardContent>
-          </Card>
+            </Grid>
+          ))}
         </Grid>
-        <Grid item xs={12} md={4}>
-          <Card sx={{ background: 'linear-gradient(135deg, #fbbf24 60%, #f59e42 100%)', color: 'white', boxShadow: 3 }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={1}>
-                <PendingActionsIcon />
-                <Typography variant="h6" gutterBottom>Pending</Typography>
-              </Box>
-              <Typography variant="h4" fontWeight={700}>{pending}</Typography>
-            </CardContent>
-          </Card>
+
+        {/* Metrics Cards */}
+        <Grid container spacing={4} mb={6}>
+          {[
+            { title: 'Total Admissions', value: total, icon: <DashboardIcon />, color: '#38bdf8', gradient: 'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(59,130,246,0.05))' },
+            { title: 'Approved', value: approved, icon: <AssignmentTurnedInIcon />, color: '#34d399', gradient: 'linear-gradient(135deg, rgba(52,211,153,0.2), rgba(16,185,129,0.05))' },
+            { title: 'Pending', value: pending, icon: <PendingActionsIcon />, color: '#fbbf24', gradient: 'linear-gradient(135deg, rgba(251,191,36,0.2), rgba(245,158,11,0.05))' }
+          ].map((metric, idx) => (
+            <Grid item xs={12} md={4} key={idx}>
+              <Card sx={{ 
+                background: metric.gradient, 
+                border: `1px solid ${metric.color}40`,
+                backdropFilter: 'blur(10px)',
+                borderRadius: 4,
+                boxShadow: `0 0 30px ${metric.color}15`,
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <Box sx={{ position: 'absolute', top: -20, right: -20, color: `${metric.color}20`, transform: 'scale(3)' }}>
+                  {metric.icon}
+                </Box>
+                <CardContent sx={{ p: 4, position: 'relative', zIndex: 1 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>
+                    {metric.title}
+                  </Typography>
+                  <Typography variant="h2" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>
+                    {metric.value}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
         </Grid>
-      </Grid>
-      <Grid container spacing={4} mb={4}>
-        <Grid item xs={12} md={7}>
-          <Paper elevation={3} sx={{ p: 2, borderRadius: 4, height: 350 }}>
-            <Typography variant="h6" mb={2} fontWeight={600}>Admissions Per Month</Typography>
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={monthChartData} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
-                <XAxis dataKey="month" stroke="#888" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="count" fill="#4a90e2" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </Paper>
+
+        {/* Charts */}
+        <Grid container spacing={4} mb={6}>
+          <Grid item xs={12} md={7}>
+            <Paper sx={{ p: 4, borderRadius: 4, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', height: 400 }}>
+              <Typography variant="h6" mb={4} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                Admissions Timeline
+              </Typography>
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={monthChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <XAxis dataKey="month" stroke="#64748b" tick={{ fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} stroke="#64748b" tick={{ fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                  <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px', color: '#fff' }} />
+                  <Bar dataKey="count" fill="#38bdf8" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={5}>
+            <Paper sx={{ p: 4, borderRadius: 4, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', height: 400 }}>
+              <Typography variant="h6" mb={4} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                Course Distribution
+              </Typography>
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={courseChartData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={90}
+                    paddingAngle={5}
+                    fill="#8884d8"
+                    stroke="none"
+                  >
+                    {courseChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Legend wrapperStyle={{ color: '#cbd5e1' }} />
+                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px', color: '#fff' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </Paper>
+          </Grid>
         </Grid>
-        <Grid item xs={12} md={5}>
-          <Paper elevation={3} sx={{ p: 2, borderRadius: 4, height: 350 }}>
-            <Typography variant="h6" mb={2} fontWeight={600}>Admissions By Course</Typography>
-            <ResponsiveContainer width="100%" height={280}>
-              <PieChart>
-                <Pie
-                  data={courseChartData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={90}
-                  fill="#8884d8"
-                  label
-                >
-                  {courseChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+
+        {/* Admissions Table */}
+        <Typography variant="h6" sx={{ color: '#fff', mb: 3, fontFamily: '"Saira Condensed", sans-serif', letterSpacing: '1px', textTransform: 'uppercase' }}>
+          Recent Applications
+        </Typography>
+        <Paper sx={{ borderRadius: 4, overflow: 'hidden', background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+          <TableContainer>
+            <Table>
+              <TableHead sx={{ background: 'rgba(15,23,42,0.6)' }}>
+                <TableRow>
+                  {['Name', 'Email', 'Course', 'Status', 'Actions'].map((header) => (
+                    <TableCell key={header} sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      {header}
+                    </TableCell>
                   ))}
-                </Pie>
-                <Legend />
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </Paper>
-        </Grid>
-      </Grid>
-      <Paper elevation={4} sx={{ borderRadius: 4, overflow: 'hidden', boxShadow: 6 }}>
-        <TableContainer>
-          <Table>
-            <TableHead sx={{ background: '#f0f9ff' }}>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Course</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {admissions.map((admission) => (
-                <TableRow key={admission._id} hover>
-                  <TableCell>{admission.name}</TableCell>
-                  <TableCell>{admission.email}</TableCell>
-                  <TableCell>{admission.course}</TableCell>
-                  <TableCell>
-                    <Chip 
-                      label={admission.status}
-                      color={admission.status === 'Approved' ? 'success' : 'warning'}
-                      variant="filled"
-                      sx={{ fontWeight: 600, fontSize: '1rem' }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Button 
-                      variant="contained" 
-                      color="primary" 
-                      size="small"
-                      onClick={() => handlePrint(admission)}
-                      sx={{ mr: 1, borderRadius: 2 }}
-                    >
-                      Print
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color={admission.status === 'Pending' ? 'success' : 'warning'}
-                      size="small"
-                      onClick={() => handleStatusUpdate(
-                        admission._id,
-                        admission.status === 'Pending' ? 'Approved' : 'Pending'
-                      )}
-                      sx={{ mr: 1, borderRadius: 2 }}
-                    >
-                      {admission.status === 'Pending' ? 'Approve' : 'Mark Pending'}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      size="small"
-                      onClick={() => handleDelete(admission._id)}
-                      sx={{ borderRadius: 2 }}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
-    </Container>
+              </TableHead>
+              <TableBody>
+                {admissions.map((admission) => (
+                  <TableRow key={admission._id} hover sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.02) !important' } }}>
+                    <TableCell sx={{ color: '#f8fafc', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{admission.name}</TableCell>
+                    <TableCell sx={{ color: '#cbd5e1', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{admission.email}</TableCell>
+                    <TableCell sx={{ color: '#cbd5e1', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{admission.course}</TableCell>
+                    <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <Chip 
+                        label={admission.status}
+                        sx={{ 
+                          fontWeight: 600, 
+                          backgroundColor: admission.status === 'Approved' ? 'rgba(52,211,153,0.1)' : 'rgba(251,191,36,0.1)',
+                          color: admission.status === 'Approved' ? '#34d399' : '#fbbf24',
+                          border: `1px solid ${admission.status === 'Approved' ? '#34d399' : '#fbbf24'}40`,
+                          borderRadius: 2
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <Box display="flex" gap={1}>
+                        <Button 
+                          variant="outlined" 
+                          size="small"
+                          onClick={() => handlePrint(admission)}
+                          sx={{ color: '#38bdf8', borderColor: '#38bdf850', '&:hover': { borderColor: '#38bdf8', background: 'rgba(56,189,248,0.1)' } }}
+                        >
+                          Print
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => handleStatusUpdate(
+                            admission._id,
+                            admission.status === 'Pending' ? 'Approved' : 'Pending'
+                          )}
+                          sx={{ 
+                            color: admission.status === 'Pending' ? '#34d399' : '#fbbf24', 
+                            borderColor: admission.status === 'Pending' ? '#34d39950' : '#fbbf2450',
+                            '&:hover': { borderColor: admission.status === 'Pending' ? '#34d399' : '#fbbf24', background: admission.status === 'Pending' ? 'rgba(52,211,153,0.1)' : 'rgba(251,191,36,0.1)' } 
+                          }}
+                        >
+                          {admission.status === 'Pending' ? 'Approve' : 'Mark Pending'}
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => handleDelete(admission._id)}
+                          sx={{ color: '#f87171', borderColor: '#f8717150', '&:hover': { borderColor: '#f87171', background: 'rgba(248,113,113,0.1)' } }}
+                        >
+                          Delete
+                        </Button>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+
+      </Container>
+    </Box>
   );
 };
 

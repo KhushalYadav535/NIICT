@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Typography, Paper, Table, TableBody, TableCell, 
          TableContainer, TableHead, TableRow, Button, Box, Chip, Grid, 
          Card, CardContent, TextField, Dialog, DialogTitle, DialogContent, 
-         DialogActions, FormControl, InputLabel, Select, MenuItem, Alert } from '@mui/material';
+         DialogActions, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { motion } from 'framer-motion';
 import { FaTrophy, FaPlus, FaEdit, FaTrash, FaUpload, FaDownload } from 'react-icons/fa';
 
@@ -209,347 +209,175 @@ const ResultManagement = () => {
   const gkResults = results.filter(r => r.subject === 'GK').length;
   const computerResults = results.filter(r => r.subject === 'Computer').length;
 
+  const inputSx = {
+    input: { color: '#fff' },
+    label: { color: '#94a3b8' },
+    '& label.Mui-focused': { color: '#fbbf24' },
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
+      '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+      '&.Mui-focused fieldset': { borderColor: '#fbbf24', boxShadow: '0 0 10px rgba(251,191,36,0.2)' },
+    },
+    '& .MuiSelect-icon': { color: '#94a3b8' },
+    '& .MuiSelect-select': { color: '#fff' }
+  };
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4, paddingTop: '80px' }}>
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <Box display="flex" alignItems="center" mb={4} gap={2}>
-          <FaTrophy size={30} color="#fbbf24" />
-          <Typography variant="h4" fontWeight={700} color="#222">
-            Result Management
-          </Typography>
-        </Box>
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#0B1120', pt: 12, pb: 8 }}>
+      <Box sx={{ position: 'fixed', top: '-10%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(251,191,36,0.1) 0%, rgba(11,17,32,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
+      <Box sx={{ position: 'fixed', bottom: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(167,139,250,0.1) 0%, rgba(11,17,32,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
 
-        {/* Summary Cards */}
-        <Grid container spacing={3} mb={4}>
-          <Grid item xs={12} md={3}>
-            <Card sx={{ background: 'linear-gradient(135deg, #4a90e2 60%, #2563eb 100%)', color: 'white', boxShadow: 3 }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>Total Results</Typography>
-                <Typography variant="h4" fontWeight={700}>{totalResults}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Card sx={{ background: 'linear-gradient(135deg, #10b981 60%, #22d3ee 100%)', color: 'white', boxShadow: 3 }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>Published</Typography>
-                <Typography variant="h4" fontWeight={700}>{publishedResults}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Card sx={{ background: 'linear-gradient(135deg, #fbbf24 60%, #f59e42 100%)', color: 'white', boxShadow: 3 }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>GK Results</Typography>
-                <Typography variant="h4" fontWeight={700}>{gkResults}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Card sx={{ background: 'linear-gradient(135deg, #a78bfa 60%, #6366f1 100%)', color: 'white', boxShadow: 3 }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>Computer Results</Typography>
-                <Typography variant="h4" fontWeight={700}>{computerResults}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-
-        {/* Action Buttons */}
-        <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={openAddDialog}
-            startIcon={<FaPlus />}
-            sx={{ borderRadius: 2 }}
-          >
-            Add Result
-          </Button>
-          <Button
-            variant="contained"
-            color="success"
-            onClick={handlePublish}
-            startIcon={<FaUpload />}
-            sx={{ borderRadius: 2 }}
-          >
-            Publish All Results
-          </Button>
-          <Button
-            variant="contained"
-            color="info"
-            onClick={exportToCSV}
-            startIcon={<FaDownload />}
-            sx={{ borderRadius: 2 }}
-          >
-            Export CSV
-          </Button>
-        </Box>
-
-        {/* Results Table */}
-        <Paper elevation={4} sx={{ borderRadius: 4, overflow: 'hidden', boxShadow: 6 }}>
-          <TableContainer>
-            <Table>
-              <TableHead sx={{ background: '#f0f9ff' }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>Roll Number</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Father Name</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Subject</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Marks</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Rank</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Published</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {results.map((result) => (
-                  <TableRow key={result._id} hover>
-                    <TableCell>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {result.rollNumber}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body1" fontWeight={500}>
-                        {result.name}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>{result.fatherName}</TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={result.subject}
-                        color={result.subject === 'GK' ? 'primary' : 'secondary'}
-                        variant="filled"
-                        sx={{ fontWeight: 600 }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {result.marks}/100
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        #{result.rank}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={result.status}
-                        color={result.status === 'Passed' ? 'success' : 'error'}
-                        variant="filled"
-                        sx={{ fontWeight: 600 }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={result.isPublished ? 'Yes' : 'No'}
-                        color={result.isPublished ? 'success' : 'warning'}
-                        variant="filled"
-                        sx={{ fontWeight: 600 }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Button 
-                        variant="contained" 
-                        color="info" 
-                        size="small"
-                        onClick={() => openEditDialog(result)}
-                        sx={{ mr: 1, borderRadius: 2 }}
-                        startIcon={<FaEdit />}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="error"
-                        size="small"
-                        onClick={() => handleDelete(result.rollNumber)}
-                        sx={{ borderRadius: 2 }}
-                        startIcon={<FaTrash />}
-                      >
-                        Delete
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
-
-        {results.length === 0 && (
-          <Box textAlign="center" py={4}>
-            <Typography variant="h6" color="#64748b">
-              No results found. Add some results to get started.
-            </Typography>
+      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
+        <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+          <Box display="flex" alignItems="center" mb={6} gap={2}>
+            <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #fbbf24, #f59e42)', boxShadow: '0 0 20px rgba(251,191,36,0.4)', display: 'flex' }}>
+              <FaTrophy size={32} color="#fff" />
+            </Box>
+            <Box>
+              <Typography variant="h3" fontWeight={800} color="#fff" sx={{ letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Saira Condensed", sans-serif', lineHeight: 1 }}>
+                Result <span style={{ color: '#fbbf24' }}>Management</span>
+              </Typography>
+            </Box>
           </Box>
-        )}
 
-        {/* Add/Edit Dialog */}
-        <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
-          <DialogTitle>
-            {editingResult ? 'Edit Result' : 'Add New Result'}
-          </DialogTitle>
-          <form onSubmit={handleSubmit}>
-            <DialogContent>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Roll Number"
-                    value={formData.rollNumber}
-                    onChange={(e) => setFormData({...formData, rollNumber: e.target.value.toUpperCase()})}
-                    required
-                    sx={{ mb: 2 }}
-                  />
+          <Grid container spacing={3} mb={6}>
+            <Grid item xs={12} md={3}>
+              <Card sx={{ background: 'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(59,130,246,0.05))', border: '1px solid rgba(56,189,248,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(56,189,248,0.15)' }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>Total Results</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>{totalResults}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <Card sx={{ background: 'linear-gradient(135deg, rgba(52,211,153,0.2), rgba(16,185,129,0.05))', border: '1px solid rgba(52,211,153,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(52,211,153,0.15)' }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>Published</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>{publishedResults}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <Card sx={{ background: 'linear-gradient(135deg, rgba(251,191,36,0.2), rgba(245,158,11,0.05))', border: '1px solid rgba(251,191,36,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(251,191,36,0.15)' }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>GK Results</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>{gkResults}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <Card sx={{ background: 'linear-gradient(135deg, rgba(167,139,250,0.2), rgba(139,92,246,0.05))', border: '1px solid rgba(167,139,250,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(167,139,250,0.15)' }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>Computer Results</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>{computerResults}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+
+          <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap' }}>
+            <Button variant="contained" onClick={openAddDialog} startIcon={<FaPlus />} sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #fbbf24, #f59e42)', color: '#fff', '&:hover': { boxShadow: '0 0 20px rgba(251,191,36,0.4)' } }}>
+              Add Result
+            </Button>
+            <Button variant="contained" onClick={handlePublish} startIcon={<FaUpload />} sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff' }}>
+              Publish All Results
+            </Button>
+            <Button variant="contained" onClick={exportToCSV} startIcon={<FaDownload />} sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #6366f1, #4f46e5)', color: '#fff' }}>
+              Export CSV
+            </Button>
+          </Box>
+
+          <Paper elevation={4} sx={{ borderRadius: 4, overflow: 'hidden', background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+            <TableContainer>
+              <Table>
+                <TableHead sx={{ background: 'rgba(15,23,42,0.6)' }}>
+                  <TableRow>
+                    {['Roll Number', 'Name', 'Father Name', 'Subject', 'Marks', 'Rank', 'Status', 'Published', 'Actions'].map(h => (
+                      <TableCell key={h} sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{h}</TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {results.map((result) => (
+                    <TableRow key={result._id} hover sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.02) !important' } }}>
+                      <TableCell sx={{ color: '#fbbf24', fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{result.rollNumber}</TableCell>
+                      <TableCell sx={{ color: '#f8fafc', fontWeight: 500, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{result.name}</TableCell>
+                      <TableCell sx={{ color: '#cbd5e1', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{result.fatherName}</TableCell>
+                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <Chip label={result.subject} size="small" sx={{ background: result.subject === 'GK' ? 'rgba(56,189,248,0.1)' : 'rgba(167,139,250,0.1)', color: result.subject === 'GK' ? '#38bdf8' : '#a78bfa', border: `1px solid ${result.subject === 'GK' ? 'rgba(56,189,248,0.2)' : 'rgba(167,139,250,0.2)'}` }} />
+                      </TableCell>
+                      <TableCell sx={{ color: '#34d399', fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{result.marks}/100</TableCell>
+                      <TableCell sx={{ color: '#fbbf24', fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>#{result.rank}</TableCell>
+                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <Chip label={result.status} size="small" sx={{ background: result.status === 'Passed' ? 'rgba(52,211,153,0.1)' : 'rgba(248,113,113,0.1)', color: result.status === 'Passed' ? '#34d399' : '#f87171', border: `1px solid ${result.status === 'Passed' ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}` }} />
+                      </TableCell>
+                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <Chip label={result.isPublished ? 'Yes' : 'No'} size="small" sx={{ background: result.isPublished ? 'rgba(52,211,153,0.1)' : 'rgba(251,191,36,0.1)', color: result.isPublished ? '#34d399' : '#fbbf24', border: `1px solid ${result.isPublished ? 'rgba(52,211,153,0.2)' : 'rgba(251,191,36,0.2)'}` }} />
+                      </TableCell>
+                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <Box display="flex" gap={1}>
+                          <Button variant="outlined" size="small" onClick={() => openEditDialog(result)} sx={{ color: '#38bdf8', borderColor: '#38bdf850', minWidth: 0, p: 1 }}><FaEdit /></Button>
+                          <Button variant="outlined" size="small" onClick={() => handleDelete(result.rollNumber)} sx={{ color: '#f87171', borderColor: '#f8717150', minWidth: 0, p: 1 }}><FaTrash /></Button>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+
+          {results.length === 0 && (
+            <Box textAlign="center" py={4}>
+              <Typography variant="h6" color="#64748b">No results found.</Typography>
+            </Box>
+          )}
+
+          <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth PaperProps={{ sx: { background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 3, color: '#fff' } }}>
+            <DialogTitle sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#fff', fontFamily: '"Saira Condensed", sans-serif', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              {editingResult ? 'Edit Result' : 'Add New Result'}
+            </DialogTitle>
+            <form onSubmit={handleSubmit}>
+              <DialogContent sx={{ mt: 2 }}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}><TextField sx={inputSx} fullWidth label="Roll Number" value={formData.rollNumber} onChange={(e) => setFormData({...formData, rollNumber: e.target.value.toUpperCase()})} required /></Grid>
+                  <Grid item xs={12} md={6}><TextField sx={inputSx} fullWidth label="Student Name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required /></Grid>
+                  <Grid item xs={12} md={6}><TextField sx={inputSx} fullWidth label="Father Name" value={formData.fatherName} onChange={(e) => setFormData({...formData, fatherName: e.target.value})} required /></Grid>
+                  <Grid item xs={12} md={6}><TextField sx={inputSx} fullWidth label="Mother Name" value={formData.motherName} onChange={(e) => setFormData({...formData, motherName: e.target.value})} /></Grid>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth>
+                      <InputLabel sx={{ color: '#94a3b8', '&.Mui-focused': { color: '#fbbf24' } }}>Subject</InputLabel>
+                      <Select value={formData.subject} label="Subject" onChange={(e) => setFormData({...formData, subject: e.target.value})} sx={{ color: '#fff', '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.1)' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#fbbf24' }, '.MuiSvgIcon-root': { color: '#94a3b8' } }}>
+                        <MenuItem value="GK">GK</MenuItem><MenuItem value="Computer">Computer</MenuItem><MenuItem value="Both">Both</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} md={6}><TextField sx={inputSx} fullWidth label="Marks" type="number" value={formData.marks} onChange={(e) => setFormData({...formData, marks: e.target.value})} required inputProps={{ min: 0, max: 100 }} /></Grid>
+                  <Grid item xs={12} md={6}><TextField sx={inputSx} fullWidth label="Rank" type="number" value={formData.rank} onChange={(e) => setFormData({...formData, rank: e.target.value})} required inputProps={{ min: 1 }} /></Grid>
+                  <Grid item xs={12} md={6}><TextField sx={inputSx} fullWidth label="Exam Date" type="date" value={formData.examDate} onChange={(e) => setFormData({...formData, examDate: e.target.value})} required InputLabelProps={{ shrink: true }} /></Grid>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth>
+                      <InputLabel sx={{ color: '#94a3b8', '&.Mui-focused': { color: '#fbbf24' } }}>Status</InputLabel>
+                      <Select value={formData.status} label="Status" onChange={(e) => setFormData({...formData, status: e.target.value})} sx={{ color: '#fff', '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.1)' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#fbbf24' }, '.MuiSvgIcon-root': { color: '#94a3b8' } }}>
+                        <MenuItem value="Passed">Passed</MenuItem><MenuItem value="Failed">Failed</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} md={6}><TextField sx={inputSx} fullWidth label="Class" value={formData.class} onChange={(e) => setFormData({...formData, class: e.target.value})} /></Grid>
+                  <Grid item xs={12} md={6}><TextField sx={inputSx} fullWidth label="School" value={formData.school} onChange={(e) => setFormData({...formData, school: e.target.value})} /></Grid>
+                  <Grid item xs={12} md={6}><TextField sx={inputSx} fullWidth label="Phone" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} /></Grid>
+                  <Grid item xs={12}><TextField sx={inputSx} fullWidth label="Address" multiline rows={2} value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} /></Grid>
                 </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Student Name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    required
-                    sx={{ mb: 2 }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Father Name"
-                    value={formData.fatherName}
-                    onChange={(e) => setFormData({...formData, fatherName: e.target.value})}
-                    required
-                    sx={{ mb: 2 }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Mother Name"
-                    value={formData.motherName}
-                    onChange={(e) => setFormData({...formData, motherName: e.target.value})}
-                    sx={{ mb: 2 }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel>Subject</InputLabel>
-                    <Select
-                      value={formData.subject}
-                      label="Subject"
-                      onChange={(e) => setFormData({...formData, subject: e.target.value})}
-                    >
-                      <MenuItem value="GK">GK</MenuItem>
-                      <MenuItem value="Computer">Computer</MenuItem>
-                      <MenuItem value="Both">Both</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Marks"
-                    type="number"
-                    value={formData.marks}
-                    onChange={(e) => setFormData({...formData, marks: e.target.value})}
-                    required
-                    inputProps={{ min: 0, max: 100 }}
-                    sx={{ mb: 2 }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Rank"
-                    type="number"
-                    value={formData.rank}
-                    onChange={(e) => setFormData({...formData, rank: e.target.value})}
-                    required
-                    inputProps={{ min: 1 }}
-                    sx={{ mb: 2 }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Exam Date"
-                    type="date"
-                    value={formData.examDate}
-                    onChange={(e) => setFormData({...formData, examDate: e.target.value})}
-                    required
-                    InputLabelProps={{ shrink: true }}
-                    sx={{ mb: 2 }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel>Status</InputLabel>
-                    <Select
-                      value={formData.status}
-                      label="Status"
-                      onChange={(e) => setFormData({...formData, status: e.target.value})}
-                    >
-                      <MenuItem value="Passed">Passed</MenuItem>
-                      <MenuItem value="Failed">Failed</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Class"
-                    value={formData.class}
-                    onChange={(e) => setFormData({...formData, class: e.target.value})}
-                    sx={{ mb: 2 }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="School"
-                    value={formData.school}
-                    onChange={(e) => setFormData({...formData, school: e.target.value})}
-                    sx={{ mb: 2 }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Phone"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    sx={{ mb: 2 }}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Address"
-                    multiline
-                    rows={2}
-                    value={formData.address}
-                    onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    sx={{ mb: 2 }}
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-              <Button type="submit" variant="contained">Save</Button>
-            </DialogActions>
-          </form>
-        </Dialog>
-      </motion.div>
-    </Container>
+              </DialogContent>
+              <DialogActions sx={{ p: 3, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <Button onClick={() => setOpenDialog(false)} sx={{ color: '#94a3b8' }}>Cancel</Button>
+                <Button type="submit" variant="contained" sx={{ background: 'linear-gradient(135deg, #fbbf24, #f59e42)', color: '#fff' }}>Save Result</Button>
+              </DialogActions>
+            </form>
+          </Dialog>
+        </motion.div>
+      </Container>
+    </Box>
   );
 };
 

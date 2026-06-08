@@ -54,60 +54,88 @@ const InterviewManagement = () => {
     }
   };
 
+  const inputSx = {
+    input: { color: '#fff' },
+    label: { color: '#94a3b8' },
+    '& label.Mui-focused': { color: '#f43f5e' },
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
+      '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+      '&.Mui-focused fieldset': { borderColor: '#f43f5e', boxShadow: '0 0 10px rgba(244,63,94,0.2)' },
+    },
+    '& .MuiInputBase-inputMultiline': { color: '#fff' }
+  };
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4, paddingTop: '80px' }}>
-      <Box display="flex" alignItems="center" mb={4}>
-        <QuestionAnswerIcon sx={{ fontSize: 40, color: '#4a90e2', mr: 2 }} />
-        <Typography variant="h4" fontWeight={700}>Interview Prep Management</Typography>
-      </Box>
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#0B1120', pt: 12, pb: 8 }}>
+      <Box sx={{ position: 'fixed', top: '-10%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(244,63,94,0.1) 0%, rgba(11,17,32,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
+      <Box sx={{ position: 'fixed', bottom: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(251,146,60,0.1) 0%, rgba(11,17,32,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
 
-      <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
-        <Typography variant="h6" mb={3} fontWeight={600}>Add New Question</Typography>
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={3}>
-              <TextField fullWidth label="Category (e.g. HR, Technical)" name="category" value={formData.category} onChange={handleInputChange} required />
-            </Grid>
-            <Grid item xs={12} md={9}>
-              <TextField fullWidth label="Question" name="q" value={formData.q} onChange={handleInputChange} required />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField fullWidth multiline rows={3} label="Answer" name="a" value={formData.a} onChange={handleInputChange} required />
-            </Grid>
-            <Grid item xs={12}>
-              <Button type="submit" variant="contained" color="primary" size="large" sx={{ borderRadius: 2 }}>Add Question</Button>
-            </Grid>
-          </Grid>
-        </form>
-      </Paper>
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+        <Box display="flex" alignItems="center" mb={6} gap={2}>
+          <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #f43f5e, #e11d48)', boxShadow: '0 0 20px rgba(244,63,94,0.4)', display: 'flex' }}>
+            <QuestionAnswerIcon sx={{ fontSize: 32, color: '#fff' }} />
+          </Box>
+          <Box>
+            <Typography variant="h3" fontWeight={800} color="#fff" sx={{ letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Saira Condensed", sans-serif', lineHeight: 1 }}>
+              Interview <span style={{ color: '#f43f5e' }}>Prep Management</span>
+            </Typography>
+          </Box>
+        </Box>
 
-      <Paper elevation={3} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-        <TableContainer>
-          <Table>
-            <TableHead sx={{ background: '#f0f9ff' }}>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>Category</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Question</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Answer</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Action</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {questions.map((item) => (
-                <TableRow key={item._id}>
-                  <TableCell>{item.category}</TableCell>
-                  <TableCell>{item.q}</TableCell>
-                  <TableCell>{item.a}</TableCell>
-                  <TableCell>
-                    <IconButton color="error" onClick={() => handleDelete(item._id)}><DeleteIcon /></IconButton>
-                  </TableCell>
+        <Paper elevation={0} sx={{ p: 4, mb: 6, borderRadius: 4, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+          <Typography variant="h6" mb={4} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif', textTransform: 'uppercase', letterSpacing: '1px' }}>Add New Question</Typography>
+          <form onSubmit={handleSubmit}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={3}>
+                <TextField sx={inputSx} fullWidth label="Category (e.g. HR, Technical)" name="category" value={formData.category} onChange={handleInputChange} required />
+              </Grid>
+              <Grid item xs={12} md={9}>
+                <TextField sx={inputSx} fullWidth label="Question" name="q" value={formData.q} onChange={handleInputChange} required />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField sx={inputSx} fullWidth multiline rows={3} label="Answer" name="a" value={formData.a} onChange={handleInputChange} required />
+              </Grid>
+              <Grid item xs={12} mt={2}>
+                <Button type="submit" variant="contained" size="large" fullWidth sx={{ background: 'linear-gradient(135deg, #f43f5e, #e11d48)', color: '#fff', py: 1.5, fontSize: '1.1rem', letterSpacing: '1px', '&:hover': { boxShadow: '0 0 20px rgba(244,63,94,0.4)' } }}>
+                  Add Question
+                </Button>
+              </Grid>
+            </Grid>
+          </form>
+        </Paper>
+
+        <Typography variant="h6" mb={3} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif', textTransform: 'uppercase', letterSpacing: '1px' }}>Question Bank</Typography>
+        <Paper sx={{ borderRadius: 4, overflow: 'hidden', background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+          <TableContainer>
+            <Table>
+              <TableHead sx={{ background: 'rgba(15,23,42,0.6)' }}>
+                <TableRow>
+                  <TableCell sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>Category</TableCell>
+                  <TableCell sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>Question</TableCell>
+                  <TableCell sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>Answer</TableCell>
+                  <TableCell sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>Action</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
-    </Container>
+              </TableHead>
+              <TableBody>
+                {questions.map((item) => (
+                  <TableRow key={item._id} hover sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.02) !important' } }}>
+                    <TableCell sx={{ color: '#f43f5e', fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.05)', whiteSpace: 'nowrap' }}>{item.category}</TableCell>
+                    <TableCell sx={{ color: '#f8fafc', fontWeight: 500, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{item.q}</TableCell>
+                    <TableCell sx={{ color: '#cbd5e1', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{item.a}</TableCell>
+                    <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <IconButton color="error" onClick={() => handleDelete(item._id)} sx={{ color: '#f87171', background: 'rgba(248,113,113,0.1)', '&:hover': { background: 'rgba(248,113,113,0.2)' } }}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      </Container>
+    </Box>
   );
 };
 

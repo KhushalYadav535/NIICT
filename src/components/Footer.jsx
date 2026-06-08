@@ -1,6 +1,7 @@
 import React from 'react';
 import { Facebook, Twitter, Instagram, Linkedin, Youtube, Mail, Phone, MapPin, Clock, ChevronRight, Heart, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
+import logoImg from '../assets/logo.jpg';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -93,7 +94,7 @@ const Footer = () => {
           <div className="lg:col-span-4">
             <div className="flex items-center gap-4 mb-8">
               <div className="w-16 h-16 bg-white rounded-2xl shadow-md border border-slate-200 p-2 flex items-center justify-center">
-                <img src="/src/assets/logo.jpg" alt="NIICT Logo" className="w-full h-full object-contain rounded-xl" />
+                <img src={logoImg} alt="NIICT Logo" className="w-full h-full object-contain rounded-xl" />
               </div>
               <div>
                 <h4 className="font-display text-2xl font-bold tracking-tight text-slate-900">NIICT</h4>

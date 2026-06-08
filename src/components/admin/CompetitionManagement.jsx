@@ -420,7 +420,6 @@ const CompetitionManagement = () => {
     window.URL.revokeObjectURL(url);
   };
 
-  // Ensure html2canvas and jsPDF are available via CDN globals only (avoid bundler imports)
   const ensureExportLibs = async () => {
     if (libsLoaded && html2canvasRef.current && jsPDFRef.current) return true;
 
@@ -458,7 +457,6 @@ const CompetitionManagement = () => {
 
     const [h2cOk, jsPdfOk] = await Promise.all([ensureHtml2Canvas(), ensureJsPDF()]);
 
-    // Capture globals to refs (support multiple UMD shapes)
     if (h2cOk && window.html2canvas) html2canvasRef.current = window.html2canvas;
     const possibleJsPDF = jsPdfOk ? ((window.jspdf && window.jspdf.jsPDF) || window.jsPDF || null) : null;
     if (possibleJsPDF) jsPDFRef.current = possibleJsPDF;
@@ -472,10 +470,9 @@ const CompetitionManagement = () => {
     return true;
   };
 
-  // Build a single attendance page DOM node with up to 15 students
   const buildAttendancePage = (slice, pageNumber) => {
     const container = document.createElement('div');
-    container.style.width = '794px'; // ~A4 width at 96dpi
+    container.style.width = '794px'; 
     container.style.padding = '16px';
     container.style.background = '#ffffff';
     container.style.color = '#111827';
@@ -552,7 +549,6 @@ const CompetitionManagement = () => {
   };
 
   const getAttendancePagesAsCanvases = async (data) => {
-    // Prepare a hidden staging area
     let staging = document.getElementById(attendanceContainerId);
     if (!staging) {
       staging = document.createElement('div');
@@ -570,10 +566,8 @@ const CompetitionManagement = () => {
     for (let p = 0; p < pages.length; p++) {
       const pageNode = buildAttendancePage(pages[p], p + 1);
       staging.appendChild(pageNode);
-      // eslint-disable-next-line no-await-in-loop
       const canvas = await html2canvasRef.current(pageNode, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
       canvases.push(canvas);
-      // Safely clear contents instead of removing a potentially reparented node
       staging.innerHTML = '';
     }
     return canvases;
@@ -592,7 +586,6 @@ const CompetitionManagement = () => {
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
 
-        // Fit image into page keeping aspect ratio
         const imgWidth = pageWidth;
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
         const yOffset = Math.max(0, (pageHeight - imgHeight) / 2);
@@ -660,473 +653,279 @@ const CompetitionManagement = () => {
 
   if (showDetails && selectedApplication) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4, paddingTop: '80px' }}>
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <Box display="flex" alignItems="center" mb={4} gap={2}>
-            <FaTrophy size={30} color="#fbbf24" />
-            <Typography variant="h4" fontWeight={700} color="#222">
-              Competition Application Details
-            </Typography>
-          </Box>
+      <Box sx={{ minHeight: '100vh', backgroundColor: '#0B1120', pt: 12, pb: 8 }}>
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+            <Box display="flex" alignItems="center" mb={6} gap={2}>
+              <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #fbbf24, #f59e42)', boxShadow: '0 0 20px rgba(251,191,36,0.4)', display: 'flex' }}>
+                <FaTrophy size={32} color="#fff" />
+              </Box>
+              <Box>
+                <Typography variant="h3" fontWeight={800} color="#fff" sx={{ letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Saira Condensed", sans-serif', lineHeight: 1 }}>
+                  Application <span style={{ color: '#fbbf24' }}>Details</span>
+                </Typography>
+              </Box>
+            </Box>
 
-          <Paper elevation={6} sx={{ p: 4, borderRadius: 4, background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' }}>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={8}>
-                <Box sx={{ background: 'white', p: 3, borderRadius: 3, boxShadow: 2 }}>
-                  <Typography variant="h6" fontWeight={600} color="#1e293b" gutterBottom>
-                    Candidate Information
-                  </Typography>
-                  
-                  <Grid container spacing={2} mb={3}>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Roll Number</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.rollNumber}
-                      </Typography>
+            <Paper elevation={0} sx={{ p: 4, borderRadius: 4, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={8}>
+                  <Box sx={{ background: 'rgba(15,23,42,0.6)', p: 3, borderRadius: 3, border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <Typography variant="h6" fontWeight={600} color="#fff" gutterBottom sx={{ textTransform: 'uppercase', letterSpacing: '1px', mb: 3 }}>
+                      Candidate Information
+                    </Typography>
+                    
+                    <Grid container spacing={3}>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="#94a3b8">Roll Number</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#fbbf24">{selectedApplication.rollNumber}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="#94a3b8">Subject</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.subject}</Typography>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Typography variant="body2" color="#94a3b8">Full Name</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.name}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="#94a3b8">Phone</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.phone}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="#94a3b8">Aadhaar Number</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.aadhaar || 'Not provided'}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="#94a3b8">Date of Birth</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.dateOfBirth ? new Date(selectedApplication.dateOfBirth).toLocaleDateString('en-GB') : 'Not provided'}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="#94a3b8">Class</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.classPassed || selectedApplication.class || 'Not provided'}</Typography>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Typography variant="body2" color="#94a3b8">School</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.school}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="#94a3b8">Father's Name</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.fatherName || 'Not provided'}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="#94a3b8">Mother's Name</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.motherName || 'Not provided'}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="#94a3b8">Parent Phone</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.parentPhone || 'Not provided'}</Typography>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Typography variant="body2" color="#94a3b8">Address</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.address}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="#94a3b8">Payment Status</Typography>
+                        <Typography variant="h6" fontWeight={600} color={selectedApplication.paymentStatus === 'verified' ? '#34d399' : '#fbbf24'}>
+                          {selectedApplication.paymentStatus === 'verified' ? 'Verified' : 'Pending'}
+                        </Typography>
+                      </Grid>
                     </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Subject</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.subject}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography variant="body2" color="#64748b">Full Name</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.name}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Phone</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.phone}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Aadhaar Number</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.aadhaar || 'Not provided'}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Date of Birth</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.dateOfBirth ? new Date(selectedApplication.dateOfBirth).toLocaleDateString('en-GB') : 'Not provided'}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Class</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.classPassed || selectedApplication.class || 'Not provided'}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography variant="body2" color="#64748b">School</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.school}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Father's Name</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.fatherName || 'Not provided'}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Mother's Name</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.motherName || 'Not provided'}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Parent Phone</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.parentPhone || 'Not provided'}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography variant="body2" color="#64748b">Address</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.address}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Application Date</Typography>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {selectedApplication.createdAt ? new Date(selectedApplication.createdAt).toLocaleDateString('en-GB') : 'Not available'}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="#64748b">Payment Status</Typography>
-                      <Typography variant="h6" fontWeight={600} color={selectedApplication.paymentStatus === 'verified' ? '#16a34a' : '#b45309'}>
-                        {selectedApplication.paymentStatus === 'verified' ? 'Verified' : 'Pending'}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                </Box>
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <Box sx={{ background: 'white', p: 3, borderRadius: 3, boxShadow: 2, textAlign: 'center' }}>
-                  <Typography variant="h6" fontWeight={600} color="#1e293b" gutterBottom>
-                    QR Code
-                  </Typography>
-                  <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                    <QRCode 
-                      value={selectedApplication.qrCode}
-                      size={150}
-                      level="H"
-                      includeMargin={true}
-                    />
                   </Box>
-                  <Typography variant="body2" color="#64748b" gutterBottom>
-                    Scan this QR code for verification
-                  </Typography>
-                </Box>
+                </Grid>
 
-                <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    onClick={() => printAdmitCard(selectedApplication)}
-                    startIcon={<FaPrint />}
-                    sx={{ borderRadius: 2, py: 1.5 }}
-                  >
-                    Print Admit Card
-                  </Button>
-                  {selectedApplication.paymentStatus !== 'verified' ? (
-                    <Button
-                      variant="contained"
-                      color="success"
-                      size="large"
-                      disabled={updating}
-                      onClick={() => updatePaymentStatus(selectedApplication._id, 'verified')}
-                      sx={{ borderRadius: 2, py: 1.5 }}
-                    >
-                      Mark as Verified
+                <Grid item xs={12} md={4}>
+                  <Box sx={{ background: 'rgba(15,23,42,0.6)', p: 3, borderRadius: 3, border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+                    <Typography variant="h6" fontWeight={600} color="#fff" gutterBottom sx={{ textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      QR Code
+                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2, p: 2, background: '#fff', borderRadius: 2 }}>
+                      <QRCode value={selectedApplication.qrCode} size={150} level="H" includeMargin={true} />
+                    </Box>
+                    <Typography variant="body2" color="#94a3b8" gutterBottom>
+                      Scan this QR code for verification
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Button variant="contained" size="large" onClick={() => printAdmitCard(selectedApplication)} startIcon={<FaPrint />} sx={{ background: 'linear-gradient(135deg, #fbbf24, #f59e42)', color: '#fff', '&:hover': { boxShadow: '0 0 20px rgba(251,191,36,0.4)' } }}>
+                      Print Admit Card
                     </Button>
-                  ) : (
-                    <Button
-                      variant="outlined"
-                      color="warning"
-                      size="large"
-                      disabled={updating}
-                      onClick={() => updatePaymentStatus(selectedApplication._id, 'pending')}
-                      sx={{ borderRadius: 2, py: 1.5 }}
-                    >
-                      Revert to Pending
+                    {selectedApplication.paymentStatus !== 'verified' ? (
+                      <Button variant="contained" size="large" disabled={updating} onClick={() => updatePaymentStatus(selectedApplication._id, 'verified')} sx={{ background: 'linear-gradient(135deg, #34d399, #10b981)', color: '#fff' }}>
+                        Mark as Verified
+                      </Button>
+                    ) : (
+                      <Button variant="outlined" color="warning" size="large" disabled={updating} onClick={() => updatePaymentStatus(selectedApplication._id, 'pending')} sx={{ borderColor: '#fbbf24', color: '#fbbf24', '&:hover': { background: 'rgba(251,191,36,0.1)' } }}>
+                        Revert to Pending
+                      </Button>
+                    )}
+                    <Button variant="outlined" size="large" onClick={() => setShowDetails(false)} sx={{ borderColor: '#64748b', color: '#cbd5e1', '&:hover': { background: 'rgba(100,116,139,0.1)', borderColor: '#cbd5e1' } }}>
+                      Back to List
                     </Button>
-                  )}
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    size="large"
-                    onClick={() => setShowDetails(false)}
-                    sx={{ borderRadius: 2, py: 1.5 }}
-                  >
-                    Back to List
-                  </Button>
-                </Box>
+                  </Box>
+                </Grid>
               </Grid>
-            </Grid>
-          </Paper>
-        </motion.div>
-      </Container>
+            </Paper>
+          </motion.div>
+        </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4, paddingTop: '80px' }}>
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <Box display="flex" alignItems="center" mb={4} gap={2}>
-          <FaTrophy size={30} color="#fbbf24" />
-          <Typography variant="h4" fontWeight={700} color="#222">
-            Competition Management
-          </Typography>
-        </Box>
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#0B1120', pt: 12, pb: 8 }}>
+      <Box sx={{ position: 'fixed', top: '-10%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(251,191,36,0.1) 0%, rgba(11,17,32,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
+      <Box sx={{ position: 'fixed', bottom: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(245,158,11,0.1) 0%, rgba(11,17,32,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
 
-        {/* Summary Cards */}
-        <Grid container spacing={3} mb={4}>
-          <Grid item xs={12} md={3}>
-            <Card sx={{ background: 'linear-gradient(135deg, #4a90e2 60%, #2563eb 100%)', color: 'white', boxShadow: 3 }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>Total Applications</Typography>
-                <Typography variant="h4" fontWeight={700}>{totalApplications}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Card sx={{ background: 'linear-gradient(135deg, #10b981 60%, #22d3ee 100%)', color: 'white', boxShadow: 3 }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>GK Applications</Typography>
-                <Typography variant="h4" fontWeight={700}>{gkApplications}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Card sx={{ background: 'linear-gradient(135deg, #fbbf24 60%, #f59e42 100%)', color: 'white', boxShadow: 3 }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>Computer Applications</Typography>
-                <Typography variant="h4" fontWeight={700}>{computerApplications}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Card sx={{ background: 'linear-gradient(135deg, #a78bfa 60%, #6366f1 100%)', color: 'white', boxShadow: 3 }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>Both Subjects</Typography>
-                <Typography variant="h4" fontWeight={700}>{bothApplications}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-
-        {/* Enhanced Search Bar */}
-        <Paper elevation={3} sx={{ p: 3, mb: 3, borderRadius: 3, background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' }}>
-          <Typography variant="h6" fontWeight={600} color="#1e293b" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <FaSearch size={20} />
-            Search Applications
-          </Typography>
+      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
+        <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', mt: 2 }}>
-            <FormControl sx={{ minWidth: 160 }}>
-              <InputLabel>Search By</InputLabel>
-              <Select
-                value={searchType}
-                label="Search By"
-                onChange={(e) => {
-                  setSearchType(e.target.value);
-                  setSearchTerm('');
-                }}
-                sx={{ borderRadius: 2 }}
-              >
-                <MenuItem value="all">🔍 All Fields</MenuItem>
-                <MenuItem value="name">👤 Name</MenuItem>
-                <MenuItem value="phone">📱 Phone Number</MenuItem>
-                <MenuItem value="aadhaar">🆔 Aadhaar Number</MenuItem>
-                <MenuItem value="roll">🎫 Roll Number</MenuItem>
-                <MenuItem value="school">🏫 School</MenuItem>
-                <MenuItem value="subject">📚 Subject</MenuItem>
-              </Select>
-            </FormControl>
-            
-            <TextField
-              placeholder={
-                searchType === 'all' ? "🔍 Search by name, roll number, school, subject, phone, or Aadhaar..." :
-                searchType === 'name' ? "👤 Search by name..." :
-                searchType === 'phone' ? "📱 Search by phone number..." :
-                searchType === 'aadhaar' ? "🆔 Search by Aadhaar number..." :
-                searchType === 'roll' ? "🎫 Search by roll number..." :
-                searchType === 'school' ? "🏫 Search by school..." :
-                "📚 Search by subject..."
-              }
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              sx={{ 
-                flexGrow: 1, 
-                minWidth: 320,
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
-                  backgroundColor: 'white',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  },
-                }
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <FaSearch color="#64748b" />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            
-            {searchTerm && (
-              <Button
-                variant="outlined"
-                onClick={() => setSearchTerm('')}
-                sx={{ borderRadius: 2, minWidth: 100 }}
-              >
-                Clear
-              </Button>
-            )}
-            
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={exportToCSV}
-              startIcon={<FaDownload />}
-              sx={{ borderRadius: 2, minWidth: 140 }}
-            >
-              Export CSV
-            </Button>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={exportAttendancePDF}
-              startIcon={<FaDownload />}
-              sx={{ borderRadius: 2, minWidth: 160 }}
-            >
-              Export PDF
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={exportAttendanceJPG}
-              startIcon={<FaDownload />}
-              sx={{ borderRadius: 2, minWidth: 160 }}
-            >
-              Export JPG
-            </Button>
+          <Box display="flex" alignItems="center" mb={6} gap={2}>
+            <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #fbbf24, #f59e42)', boxShadow: '0 0 20px rgba(251,191,36,0.4)', display: 'flex' }}>
+              <FaTrophy size={32} color="#fff" />
+            </Box>
+            <Box>
+              <Typography variant="h3" fontWeight={800} color="#fff" sx={{ letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Saira Condensed", sans-serif', lineHeight: 1 }}>
+                Competition <span style={{ color: '#fbbf24' }}>Management</span>
+              </Typography>
+            </Box>
           </Box>
-          
-          {searchTerm && (
-            <Box sx={{ mt: 2, p: 2, backgroundColor: 'rgba(59, 130, 246, 0.1)', borderRadius: 2, border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-              <Typography variant="body2" color="#1e40af" fontWeight={500}>
-                🔍 Searching for "{searchTerm}" in {searchType === 'all' ? 'all fields' : searchType} • Found {filteredApplications.length} result{filteredApplications.length !== 1 ? 's' : ''}
+
+          <Grid container spacing={3} mb={6}>
+            <Grid item xs={12} md={3}>
+              <Card sx={{ background: 'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(59,130,246,0.05))', border: '1px solid rgba(56,189,248,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(56,189,248,0.15)' }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>Total Applications</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>{totalApplications}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <Card sx={{ background: 'linear-gradient(135deg, rgba(52,211,153,0.2), rgba(16,185,129,0.05))', border: '1px solid rgba(52,211,153,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(52,211,153,0.15)' }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>GK Applications</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>{gkApplications}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <Card sx={{ background: 'linear-gradient(135deg, rgba(251,191,36,0.2), rgba(245,158,11,0.05))', border: '1px solid rgba(251,191,36,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(251,191,36,0.15)' }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>Computer Applications</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>{computerApplications}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <Card sx={{ background: 'linear-gradient(135deg, rgba(167,139,250,0.2), rgba(139,92,246,0.05))', border: '1px solid rgba(167,139,250,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(167,139,250,0.15)' }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>Both Subjects</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>{bothApplications}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+
+          <Paper elevation={0} sx={{ p: 4, mb: 6, borderRadius: 4, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+            <Typography variant="h6" mb={3} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: 1 }}>
+              <FaSearch size={20} color="#fbbf24" /> Search Applications
+            </Typography>
+            
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+              <FormControl sx={{ minWidth: 160 }}>
+                <InputLabel sx={{ color: '#94a3b8', '&.Mui-focused': { color: '#fbbf24' } }}>Search By</InputLabel>
+                <Select
+                  value={searchType}
+                  label="Search By"
+                  onChange={(e) => { setSearchType(e.target.value); setSearchTerm(''); }}
+                  sx={{ color: '#fff', '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.1)' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#fbbf24' }, '.MuiSvgIcon-root': { color: '#94a3b8' } }}
+                >
+                  <MenuItem value="all">🔍 All Fields</MenuItem>
+                  <MenuItem value="name">👤 Name</MenuItem>
+                  <MenuItem value="phone">📱 Phone</MenuItem>
+                  <MenuItem value="aadhaar">🆔 Aadhaar</MenuItem>
+                  <MenuItem value="roll">🎫 Roll Number</MenuItem>
+                  <MenuItem value="school">🏫 School</MenuItem>
+                  <MenuItem value="subject">📚 Subject</MenuItem>
+                </Select>
+              </FormControl>
+              
+              <TextField
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                sx={{ flexGrow: 1, minWidth: 320, input: { color: '#fff' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&.Mui-focused fieldset': { borderColor: '#fbbf24' } } }}
+                InputProps={{ startAdornment: ( <InputAdornment position="start"><FaSearch color="#64748b" /></InputAdornment> ) }}
+              />
+              
+              {searchTerm && (
+                <Button variant="outlined" onClick={() => setSearchTerm('')} sx={{ color: '#cbd5e1', borderColor: '#64748b', '&:hover': { borderColor: '#fff' } }}>
+                  Clear
+                </Button>
+              )}
+              
+              <Button variant="contained" onClick={exportToCSV} startIcon={<FaDownload />} sx={{ background: 'linear-gradient(135deg, #4ade80, #22c55e)', color: '#fff' }}>CSV</Button>
+              <Button variant="contained" onClick={exportAttendancePDF} startIcon={<FaDownload />} sx={{ background: 'linear-gradient(135deg, #f87171, #ef4444)', color: '#fff' }}>PDF</Button>
+              <Button variant="contained" onClick={exportAttendanceJPG} startIcon={<FaDownload />} sx={{ background: 'linear-gradient(135deg, #60a5fa, #3b82f6)', color: '#fff' }}>JPG</Button>
+            </Box>
+          </Paper>
+
+          <Paper sx={{ borderRadius: 4, overflow: 'hidden', background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+            <TableContainer>
+              <Table>
+                <TableHead sx={{ background: 'rgba(15,23,42,0.6)' }}>
+                  <TableRow>
+                    {['Roll Number', 'Name', 'Father\'s Name', 'Photo', 'Signature', 'Actions'].map((header) => (
+                      <TableCell key={header} sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        {header}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredApplications.map((application) => (
+                    <TableRow key={application._id || application.rollNumber} hover sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.02) !important' } }}>
+                      <TableCell sx={{ color: '#fbbf24', fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{application.rollNumber}</TableCell>
+                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <Typography sx={{ color: '#fff', fontWeight: 500 }}>{application.name}</Typography>
+                        <Typography variant="body2" sx={{ color: '#94a3b8' }}>{application.email}</Typography>
+                      </TableCell>
+                      <TableCell sx={{ color: '#cbd5e1', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{application.fatherName || 'Not provided'}</TableCell>
+                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        {application.image ? (
+                          <Box component="img" src={application.image} alt="photo" sx={{ width: 50, height: 50, borderRadius: 2, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
+                        ) : (
+                          <Box sx={{ width: 50, height: 50, borderRadius: 2, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#64748b' }}>No Photo</Box>
+                        )}
+                      </TableCell>
+                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <Box sx={{ width: 120, height: 40, border: '1px dashed rgba(255,255,255,0.2)', borderRadius: 1 }} />
+                      </TableCell>
+                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <Box display="flex" gap={1}>
+                          <Button variant="outlined" size="small" onClick={() => handleViewDetails(application)} sx={{ color: '#38bdf8', borderColor: '#38bdf850', minWidth: 0, p: 1 }}><FaEye /></Button>
+                          <Button variant="outlined" size="small" onClick={() => printAdmitCard(application)} sx={{ color: '#fbbf24', borderColor: '#fbbf2450', minWidth: 0, p: 1 }}><FaPrint /></Button>
+                          <Button variant="outlined" size="small" onClick={() => handleDelete(application._id)} sx={{ color: '#f87171', borderColor: '#f8717150', minWidth: 0, p: 1 }}><FaTrash /></Button>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+
+          {filteredApplications.length === 0 && (
+            <Box textAlign="center" py={4}>
+              <Typography variant="h6" color="#64748b">
+                {searchTerm ? 'No applications found matching your search.' : 'No competition applications yet.'}
               </Typography>
             </Box>
           )}
-        </Paper>
-
-        {/* Applications Table */}
-        <Paper elevation={4} sx={{ borderRadius: 4, overflow: 'hidden', boxShadow: 6 }}>
-          <TableContainer>
-            <Table>
-              <TableHead sx={{ background: '#f0f9ff' }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>Roll Number</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Father's Name</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Photo</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Signature</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredApplications.map((application) => (
-                  <TableRow key={application._id || application.rollNumber} hover>
-                    <TableCell>
-                      <Typography variant="h6" fontWeight={600} color="#1e293b">
-                        {application.rollNumber}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body1" fontWeight={500}>
-                        {application.name}
-                      </Typography>
-                      <Typography variant="body2" color="#64748b">
-                        {application.email}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>{application.fatherName || 'Not provided'}</TableCell>
-                    <TableCell>
-                      {application.image ? (
-                        <Box
-                          component="img"
-                          src={application.image}
-                          alt={`${application.name} photo`}
-                          sx={{
-                            width: 50,
-                            height: 50,
-                            borderRadius: 2,
-                            objectFit: 'cover',
-                            border: '2px solid #e5e7eb',
-                            boxShadow: 1
-                          }}
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'flex';
-                          }}
-                        />
-                      ) : null}
-                      <Box
-                        sx={{
-                          width: 50,
-                          height: 50,
-                          borderRadius: 2,
-                          backgroundColor: '#f3f4f6',
-                          border: '2px solid #e5e7eb',
-                          display: application.image ? 'none' : 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '12px',
-                          color: '#6b7280',
-                          fontWeight: 500
-                        }}
-                      >
-                        No Photo
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box
-                        sx={{
-                          width: 120,
-                          height: 40,
-                          border: '2px solid #e5e7eb',
-                          borderRadius: 1,
-                          backgroundColor: '#ffffff'
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Button 
-                        variant="contained" 
-                        color="info" 
-                        size="small"
-                        onClick={() => handleViewDetails(application)}
-                        sx={{ mr: 1, borderRadius: 2 }}
-                        startIcon={<FaEye />}
-                      >
-                        View
-                      </Button>
-                      <Button
-                        variant="contained" 
-                        color="primary" 
-                        size="small"
-                        onClick={() => printAdmitCard(application)}
-                        sx={{ mr: 1, borderRadius: 2 }}
-                        startIcon={<FaPrint />}
-                      >
-                        Print
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="error"
-                        size="small"
-                        onClick={() => handleDelete(application._id)}
-                        sx={{ borderRadius: 2 }}
-                        startIcon={<FaTrash />}
-                      >
-                        Delete
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
-
-        {filteredApplications.length === 0 && (
-          <Box textAlign="center" py={4}>
-            <Typography variant="h6" color="#64748b">
-              {searchTerm ? 'No applications found matching your search.' : 'No competition applications yet.'}
-            </Typography>
-          </Box>
-        )}
-      </motion.div>
-    </Container>
+        </motion.div>
+      </Container>
+    </Box>
   );
 };
 

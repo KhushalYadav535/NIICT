@@ -2,6 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Award, BookOpen, Users, Target, TrendingUp, Clock, Globe, Shield, Heart, Star, ChevronRight, ChevronLeft, Play, CheckCircle, Zap, Lightbulb, Rocket, Milestone } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import tutor1 from '../assets/tutor1.jpeg';
+import sksir from '../assets/sksir.jpg';
+import sachinsir from '../assets/sachinsir.png';
+import hemant from '../assets/hemant.jpeg';
+import gaurav from '../assets/gaurav.jpg';
 
 const About = () => {
   const [activeTab, setActiveTab] = useState('mission');
@@ -53,7 +58,7 @@ const About = () => {
       role: 'Founder & CEO',
       expertise: ['Full Stack Development', 'Cloud Architecture', 'DevOps'],
       experience: '15+ years',
-      image: '/src/assets/tutor1.jpeg',
+      image: tutor1,
       bio: 'With over 10 years of experience in the IT industry, Ramesh Sir leads NIICT with a vision to transform education through innovation and practical learning. He is committed to fostering a supportive learning atmosphere that encourages students to explore their full potential',
       education: 'Ph.D. in Computer Science, MIT',
       achievements: ['Published 20+ research papers', 'Industry expert speaker', 'Mentored 5000+ students']
@@ -64,7 +69,7 @@ const About = () => {
       role: 'Head of Data Science',
       expertise: ['Machine Learning', 'Data Analytics', 'AI Research'],
       experience: '4+ years',
-      image: '/src/assets/sksir.jpg',
+      image: sksir,
       bio: 'SK Sir is a seasoned computer professional and mentor, specializing in Excel, Paint, and CorelDRAW. He focuses on data analysis with practical applications and real-world scenario',
       education: 'M.S. in Data Science, Stanford University',
       achievements: ['AI research award winner', 'Published 15+ papers', 'Industry consultant']
@@ -75,7 +80,7 @@ const About = () => {
       role: 'Senior Web Development Instructor',
       expertise: ['React', 'Node.js', 'MongoDB', 'AWS'],
       experience: '4+ years',
-      image: '/src/assets/sachinsir.png',
+      image: sachinsir,
       bio: 'Sachin Sir is an expert in fundamental computer science and programming, providing students with a strong foundation in these areas. His teaching methodology focuses on practical applications.',
       education: 'B.Tech in Computer Science, IIT Delhi',
       achievements: ['Built 50+ web applications', 'Tech conference speaker', 'Open source contributor']
@@ -86,7 +91,7 @@ const About = () => {
       role: 'English & Personality Development Expert',
       expertise: ['Spoken English', 'Personality Development', 'Communication Skills'],
       experience: '6+ years',
-      image: '/src/assets/hemant.jpeg',
+      image: hemant,
       bio: 'Hemant Sir is skilled in English Grammar and literature, inspiring students to communicate effectively and think critically. His expertise helps students develop strong language and communication skills.',
       education: 'M.A. in English Literature',
       achievements: ['Best Communication Coach Award', 'Trained 10,000+ students', 'Corporate Soft Skills Trainer']
@@ -97,7 +102,7 @@ const About = () => {
       role: 'Programming & Startup Enthusiast',
       expertise: ['Software Development', 'Programming Languages', 'Startup Ecosystem'],
       experience: '5+ years',
-      image: '/src/assets/gaurav.jpg',
+      image: gaurav,
       bio: 'Khushal Sir is a computer programming and development enthusiast with a strong passion for the startup ecosystem. He helps students bridge the gap between coding and building real-world products.',
       education: 'B.Tech in Computer Science',
       achievements: ['Tech Startup Mentor', 'Product Builder', 'Hackathon Winner']
