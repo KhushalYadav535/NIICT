@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+  
+  const isHome = location.pathname === '/';
+  const textColor = isHome && !isScrolled ? 'text-white' : 'text-slate-900';
+  const logoColor = isHome && !isScrolled ? 'text-cyan-400' : 'text-primary';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,7 +27,7 @@ const Navbar = () => {
         {/* Left: Menu Toggle */}
         <button 
           onClick={toggleMenu}
-          className="font-mono text-[12px] uppercase tracking-[2px] text-slate-900 hover:text-primary transition-colors font-bold"
+          className={`font-mono text-[12px] uppercase tracking-[2px] hover:text-primary transition-colors font-bold ${textColor}`}
         >
           {isMenuOpen ? 'CLOSE' : 'MENU'}
         </button>
@@ -30,7 +35,7 @@ const Navbar = () => {
         {/* Center: Wordmark */}
         <Link 
           to="/" 
-          className="font-display text-[16px] font-bold uppercase tracking-[6px] text-primary absolute left-1/2 -translate-x-1/2 drop-shadow-sm"
+          className={`font-display text-[16px] font-bold uppercase tracking-[6px] absolute left-1/2 -translate-x-1/2 drop-shadow-sm ${logoColor}`}
         >
           NIICT
         </Link>
@@ -39,13 +44,13 @@ const Navbar = () => {
         <div className="flex gap-6">
           <Link 
             to="/student-portal" 
-            className="font-mono text-[12px] uppercase tracking-[2px] text-slate-900 hover:text-primary hidden md:block font-bold"
+            className={`font-mono text-[12px] uppercase tracking-[2px] hover:text-primary hidden md:block font-bold ${textColor}`}
           >
             PORTAL
           </Link>
           <Link 
             to="/admin-login" 
-            className="font-mono text-[12px] uppercase tracking-[2px] text-slate-900 hover:text-primary font-bold"
+            className={`font-mono text-[12px] uppercase tracking-[2px] hover:text-primary font-bold ${textColor}`}
           >
             ADMIN
           </Link>
