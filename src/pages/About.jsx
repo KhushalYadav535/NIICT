@@ -132,13 +132,13 @@ const About = () => {
   }, [isHovered, instructors.length]);
 
   return (
-    <div className="bg-[#FAFAFA] min-h-screen text-slate-900 overflow-x-hidden">
+    <div className="bg-white min-h-screen text-gray-900 overflow-x-hidden">
       
       {/* Hyper Cinematic Parallax Hero */}
       <section className="relative w-full h-[80vh] flex items-center justify-center overflow-hidden">
         <motion.div style={{ y: heroY }} className="absolute inset-0 z-0">
-          <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] bg-blue-100 rounded-full blur-[120px] mix-blend-multiply opacity-60"></div>
-          <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] bg-cyan-100 rounded-full blur-[120px] mix-blend-multiply opacity-60"></div>
+          <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] bg-blue-100 rounded-full blur-[120px] opacity-60"></div>
+          <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] bg-indigo-100 rounded-full blur-[120px] opacity-60"></div>
           <div className="absolute inset-0 bg-[radial-gradient(#CBD5E1_1px,transparent_1px)] [background-size:40px_40px] opacity-30"></div>
         </motion.div>
         
@@ -148,14 +148,14 @@ const About = () => {
             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
             transition={{ duration: 1.5, ease: "easeOut" }}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 border border-slate-200 backdrop-blur-md mb-8 text-sm font-mono tracking-widest text-blue-600 uppercase shadow-sm">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 border border-gray-200 backdrop-blur-md mb-8 text-sm font-mono tracking-widest text-[#1a237e] uppercase shadow-sm">
               <Star size={14} /> The NIICT Story
             </div>
-            <h1 className="text-6xl md:text-8xl lg:text-9xl font-display uppercase tracking-tight text-slate-900 mb-8 drop-shadow-sm leading-[0.85]">
+            <h1 className="text-6xl md:text-8xl lg:text-9xl font-bold uppercase tracking-tight text-gray-900 mb-8 leading-[0.85]">
               Redefining <br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-400">Education</span>
+              <span className="text-[#1a237e]">Education</span>
             </h1>
-            <p className="text-xl md:text-2xl text-slate-500 max-w-3xl mx-auto font-sans leading-relaxed">
+            <p className="text-xl md:text-2xl text-gray-500 max-w-3xl mx-auto leading-relaxed">
               Empowering the next generation of IT professionals with world-class education, 
               cutting-edge curriculum, and unparalleled industry connections.
             </p>
