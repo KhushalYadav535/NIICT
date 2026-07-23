@@ -84,6 +84,12 @@ const Footer = () => {
                   </Link>
                 </li>
                 <li>
+                  <Link to="/franchise-login" className="flex items-center gap-2 text-blue-200 hover:text-white transition-colors text-sm">
+                    <ChevronRight size={14} className="text-white/50" />
+                    Center Login
+                  </Link>
+                </li>
+                <li>
                   <Link to="/contact" className="flex items-center gap-2 text-blue-200 hover:text-white transition-colors text-sm">
                     <ChevronRight size={14} className="text-white/50" />
                     Online Payment

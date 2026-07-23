@@ -13,6 +13,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
 import DescriptionIcon from '@mui/icons-material/Description';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
+import StoreIcon from '@mui/icons-material/Store';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 const COLORS = ['#38bdf8', '#34d399', '#fbbf24', '#f87171', '#a78bfa', '#22d3ee', '#f472b6', '#818cf8'];
@@ -103,6 +104,7 @@ const AdminDashboard = () => {
   const courseChartData = Object.entries(admissionsByCourse).map(([course, value]) => ({ name: course, value }));
 
   const quickActions = [
+    { title: 'Franchises', icon: <StoreIcon />, path: '/admin/franchise', color: '#38bdf8' },
     { title: 'Competitions', icon: <EmojiEventsIcon />, path: '/admin/competition', color: '#fbbf24' },
     { title: 'Results', icon: <SchoolIcon />, path: '/admin/results', color: '#34d399' },
     { title: 'Courses', icon: <SchoolIcon />, path: '/admin/courses', color: '#38bdf8' },

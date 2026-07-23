@@ -118,8 +118,11 @@ const Navbar = () => {
               </div>
             ))}
 
-            {/* Franchise Button - like SDEI */}
-            <Link to="/franchise" className="ml-3 bg-[#245894] text-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-[#1a3f6a] transition-colors uppercase">
+            {/* Franchise Button */}
+            <Link
+              to="/franchise"
+              className="ml-3 bg-[#245894] text-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-[#1a3f6a] transition-colors uppercase"
+            >
               Franchise
             </Link>
           </div>
@@ -167,9 +170,14 @@ const Navbar = () => {
                 )}
               </div>
             ))}
-            <Link to="/franchise" className="block text-center bg-[#245894] text-white px-5 py-3 rounded-full text-sm font-semibold hover:bg-[#1a3f6a] transition-colors mt-3 uppercase">
-              Franchise
-            </Link>
+            <div className="mt-3 space-y-2">
+              <Link to="/franchise" className="block text-center bg-[#245894] text-white px-5 py-3 rounded-full text-sm font-semibold hover:bg-[#1a3f6a] transition-colors uppercase">
+                New Registration
+              </Link>
+              <Link to="/franchise-login" className="block text-center border border-[#245894] text-[#245894] px-5 py-3 rounded-full text-sm font-semibold hover:bg-gray-50 transition-colors uppercase">
+                Center Login
+              </Link>
+            </div>
           </div>
         </div>
       )}
