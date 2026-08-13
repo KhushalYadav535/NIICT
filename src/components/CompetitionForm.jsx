@@ -887,270 +887,366 @@ const CompetitionForm = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 4, paddingTop: '80px' }}>
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <Paper elevation={6} sx={{ p: 4, borderRadius: 4, background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' }}>
-          <Box textAlign="center" mb={4}>
-            <FaTrophy size={40} color="#fbbf24" style={{ marginBottom: '10px' }} />
-            <Typography variant="h4" fontWeight={700} color="#1e293b" gutterBottom>
-              GK & Computer Competition Registration
-            </Typography>
-            <Typography variant="h6" color="#64748b" gutterBottom>
-              Join our exciting competition and test your knowledge!
-            </Typography>
-            <Box sx={{ background: '#dbeafe', p: 3, borderRadius: 3, mt: 3 }}>
-              <Typography variant="h6" fontWeight={600} color="#1e40af" gutterBottom>
-                <FaCalendarAlt style={{ marginRight: '8px' }} />
-                Exam Details
+    <Box sx={{ 
+      minHeight: '100vh', 
+      pt: { xs: 12, md: 16 }, 
+      pb: 12, 
+      background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Decorative Background Elements */}
+      <Box sx={{ position: 'absolute', top: '-10%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(139,92,246,0.15) 0%, rgba(0,0,0,0) 70%)', filter: 'blur(60px)', zIndex: 0 }} />
+      <Box sx={{ position: 'absolute', bottom: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(56,189,248,0.15) 0%, rgba(0,0,0,0) 70%)', filter: 'blur(60px)', zIndex: 0 }} />
+      
+      {/* Animated glowing particles */}
+      <Box sx={{ position: 'absolute', top: '20%', left: '15%', width: 8, height: 8, borderRadius: '50%', background: '#fbbf24', boxShadow: '0 0 20px 4px rgba(251,191,36,0.6)', animation: 'pulse 3s infinite' }} />
+      <Box sx={{ position: 'absolute', top: '60%', right: '20%', width: 12, height: 12, borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 20px 4px rgba(56,189,248,0.6)', animation: 'pulse 4s infinite' }} />
+
+      <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
+        >
+          <Paper elevation={0} sx={{ 
+            p: { xs: 4, md: 8 }, 
+            borderRadius: '32px', 
+            background: 'rgba(255, 255, 255, 0.03)', 
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.05)',
+            color: 'white'
+          }}>
+            <Box textAlign="center" mb={6}>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Box sx={{ 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  width: 90, 
+                  height: 90, 
+                  borderRadius: '24px',
+                  background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)',
+                  boxShadow: '0 15px 30px -5px rgba(217, 119, 6, 0.4), inset 0 2px 4px rgba(255,255,255,0.4)',
+                  mb: 4,
+                  border: '1px solid rgba(255,255,255,0.2)'
+                }}>
+                  <FaTrophy size={44} color="#fff" />
+                </Box>
+              </motion.div>
+              <Typography variant="h2" fontWeight={900} gutterBottom sx={{
+                background: 'linear-gradient(to right, #ffffff, #a5b4fc)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                letterSpacing: '-1px',
+                fontSize: { xs: '2.5rem', md: '3.5rem' },
+                mb: 2
+              }}>
+                GK & Computer Competition
               </Typography>
-              <Grid container spacing={2} textAlign="left">
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="#64748b">Date: 20 October 2024</Typography>
-                  <Typography variant="body2" color="#64748b">Time: 8:00 AM</Typography>
+              <Typography variant="h6" color="rgba(255,255,255,0.7)" fontWeight={400} sx={{ maxWidth: '600px', mx: 'auto', mb: 5, lineHeight: 1.6 }}>
+                Join our state-level competition, test your knowledge, and win exciting prizes & scholarships!
+              </Typography>
+
+              <Box sx={{ 
+                background: 'rgba(255,255,255,0.05)',
+                p: { xs: 3, md: 4 }, 
+                borderRadius: '24px', 
+                border: '1px solid rgba(255,255,255,0.1)',
+                textAlign: 'left',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <Box sx={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: 'linear-gradient(to bottom, #38bdf8, #818cf8)' }} />
+                <Typography variant="h6" fontWeight={700} color="#e0e7ff" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+                  <FaCalendarAlt color="#818cf8" />
+                  Exam Details
+                </Typography>
+                <Grid container spacing={4}>
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'center' }}>
+                      <Box sx={{ p: 2, borderRadius: '16px', background: 'rgba(56,189,248,0.1)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.2)' }}>
+                        <FaClock size={24} />
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" color="rgba(255,255,255,0.5)" fontWeight={600} textTransform="uppercase" letterSpacing="1px" fontSize="0.75rem">Date & Time</Typography>
+                        <Typography variant="body1" color="white" fontWeight={700} fontSize="1.1rem">20 Oct 2026, 8:00 AM</Typography>
+                        <Typography variant="body2" color="rgba(255,255,255,0.6)">Reporting: 7:00 AM</Typography>
+                      </Box>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'center' }}>
+                      <Box sx={{ p: 2, borderRadius: '16px', background: 'rgba(167,139,250,0.1)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.2)' }}>
+                        <FaMapMarkerAlt size={24} />
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" color="rgba(255,255,255,0.5)" fontWeight={600} textTransform="uppercase" letterSpacing="1px" fontSize="0.75rem">Exam Center</Typography>
+                        <Typography variant="body1" color="white" fontWeight={700} fontSize="1.1rem">SK Modern Inter College</Typography>
+                        <Typography variant="body2" color="rgba(255,255,255,0.6)">Semari, Jaunpur</Typography>
+                      </Box>
+                    </Box>
+                  </Grid>
                 </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="#64748b">Reporting: 7:00 AM</Typography>
-              <Typography variant="body2" color="#64748b">Center: SK Modern Intermediate College, Semari, Jaunpur</Typography>
-                </Grid>
-              </Grid>
+              </Box>
             </Box>
-          </Box>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
-            </Alert>
-          )}
+            {error && (
+              <Alert severity="error" sx={{ mb: 4, borderRadius: '12px', '& .MuiAlert-icon': { alignItems: 'center' } }}>
+                {error}
+              </Alert>
+            )}
 
-          <form onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Full Name *"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Father's Name *"
-                  name="fatherName"
-                  value={formData.fatherName}
-                  onChange={handleInputChange}
-                  required
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Mother's Name *"
-                  name="motherName"
-                  value={formData.motherName}
-                  onChange={handleInputChange}
-                  required
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-              {/* Email field removed as requested */}
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Phone Number *"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  required
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Aadhaar Number"
-                  name="aadhaar"
-                  value={formData.aadhaar}
-                  onChange={(e) => {
-                    const onlyDigits = e.target.value.replace(/[^0-9]/g, '');
-                    setFormData(prev => ({ ...prev, aadhaar: onlyDigits.slice(0, 12) }));
-                  }}
-                  inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 12 }}
-                  helperText="Enter 12-digit Aadhaar number (optional)"
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Date of Birth *"
-                  name="dateOfBirth"
-                  type="date"
-                  value={formData.dateOfBirth}
-                  onChange={handleInputChange}
-                  required
-                  InputLabelProps={{ shrink: true }}
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="School Name *"
-                  name="school"
-                  value={formData.school}
-                  onChange={handleInputChange}
-                  required
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-              <Grid item xs={12} md={8}>
-                <FormControl fullWidth sx={{ mb: 2 }}>
-                  <InputLabel sx={{ fontSize: '16px', whiteSpace: 'nowrap' }}>Class Passed *</InputLabel>
-                  <Select
-                    name="classPassed"
-                    value={formData.classPassed}
+            <form onSubmit={handleSubmit}>
+              <Typography variant="h5" fontWeight={700} color="#ffffff" gutterBottom sx={{ mb: 4, mt: 2 }}>
+                Applicant Details
+              </Typography>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Full Name *"
+                    name="name"
+                    value={formData.name}
                     onChange={handleInputChange}
-                    label="Class Passed *"
                     required
-                    sx={{
-                      height: '56px',
-                      fontSize: '16px',
-                      minWidth: '200px',
-                      '& .MuiSelect-select': {
-                        fontSize: '16px',
-                        padding: '16px 14px'
-                      },
-                      '& .MuiInputLabel-root': {
-                        fontSize: '16px',
-                        whiteSpace: 'nowrap'
-                      }
-                    }}
-                  >
-                    <MenuItem value="8th">8th</MenuItem>
-                    <MenuItem value="9th">9th</MenuItem>
-                    <MenuItem value="10th">10th</MenuItem>
-                    <MenuItem value="11th">11th</MenuItem>
-                    <MenuItem value="12th">12th</MenuItem>
-                    <MenuItem value="Diploma">Diploma</MenuItem>
-                    <MenuItem value="Undergraduate">Undergraduate</MenuItem>
-                    <MenuItem value="Graduation">Graduation</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Parent/Guardian Phone"
-                  name="parentPhone"
-                  value={formData.parentPhone}
-                  onChange={handleInputChange}
-                  helperText="Optional - if available"
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Complete Address *"
-                  name="address"
-                  multiline
-                  rows={3}
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  required
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body1" sx={{ mb: 1, fontWeight: 500 }}>
-                    Student Image (Optional)
-                  </Typography>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    style={{ display: 'none' }}
-                    id="image-upload"
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
                   />
-                  <label htmlFor="image-upload">
-                    <Button
-                      variant="outlined"
-                      component="span"
-                      disabled={uploadingImage}
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Phone Number *"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    required
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Father's Name *"
+                    name="fatherName"
+                    value={formData.fatherName}
+                    onChange={handleInputChange}
+                    required
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Mother's Name *"
+                    name="motherName"
+                    value={formData.motherName}
+                    onChange={handleInputChange}
+                    required
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Aadhaar Number"
+                    name="aadhaar"
+                    value={formData.aadhaar}
+                    onChange={(e) => {
+                      const onlyDigits = e.target.value.replace(/[^0-9]/g, '');
+                      setFormData(prev => ({ ...prev, aadhaar: onlyDigits.slice(0, 12) }));
+                    }}
+                    inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 12 }}
+                    helperText="12-digit Aadhaar number (optional)"
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Date of Birth *"
+                    name="dateOfBirth"
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={handleInputChange}
+                    required
+                    InputLabelProps={{ shrink: true }}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={8}>
+                  <TextField
+                    fullWidth
+                    label="School/College Name *"
+                    name="school"
+                    value={formData.school}
+                    onChange={handleInputChange}
+                    required
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <FormControl fullWidth sx={{ '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}>
+                    <InputLabel sx={{ background: 'transparent', px: 1, '&.Mui-focused': { color: '#818cf8' } }}>Class Passed *</InputLabel>
+                    <Select
+                      name="classPassed"
+                      value={formData.classPassed}
+                      onChange={handleInputChange}
+                      required
                       sx={{
-                        width: '100%',
-                        height: '56px',
-                        border: '2px dashed #ccc',
-                        '&:hover': {
-                          border: '2px dashed #1976d2',
-                          backgroundColor: '#f5f5f5'
-                        }
+                        borderRadius: '12px',
+                        background: 'rgba(255,255,255,0.05)',
+                        color: 'white',
+                        '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' },
+                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.4)' },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#818cf8' },
+                        '& .MuiSvgIcon-root': { color: 'rgba(255,255,255,0.7)' }
                       }}
                     >
-                      {uploadingImage ? 'Uploading...' : 'Upload Student Photo'}
-                    </Button>
-                  </label>
-                  {imagePreview && (
-                    <Box sx={{ mt: 2, textAlign: 'center' }}>
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        style={{
-                          maxWidth: '200px',
-                          maxHeight: '200px',
-                          borderRadius: '8px',
-                          border: '2px solid #e0e0e0'
+                      <MenuItem value="8th">8th</MenuItem>
+                      <MenuItem value="9th">9th</MenuItem>
+                      <MenuItem value="10th">10th</MenuItem>
+                      <MenuItem value="11th">11th</MenuItem>
+                      <MenuItem value="12th">12th</MenuItem>
+                      <MenuItem value="Diploma">Diploma</MenuItem>
+                      <MenuItem value="Undergraduate">Undergraduate</MenuItem>
+                      <MenuItem value="Graduation">Graduation</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Parent/Guardian Phone"
+                    name="parentPhone"
+                    value={formData.parentPhone}
+                    onChange={handleInputChange}
+                    helperText="Optional - if available"
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Complete Address *"
+                    name="address"
+                    multiline
+                    rows={3}
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    required
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
+                  />
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <Box sx={{ 
+                    p: 4, 
+                    border: '2px dashed rgba(255,255,255,0.2)', 
+                    borderRadius: '20px', 
+                    background: 'rgba(255,255,255,0.02)',
+                    textAlign: 'center',
+                    transition: 'all 0.3s',
+                    '&:hover': {
+                      borderColor: '#818cf8',
+                      background: 'rgba(255,255,255,0.05)'
+                    }
+                  }}>
+                    <Typography variant="subtitle1" fontWeight={600} color="white" gutterBottom>
+                      Student Image (Optional)
+                    </Typography>
+                    <Typography variant="body2" color="rgba(255,255,255,0.6)" mb={3}>
+                      Upload a clear passport size photograph (Max 5MB)
+                    </Typography>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      style={{ display: 'none' }}
+                      id="image-upload"
+                    />
+                    <label htmlFor="image-upload">
+                      <Button
+                        variant="outlined"
+                        component="span"
+                        disabled={uploadingImage}
+                        sx={{
+                          borderRadius: '12px',
+                          px: 4,
+                          py: 1.5,
+                          borderWidth: '2px',
+                          borderColor: 'rgba(255,255,255,0.3)',
+                          color: 'white',
+                          '&:hover': { borderWidth: '2px', borderColor: 'white', background: 'rgba(255,255,255,0.1)' }
                         }}
-                      />
-                    </Box>
-                  )}
-                </Box>
+                      >
+                        {uploadingImage ? 'Uploading...' : 'Choose Image'}
+                      </Button>
+                    </label>
+                    {imagePreview && (
+                      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
+                        <Box sx={{ mt: 3, position: 'relative', display: 'inline-block' }}>
+                          <img
+                            src={imagePreview}
+                            alt="Preview"
+                            style={{
+                              width: '120px',
+                              height: '150px',
+                              objectFit: 'cover',
+                              borderRadius: '12px',
+                              border: '4px solid white',
+                              boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'
+                            }}
+                          />
+                        </Box>
+                      </motion.div>
+                    )}
+                  </Box>
+                </Grid>
               </Grid>
-              {/* Subject field removed as requested; subject remains defaulted in state */}
-            </Grid>
 
-            <Box textAlign="center" mt={4}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                size="large"
-                disabled={loading}
-                sx={{ 
-                  borderRadius: 3, 
-                  py: 1.5, 
-                  px: 4, 
-                  fontSize: '1.1rem',
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)'
-                  }
-                }}
-              >
-                {loading ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  <>
-                    <FaUserGraduate style={{ marginRight: '8px' }} />
-                    Register for Competition
-                  </>
-                )}
-              </Button>
-            </Box>
-          </form>
-        </Paper>
-      </motion.div>
-    </Container>
+              <Box textAlign="center" mt={5}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={loading}
+                  sx={{ 
+                    borderRadius: '50px', 
+                    py: 2, 
+                    px: 6, 
+                    fontSize: '1.1rem',
+                    fontWeight: 700,
+                    textTransform: 'none',
+                    letterSpacing: '0.5px',
+                    background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                    boxShadow: '0 10px 20px -5px rgba(79, 70, 229, 0.4)',
+                    transition: 'all 0.3s',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%)',
+                      boxShadow: '0 15px 25px -5px rgba(79, 70, 229, 0.5)',
+                      transform: 'translateY(-2px)'
+                    }
+                  }}
+                >
+                  {loading ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    <>
+                      <FaUserGraduate style={{ marginRight: '10px' }} size={20} />
+                      Complete Registration
+                    </>
+                  )}
+                </Button>
+              </Box>
+            </form>
+          </Paper>
+        </motion.div>
+      </Container>
+    </Box>
   );
 };
 
