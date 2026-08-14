@@ -1,1207 +1,578 @@
 import React, { useState } from 'react';
-import { Container, Typography, Paper, TextField, Button, Box, Grid, FormControl, InputLabel, Select, MenuItem, Alert, CircularProgress } from '@mui/material';
+import {
+  Container, Typography, Paper, TextField, Button, Box, Grid,
+  FormControl, InputLabel, Select, MenuItem, Alert, CircularProgress,
+  Dialog, DialogTitle, DialogContent, DialogActions, Divider
+} from '@mui/material';
 import { motion } from 'framer-motion';
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
-import { FaTrophy, FaUserGraduate, FaCalendarAlt, FaClock, FaMapMarkerAlt } from 'react-icons/fa';
+import {
+  FaTrophy, FaCalendarAlt, FaClock, FaMapMarkerAlt,
+  FaCheckCircle, FaCreditCard, FaDownload, FaEye, FaShieldAlt
+} from 'react-icons/fa';
 
+/* ─── Design Tokens ─────────────────────────────────────── */
+const C = {
+  paper: '#FFFFFF',
+  canvas: '#F6F5FB',
+  ink: '#1E1B3A',
+  inkSoft: '#6B6785',
+  accent: '#5B3DF5',
+  accentSoft: 'rgba(91,61,245,0.08)',
+  accentMid: 'rgba(91,61,245,0.18)',
+  gold: '#C89B3C',
+  goldSoft: 'rgba(200,155,60,0.10)',
+  border: '#E4E1F0',
+  success: '#16a34a',
+  successSoft: 'rgba(22,163,74,0.08)',
+};
+
+const fieldSx = {
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '14px',
+    background: C.paper,
+    minHeight: 58,
+    fontSize: '1rem',
+    color: C.ink,
+    transition: 'all 0.25s ease',
+    '& fieldset': { borderColor: C.border, borderWidth: '1.5px' },
+    '&:hover fieldset': { borderColor: C.accent },
+    '&.Mui-focused fieldset': { borderColor: C.accent, borderWidth: '2px', boxShadow: `0 0 0 4px ${C.accentSoft}` },
+  },
+  '& .MuiInputLabel-root': { color: C.inkSoft, fontSize: '0.95rem', fontWeight: 500 },
+  '& .MuiInputLabel-root.Mui-focused': { color: C.accent, fontWeight: 600 },
+  '& .MuiFormHelperText-root': { color: C.inkSoft, marginLeft: 0, fontSize: '0.8rem' },
+};
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ||
+  (import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000');
+
+// Current academic/exam session — update this each year
+const CURRENT_SESSION = '2026-2027';
+
+/* ─── Step Bar ───────────────────────────────────────────── */
+const STEPS = ['Fill Form', 'Review', 'Pay Rs.150', 'Admit Card'];
+
+const StepBar = ({ current }) => (
+  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 5 }}>
+    {STEPS.map((label, i) => {
+      const done = i < current;
+      const active = i === current;
+      return (
+        <React.Fragment key={i}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+            <Box sx={{
+              width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 800, fontSize: '0.85rem',
+              background: done ? C.success : active ? C.accent : C.border,
+              color: done || active ? '#fff' : C.inkSoft,
+              transition: 'all 0.3s',
+              boxShadow: active ? `0 4px 14px ${C.accentMid}` : 'none',
+            }}>
+              {done ? '✓' : i + 1}
+            </Box>
+            <Typography variant="caption" sx={{
+              color: active ? C.accent : done ? C.success : C.inkSoft,
+              fontWeight: active ? 700 : 500, whiteSpace: 'nowrap', fontSize: '0.7rem'
+            }}>
+              {label}
+            </Typography>
+          </Box>
+          {i < STEPS.length - 1 && (
+            <Box sx={{ flex: 1, height: 2, background: i < current ? C.success : C.border, mx: 1, mb: 3, transition: 'background 0.3s', maxWidth: 80 }} />
+          )}
+        </React.Fragment>
+      );
+    })}
+  </Box>
+);
+
+/* ─── Preview Modal ──────────────────────────────────────── */
+const PreviewModal = ({ open, formData, imagePreview, onConfirm, onEdit, loading }) => {
+  const rows = [
+    ['Full Name', formData.name],
+    ['Phone', formData.phone],
+    ["Father's Name", formData.fatherName],
+    ["Mother's Name", formData.motherName],
+    ['Date of Birth', formData.dateOfBirth ? new Date(formData.dateOfBirth).toLocaleDateString('en-GB') : ''],
+    ['Aadhaar', formData.aadhaar || 'Not provided'],
+    ['School / College', formData.school],
+    ['Class Passed', formData.classPassed],
+    ['Parent Phone', formData.parentPhone || 'Not provided'],
+    ['Address', formData.address],
+  ];
+  return (
+    <Dialog open={open} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '24px', p: 1 } }}>
+      <DialogTitle sx={{ fontWeight: 800, color: C.ink, fontSize: '1.3rem', pb: 0 }}>
+        Review Your Application
+        <Typography variant="body2" color={C.inkSoft} sx={{ fontWeight: 400, mt: 0.5 }}>
+          Verify all details before payment.
+        </Typography>
+      </DialogTitle>
+      <DialogContent sx={{ pt: 2 }}>
+        {imagePreview && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+            <img src={imagePreview} alt="Student" style={{ width: 90, height: 112, objectFit: 'cover', borderRadius: 12, border: `3px solid ${C.border}` }} />
+          </Box>
+        )}
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+          {rows.map(([label, value]) => (
+            <Box key={label} sx={{ background: C.canvas, p: 1.5, borderRadius: '12px', gridColumn: label === 'Address' ? 'span 2' : 'auto' }}>
+              <Typography variant="caption" color={C.inkSoft} fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.8px', fontSize: '0.65rem' }}>
+                {label}
+              </Typography>
+              <Typography variant="body2" color={C.ink} fontWeight={600} sx={{ mt: 0.2, wordBreak: 'break-word' }}>
+                {value || '—'}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+        <Box sx={{ mt: 3, p: 2.5, background: `linear-gradient(135deg, ${C.accentSoft}, ${C.goldSoft})`, borderRadius: '16px', border: `1px solid ${C.accentMid}`, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <FaCreditCard size={28} color={C.accent} />
+          <Box>
+            <Typography variant="body2" color={C.inkSoft} fontWeight={600}>Registration Fee</Typography>
+            <Typography variant="h5" fontWeight={900} color={C.accent}>Rs. 150</Typography>
+          </Box>
+          <Box sx={{ ml: 'auto', textAlign: 'right' }}>
+            <Typography variant="caption" color={C.inkSoft}>Secured by</Typography>
+            <Typography variant="body2" fontWeight={700} color={C.ink}>Cashfree Payments</Typography>
+          </Box>
+        </Box>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2.5, gap: 1.5 }}>
+        <Button onClick={onEdit} variant="outlined" sx={{ borderRadius: '12px', px: 3, fontWeight: 700, textTransform: 'none', borderColor: C.border, color: C.inkSoft, '&:hover': { borderColor: C.accent, color: C.accent } }}>
+          Edit Details
+        </Button>
+        <Button onClick={onConfirm} variant="contained" disabled={loading}
+          sx={{ borderRadius: '12px', px: 4, fontWeight: 800, textTransform: 'none', background: `linear-gradient(90deg, ${C.accent}, #7C5CFC)`, boxShadow: `0 8px 20px ${C.accentMid}` }}>
+          {loading ? <CircularProgress size={20} color="inherit" /> : 'Confirm & Pay Rs.150'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+/* ─── Thank You Screen ───────────────────────────────────── */
+const ThankYouScreen = ({ admitCardData, onDownload }) => (
+  <Box sx={{ minHeight: '100vh', background: `linear-gradient(135deg, ${C.canvas}, #fff)`, display: 'flex', alignItems: 'center', justifyContent: 'center', pt: 10, pb: 8 }}>
+    <Container maxWidth="sm">
+      <motion.div initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', bounce: 0.4 }}>
+        <Paper elevation={0} sx={{ p: 5, borderRadius: '32px', border: `1px solid ${C.border}`, textAlign: 'center', boxShadow: '0 30px 70px -25px rgba(30,27,58,0.15)' }}>
+          <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ delay: 0.3, duration: 0.5 }}>
+            <Box sx={{ width: 100, height: 100, borderRadius: '50%', background: C.successSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 3 }}>
+              <FaCheckCircle size={52} color={C.success} />
+            </Box>
+          </motion.div>
+          <Typography variant="h4" fontWeight={900} color={C.ink} gutterBottom>Payment Successful!</Typography>
+          <Typography variant="body1" color={C.inkSoft} sx={{ mb: 4 }}>
+            Your registration for the <strong>GK &amp; Computer Competition</strong> is confirmed.
+          </Typography>
+
+          {/* Receipt */}
+          <Box sx={{ background: C.canvas, borderRadius: '20px', p: 3, mb: 4, textAlign: 'left' }}>
+            <Typography variant="subtitle2" fontWeight={800} color={C.ink} sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <FaShieldAlt color={C.accent} /> Payment Receipt
+            </Typography>
+            <Divider sx={{ mb: 2, borderColor: C.border }} />
+            {[
+              ['Roll Number', admitCardData.rollNumber],
+              ['Candidate Name', admitCardData.name],
+              ['Amount Paid', 'Rs. 150'],
+              ['Transaction ID', admitCardData.paymentTransactionId || 'N/A'],
+              ['Payment Date', admitCardData.paidAt ? new Date(admitCardData.paidAt).toLocaleString('en-IN') : new Date().toLocaleString('en-IN')],
+              ['Status', 'PAID'],
+            ].map(([k, v]) => (
+              <Box key={k} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2" color={C.inkSoft}>{k}</Typography>
+                <Typography variant="body2" fontWeight={700} color={k === 'Status' ? C.success : C.ink}>{v}</Typography>
+              </Box>
+            ))}
+          </Box>
+
+          <Button variant="contained" size="large" fullWidth onClick={onDownload} startIcon={<FaDownload />}
+            sx={{ borderRadius: '16px', py: 1.8, fontWeight: 800, textTransform: 'none', fontSize: '1.05rem', background: `linear-gradient(90deg, ${C.accent}, #7C5CFC)`, boxShadow: `0 12px 28px ${C.accentMid}`, mb: 2 }}>
+            Download Admit Card
+          </Button>
+          <Typography variant="caption" color={C.inkSoft}>
+            Exam: 12 Oct 2025 | S.K. Modern Inter College, Semari, Jaunpur
+          </Typography>
+        </Paper>
+      </motion.div>
+    </Container>
+  </Box>
+);
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN COMPONENT
+═══════════════════════════════════════════════════════════ */
 const CompetitionForm = () => {
+  const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    school: '',
-    parentPhone: '',
-    address: '',
-    subject: 'GK',
-    fatherName: '',
-    motherName: '',
-    aadhaar: '',
-    dateOfBirth: '',
-    classPassed: '',
-    image: null
+    name: '', phone: '', school: '', parentPhone: '', address: '',
+    subject: 'GK', fatherName: '', motherName: '', aadhaar: '',
+    dateOfBirth: '', classPassed: '', image: null
   });
-
   const [loading, setLoading] = useState(false);
-  const [showAdmitCard, setShowAdmitCard] = useState(false);
-  const [admitCardData, setAdmitCardData] = useState(null);
   const [error, setError] = useState('');
-  const [showPayment, setShowPayment] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [admitCardData, setAdmitCardData] = useState(null);
 
+  const setField = (name) => (e) => setFormData(p => ({ ...p, [name]: e.target.value }));
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
+  /* ── Image Upload ── */
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        setError('Image size should be less than 5MB');
-        return;
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { setError('Image must be less than 5MB'); return; }
+    setUploadingImage(true); setError('');
+    try {
+      const mf = new FormData();
+      mf.append('image', file);
+      const mr = await fetch(`${BACKEND_URL}/api/upload-image-mongo`, { method: 'POST', body: mf });
+      if (mr.ok) {
+        const mj = await mr.json();
+        if (mj.secure_url) { setFormData(p => ({ ...p, image: mj.secure_url })); setImagePreview(mj.secure_url); return; }
       }
-      
-      setUploadingImage(true);
-      setError('');
-      
-      try {
-        const defaultBackend = import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000';
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || defaultBackend;
-        const uploadStrategy = import.meta.env.VITE_UPLOAD_STRATEGY || 'mongo';
-        const folder = 'niict/competition';
-        const publicId = `student_${Date.now()}`;
-
-        if (uploadStrategy === 'cloudinary') {
-          // Signed Cloudinary upload first in production
-          try {
-            const sigRes = await fetch(`${backendUrl}/api/cloudinary-signature`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ folder, public_id: publicId })
-            });
-            if (sigRes.ok) {
-              const { cloud_name, api_key, timestamp, signature } = await sigRes.json();
-              const signedForm = new FormData();
-              signedForm.append('file', file);
-              signedForm.append('api_key', api_key);
-              signedForm.append('timestamp', String(timestamp));
-              signedForm.append('signature', signature);
-              signedForm.append('folder', folder);
-              signedForm.append('public_id', publicId);
-
-              const uploadUrl = `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`;
-              const uploadRes = await fetch(uploadUrl, { method: 'POST', body: signedForm });
-              if (uploadRes.ok) {
-                const result = await uploadRes.json();
-                if (result.secure_url) {
-                  setFormData(prev => ({ ...prev, image: result.secure_url }));
-                  setImagePreview(result.secure_url);
-                  return;
-                }
-              } else {
-                // Fallthrough to mongo
-              }
-            }
-          } catch (_) {}
-        }
-
-        // MongoDB upload (default or fallback)
-        try {
-          const mongoForm = new FormData();
-          mongoForm.append('image', file);
-          const mongoRes = await fetch(`${backendUrl}/api/upload-image-mongo`, {
-            method: 'POST',
-            body: mongoForm
-          });
-          if (!mongoRes.ok) {
-            const msg = await mongoRes.text();
-            setError(`Upload failed: ${mongoRes.status} - ${msg}`);
-            return;
-          }
-          const mongoResult = await mongoRes.json();
-          if (mongoResult.secure_url) {
-            setFormData(prev => ({ ...prev, image: mongoResult.secure_url }));
-            setImagePreview(mongoResult.secure_url);
-            return;
-          }
-        } catch (_) {}
-
-        setError('Failed to upload image - no URL returned');
-      } catch (error) {
-        console.error('Upload error:', error);
-        setError(`Failed to upload image: ${error.message}`);
-      } finally {
-        setUploadingImage(false);
-      }
+      setError('Photo upload failed. You may continue without a photo.');
+    } catch (_) {
+      setError('Photo upload failed. You may continue without a photo.');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    // Validate form
-    if (!formData.name || !formData.phone || !formData.school || !formData.address || !formData.fatherName || !formData.motherName || !formData.dateOfBirth || !formData.classPassed) {
-      setError('Please fill all required fields');
-      setLoading(false);
-      return;
+  /* ── Validation ── */
+  const validate = () => {
+    if (!formData.name || !formData.phone || !formData.school || !formData.address ||
+      !formData.fatherName || !formData.motherName || !formData.dateOfBirth || !formData.classPassed) {
+      setError('Please fill all required fields'); return false;
     }
+    const today = new Date(), birth = new Date(formData.dateOfBirth);
+    const age = today.getFullYear() - birth.getFullYear();
+    const md = today.getMonth() - birth.getMonth();
+    const actualAge = md < 0 || (md === 0 && today.getDate() < birth.getDate()) ? age - 1 : age;
+    if (actualAge > 20) { setError('Only candidates aged 20 or below can register'); return false; }
+    if (formData.aadhaar && !/^\d{12}$/.test(formData.aadhaar)) { setError('Aadhaar must be 12 digits'); return false; }
+    return true;
+  };
 
-    // Date of birth validation - must be 20 years or younger
-    const today = new Date();
-    const birthDate = new Date(formData.dateOfBirth);
-    const age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    
-    // Check if birthday hasn't occurred this year
-    const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
-    
-    if (actualAge > 20) {
-      setError('Only candidates aged 20 or below can register');
-      setLoading(false);
-      return;
-    }
+  /* ── Step 1: Open Preview ── */
+  const handleOpenPreview = (e) => {
+    e.preventDefault(); setError('');
+    if (!validate()) return;
+    setPreviewOpen(true);
+  };
 
-    // Aadhaar validation: 12 digits (only if provided)
-    if (formData.aadhaar && !/^\d{12}$/.test(formData.aadhaar)) {
-      setError('Please enter a valid 12-digit Aadhaar number');
-      setLoading(false);
-      return;
-    }
-
-    // Class Passed must be in allowed range (8th to Graduation)
-    const allowedClasses = ['8th','9th','10th','11th','12th','Diploma','Undergraduate','Graduation','Graduate','Bachelors'];
-    if (!allowedClasses.map(v => v.toLowerCase()).includes(String(formData.classPassed).toLowerCase())) {
-      setError('Class Passed must be between 8th and Graduation');
-      setLoading(false);
-      return;
-    }
-
+  /* ── Step 2: Save → Create Order → Open Cashfree ── */
+  const handleConfirmAndPay = async () => {
+    setLoading(true); setError('');
+    let appId, orderId, enriched;
     try {
-      const defaultBackend = import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000';
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || defaultBackend;
-      console.log('Submitting form data:', formData);
-      
-      const response = await fetch(`${backendUrl}/api/competition-applications`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+      // Save application
+      const saveRes = await fetch(`${BACKEND_URL}/api/competition-applications`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, session: CURRENT_SESSION }),
       });
+      const saved = await saveRes.json();
+      if (!saveRes.ok) throw new Error(saved.message || 'Failed to save application');
+      appId = saved._id;
 
-      const saved = await response.json();
-      console.log('Response status:', response.status);
-      console.log('Response data:', saved);
-      
-      if (!response.ok) {
-        throw new Error(saved.message || 'Failed to submit');
+      // Enrich for admit card
+      const today2 = new Date(), b2 = new Date(saved.dateOfBirth);
+      const age2 = today2.getFullYear() - b2.getFullYear();
+      const md2 = today2.getMonth() - b2.getMonth();
+      const actualAge2 = md2 < 0 || (md2 === 0 && today2.getDate() < b2.getDate()) ? age2 - 1 : age2;
+      enriched = { ...saved, age: actualAge2, qrCode: `COMPETITION_${saved.rollNumber}_${saved.name.replace(/\s+/g, '_')}` };
+      setAdmitCardData(enriched);
+
+      // Create Cashfree order
+      const orderRes = await fetch(`${BACKEND_URL}/api/payment/create-order`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ applicationId: saved._id }),
+      });
+      const orderData = await orderRes.json();
+      if (!orderRes.ok) throw new Error(orderData.message || 'Failed to create payment order');
+      orderId = orderData.orderId;
+
+      setPreviewOpen(false);
+
+      // Open Cashfree checkout
+      const { load } = await import('@cashfreepayments/cashfree-js');
+      const cashfree = await load({ mode: 'sandbox' });
+      cashfree.checkout({ paymentSessionId: orderData.paymentSessionId, redirectTarget: '_modal' })
+        .then(async (result) => {
+          if (result.error) { setError(`Payment failed: ${result.error.message}`); setLoading(false); return; }
+          if (result.paymentDetails || result.redirect) {
+            await verifyPayment(appId, orderId, enriched);
+          }
+        });
+    } catch (err) {
+      setError(err.message || 'Something went wrong');
+      setLoading(false);
+    }
+  };
+
+  /* ── Verify Payment ── */
+  const verifyPayment = async (appId, orderId, enriched) => {
+    try {
+      setStep(2);
+      const vRes = await fetch(`${BACKEND_URL}/api/payment/verify`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ applicationId: appId, orderId }),
+      });
+      const vData = await vRes.json();
+      if (vRes.ok && vData.success) {
+        setAdmitCardData(prev => ({ ...(prev || enriched), paymentTransactionId: vData.transactionId, paidAt: vData.paidAt, paymentStatus: 'paid', paymentAmount: 150 }));
+        setStep(3);
+      } else {
+        setError('Payment verified but confirmation failed. Contact support with Order ID: ' + orderId);
+        setStep(0);
       }
-
-      // Calculate age from date of birth
-      const today = new Date();
-      const birthDate = new Date(saved.dateOfBirth);
-      const age = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-      const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
-
-      const admitData = {
-        ...saved,
-        age: actualAge,
-        qrCode: `COMPETITION_${saved.rollNumber}_${saved.name.replace(/\s+/g, '_')}`,
-      };
-
-      setAdmitCardData(admitData);
-      setShowPayment(true);
-      setFormData({
-        name: '',
-        phone: '',
-        school: '',
-        parentPhone: '',
-        address: '',
-        subject: 'GK',
-        fatherName: '',
-        motherName: '',
-        aadhaar: '',
-        dateOfBirth: '',
-        classPassed: '',
-        image: null
-      });
-      setImagePreview(null);
-    } catch (error) {
-      console.error('Form submission error:', error);
-      setError(error.message || 'Something went wrong. Please try again.');
+    } catch (err) {
+      setError('Verification error: ' + err.message);
+      setStep(0);
     } finally {
       setLoading(false);
     }
   };
 
+  /* ── Print Admit Card ── */
   const printAdmitCard = () => {
-    // Create a simple QR code pattern that will definitely work
-    const qrCodeSvg = `
-      <svg width="60" height="60" xmlns="http://www.w3.org/2000/svg">
-        <rect width="60" height="60" fill="white" stroke="black" stroke-width="1"/>
-        <!-- QR Code pattern -->
-        <rect x="4" y="4" width="6" height="6" fill="black"/>
-        <rect x="12" y="4" width="6" height="6" fill="black"/>
-        <rect x="20" y="4" width="6" height="6" fill="black"/>
-        <rect x="28" y="4" width="6" height="6" fill="black"/>
-        <rect x="36" y="4" width="6" height="6" fill="black"/>
-        <rect x="44" y="4" width="6" height="6" fill="black"/>
-        <rect x="52" y="4" width="6" height="6" fill="black"/>
-        
-        <rect x="4" y="12" width="6" height="6" fill="black"/>
-        <rect x="20" y="12" width="6" height="6" fill="black"/>
-        <rect x="28" y="12" width="6" height="6" fill="black"/>
-        <rect x="44" y="12" width="6" height="6" fill="black"/>
-        <rect x="52" y="12" width="6" height="6" fill="black"/>
-        
-        <rect x="4" y="20" width="6" height="6" fill="black"/>
-        <rect x="12" y="20" width="6" height="6" fill="black"/>
-        <rect x="20" y="20" width="6" height="6" fill="black"/>
-        <rect x="28" y="20" width="6" height="6" fill="black"/>
-        <rect x="36" y="20" width="6" height="6" fill="black"/>
-        <rect x="44" y="20" width="6" height="6" fill="black"/>
-        <rect x="52" y="20" width="6" height="6" fill="black"/>
-        
-        <rect x="4" y="28" width="6" height="6" fill="black"/>
-        <rect x="20" y="28" width="6" height="6" fill="black"/>
-        <rect x="28" y="28" width="6" height="6" fill="black"/>
-        <rect x="44" y="28" width="6" height="6" fill="black"/>
-        <rect x="52" y="28" width="6" height="6" fill="black"/>
-        
-        <rect x="4" y="36" width="6" height="6" fill="black"/>
-        <rect x="12" y="36" width="6" height="6" fill="black"/>
-        <rect x="20" y="36" width="6" height="6" fill="black"/>
-        <rect x="28" y="36" width="6" height="6" fill="black"/>
-        <rect x="36" y="36" width="6" height="6" fill="black"/>
-        <rect x="44" y="36" width="6" height="6" fill="black"/>
-        <rect x="52" y="36" width="6" height="6" fill="black"/>
-        
-        <rect x="4" y="44" width="6" height="6" fill="black"/>
-        <rect x="20" y="44" width="6" height="6" fill="black"/>
-        <rect x="28" y="44" width="6" height="6" fill="black"/>
-        <rect x="44" y="44" width="6" height="6" fill="black"/>
-        <rect x="52" y="44" width="6" height="6" fill="black"/>
-        
-        <rect x="4" y="52" width="6" height="6" fill="black"/>
-        <rect x="12" y="52" width="6" height="6" fill="black"/>
-        <rect x="20" y="52" width="6" height="6" fill="black"/>
-        <rect x="28" y="52" width="6" height="6" fill="black"/>
-        <rect x="36" y="52" width="6" height="6" fill="black"/>
-        <rect x="44" y="52" width="6" height="6" fill="black"/>
-        <rect x="52" y="52" width="6" height="6" fill="black"/>
-      </svg>
-    `;
+    if (!admitCardData) return;
+    const paidDate = admitCardData.paidAt ? new Date(admitCardData.paidAt).toLocaleString('en-IN') : new Date().toLocaleString('en-IN');
+    const w = window.open('', '_blank');
+    w.document.write(`<!DOCTYPE html><html><head><title>NIICT Admit Card - ${admitCardData.name}</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family: 'Arial', sans-serif; }
+body { padding: 15px; color: #000; background: #fff; }
+.card { border: 2px solid #000; max-width: 800px; margin: 0 auto; background: #fff; }
+.hdr { border-bottom: 2px solid #000; padding: 12px; text-align: center; }
+.hdr h1 { font-size: 20px; font-weight: 900; margin-bottom: 4px; text-transform: uppercase; }
+.hdr p { font-size: 11px; font-weight: 600; }
+.title { text-align: center; font-size: 15px; font-weight: bold; padding: 8px; border-bottom: 2px solid #000; background: #e5e5e5; text-transform: uppercase; letter-spacing: 1px; }
+.body { padding: 12px; }
+.row-table { display: flex; border: 1px solid #000; margin-bottom: 8px; }
+.col { border-right: 1px solid #000; padding: 6px 10px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.col:last-child { border-right: none; }
+.col-label { font-size: 9px; font-weight: bold; color: #444; text-transform: uppercase; margin-bottom: 3px; }
+.col-value { font-size: 13px; font-weight: bold; color: #000; text-transform: uppercase; }
+.photo-box { width: 110px; height: 140px; border: 1px solid #000; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #666; background: #f9f9f9; }
+.photo-box img { width: 100%; height: 100%; object-fit: cover; }
+.sec-title { font-size: 12px; font-weight: bold; background: #e5e5e5; padding: 6px 10px; border: 1px solid #000; border-bottom: none; text-transform: uppercase; margin-top: 4px; }
+.sec-table { border: 1px solid #000; margin-bottom: 8px; width: 100%; border-collapse: collapse; }
+.sec-table td { border: 1px solid #000; padding: 6px 10px; width: 50%; }
+.instructions { border: 1px solid #000; padding: 10px 10px 10px 30px; margin-bottom: 15px; font-size: 11px; line-height: 1.6; }
+.instructions li { margin-bottom: 4px; }
+.signature { margin-top: 40px; display: flex; justify-content: space-between; padding: 0 10px; margin-bottom: 10px; }
+.sig-line { border-top: 1px solid #000; width: 180px; text-align: center; font-size: 11px; padding-top: 5px; font-weight: bold; text-transform: uppercase; }
+@media print { 
+  body { padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
+  .card { border: 1px solid #000; } 
+  .title, .sec-title { background: #e5e5e5 !important; }
+}
+</style></head><body>
+<div class="card">
+  <div class="hdr">
+    <h1>NIICT Computer Institute of IT Management</h1>
+    <p>AN ISO 9001:2015 CERTIFIED ORGANIZATION</p>
+  </div>
+  <div class="title">Candidate Admit Card &amp; Application Form</div>
+  <div class="body">
+    <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+      <div style="flex: 1;">
+        <div class="row-table">
+          <div class="col"><div class="col-label">Registration / Roll No.</div><div class="col-value">${admitCardData.rollNumber}</div></div>
+          <div class="col"><div class="col-label">Exam Date &amp; Time</div><div class="col-value">12 Oct 2026, 10:00 AM</div></div>
+        </div>
+        <div class="row-table">
+          <div class="col"><div class="col-label">Candidate Name</div><div class="col-value">${admitCardData.name}</div></div>
+        </div>
+        <div class="row-table">
+          <div class="col"><div class="col-label">Father's Name</div><div class="col-value">${admitCardData.fatherName}</div></div>
+          <div class="col"><div class="col-label">Mother's Name</div><div class="col-value">${admitCardData.motherName}</div></div>
+        </div>
+        <div class="row-table">
+          <div class="col"><div class="col-label">Date of Birth</div><div class="col-value">${new Date(admitCardData.dateOfBirth).toLocaleDateString('en-GB')}</div></div>
+          <div class="col"><div class="col-label">Class Passed</div><div class="col-value">${admitCardData.classPassed || admitCardData.class || 'N/A'}</div></div>
+        </div>
+      </div>
+      <div class="photo-box">
+        ${admitCardData.image ? `<img src="${admitCardData.image}" alt="Photo"/>` : 'AFFIX PHOTO'}
+      </div>
+    </div>
     
-    const qrInlineSvg = qrCodeSvg; // embed directly to avoid image load timing issues
+    <div class="row-table">
+      <div class="col"><div class="col-label">School / College Name</div><div class="col-value">${admitCardData.school}</div></div>
+    </div>
     
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>NIICT Competition Admit Card</title>
-          <style>
-            body { 
-              font-family: Arial, sans-serif; 
-              margin: 0; 
-              padding: 20px; 
-              background: white;
-              color: #333;
-            }
-            .admit-card { 
-              border: 2px solid #e0e0e0; 
-              padding: 30px; 
-              max-width: 800px; 
-              margin: 0 auto; 
-              background: white;
-            }
-            .header { 
-              text-align: center; 
-              border-bottom: 2px solid #1976d2; 
-              padding-bottom: 20px; 
-              margin-bottom: 30px; 
-            }
-            .institute-name { 
-              font-size: 28px; 
-              font-weight: bold; 
-              color: #1976d2; 
-              margin-bottom: 10px; 
-            }
-            .institute-details { 
-              font-size: 14px; 
-              color: #666; 
-              margin-bottom: 5px; 
-            }
-            .certification { 
-              font-size: 12px; 
-              font-weight: bold; 
-              color: #1976d2; 
-            }
-            .admit-title { 
-              text-align: center; 
-              font-size: 22px; 
-              font-weight: bold; 
-              color: #1976d2; 
-              margin: 30px 0; 
-            }
-            .candidate-section { 
-              border: 2px solid #e0e0e0; 
-              border-radius: 8px; 
-              padding: 20px; 
-              margin-bottom: 20px; 
-              background: #f9f9f9; 
-            }
-            .candidate-info { 
-              display: flex; 
-              gap: 30px; 
-            }
-            .info-left { 
-              flex: 2; 
-            }
-            .info-right { 
-              flex: 1; 
-              text-align: center; 
-            }
-            .info-item { 
-              margin-bottom: 15px; 
-            }
-            .info-label { 
-              font-size: 12px; 
-              font-weight: bold; 
-              color: #666; 
-              display: block; 
-            }
-            .info-value { 
-              font-size: 16px; 
-              font-weight: 600; 
-              color: #333; 
-              margin-top: 2px; 
-            }
-            .roll-number { 
-              font-size: 18px; 
-              font-weight: bold; 
-              color: #1976d2; 
-            }
-            .photo-section { 
-              border: 2px solid #e0e0e0; 
-              border-radius: 4px; 
-              padding: 10px; 
-              background: white; 
-              display: inline-block; 
-            }
-            .photo-label { 
-              font-size: 10px; 
-              color: #666; 
-              margin-bottom: 5px; 
-            }
-            .candidate-photo { 
-              width: 120px; 
-              height: 150px; 
-              object-fit: cover; 
-              border-radius: 4px; 
-              border: 1px solid #ddd; 
-            }
-            .instructions-section { 
-              border: 2px solid #e0e0e0; 
-              border-radius: 8px; 
-              padding: 20px; 
-              margin-bottom: 20px; 
-              background: #f9f9f9; 
-            }
-            .section-title { 
-              font-size: 16px; 
-              font-weight: bold; 
-              color: #1976d2; 
-              text-align: center; 
-              margin-bottom: 15px; 
-            }
-            .instructions-list { 
-              margin: 0; 
-              padding-left: 20px; 
-            }
-            .instructions-list li { 
-              margin-bottom: 8px; 
-              font-size: 14px; 
-            }
-            .exam-details { 
-              border: 2px solid #e0e0e0; 
-              border-radius: 8px; 
-              padding: 20px; 
-              margin-bottom: 20px; 
-              background: #f9f9f9; 
-            }
-            .exam-grid { 
-              display: grid; 
-              grid-template-columns: 1fr 1fr; 
-              gap: 15px; 
-            }
-            .qr-code-img {
-              width: 80px;
-              height: 80px;
-              margin: 10px auto;
-              display: block;
-            }
-            @media print { 
-              body { margin: 0; padding: 5px; font-size: 11px; } 
-              .admit-card { 
-                border: 2px solid #000; 
-                padding: 10px; 
-                max-width: 100%;
-                page-break-inside: avoid;
-              }
-              .institute-name { font-size: 16px; }
-              .admit-title { font-size: 14px; margin: 10px 0; }
-              .candidate-section, .instructions-section, .exam-details { 
-                padding: 8px; margin-bottom: 8px; 
-              }
-              .info-item { margin-bottom: 6px; }
-              .info-label { font-size: 10px; }
-              .info-value { font-size: 11px; }
-              .instructions-list li { margin-bottom: 3px; font-size: 9px; line-height: 1.2; }
-              .section-title { font-size: 11px; margin-bottom: 6px; }
-              .candidate-photo { width: 70px; height: 90px; }
-              .photo-section { padding: 3px; }
-              .exam-grid { gap: 8px; }
-              .result-info { padding: 8px; margin: 8px 0; }
-              .result-info h3 { font-size: 10px; margin-bottom: 4px; }
-              .result-info p { font-size: 9px; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="admit-card">
-            <!-- Header Section -->
-            <div class="header" style="background: linear-gradient(90deg, #1976d2, #0d47a1); color: white; padding: 16px; border-radius: 8px;">
-              <div class="institute-name" style="color: white;">NIICT Computer Institute of IT Management</div>
-              <div class="certification" style="color: #e3f2fd;">AN ISO 9001:2015 CERTIFIED ORGANIZATION</div>
-            </div>
+    <div class="row-table">
+      <div class="col"><div class="col-label">Exam Center</div><div class="col-value">S.K. Modern Inter College, Semari, Jaunpur</div></div>
+    </div>
 
-            <!-- Admit Card Title -->
-            <div class="admit-title">CANDIDATE ADMIT CARD (Competition Exam)</div>
+    <div class="sec-title">Fee &amp; Payment Details</div>
+    <table class="sec-table">
+      <tr>
+        <td><div class="col-label">Amount Paid</div><div class="col-value">Rs. ${admitCardData.paymentAmount || 150}</div></td>
+        <td><div class="col-label">Payment Date</div><div class="col-value">${paidDate}</div></td>
+      </tr>
+      <tr>
+        <td><div class="col-label">Transaction ID</div><div class="col-value">${admitCardData.paymentTransactionId || 'N/A'}</div></td>
+        <td><div class="col-label">Payment Status</div><div class="col-value">SUCCESS</div></td>
+      </tr>
+    </table>
 
-            <!-- Candidate Information Section -->
-            <div class="candidate-section">
-              <div class="candidate-info">
-                <div class="info-left">
-                  <div class="info-item">
-                    <span class="info-label">Roll No:</span>
-                    <div class="info-value roll-number">${admitCardData.rollNumber}</div>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Name:</span>
-                    <div class="info-value">${admitCardData.name}</div>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Date of Birth:</span>
-                    <div class="info-value">${new Date(admitCardData.dateOfBirth).toLocaleDateString('en-GB')}</div>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Father Name:</span>
-                    <div class="info-value">${admitCardData.fatherName}</div>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Subject:</span>
-                    <div class="info-value">${admitCardData.subject} Competition</div>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Center Name:</span>
-                    <div class="info-value">NIICT Computer Centre</div>
-                  </div>
-                </div>
-                <div class="info-right">
-                  <div class="photo-section">
-                    <div class="photo-label">PHOTOGRAPH</div>
-                    ${admitCardData.image ? 
-                      `<img src="${admitCardData.image}" alt="Candidate Photo" class="candidate-photo" />` : 
-                      `<div style="width: 120px; height: 150px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999;">No Photo</div>`
-                    }
-                  </div>
-                  
-                </div>
-              </div>
-            </div>
+    <div class="sec-title">Instructions to Candidates</div>
+    <ol class="instructions">
+      <li><strong>Reporting Time: 08:00 AM.</strong> Reporting half hour before scheduled time is mandatory.</li>
+      <li>Entry is allowed 15 mins before the exam starts. No entry will be permitted 30 mins after commencement.</li>
+      <li>Original photo ID (Aadhaar Card / Voter ID) is mandatory along with this printed Admit Card.</li>
+      <li>Mobile phones, calculators, smart watches, and other electronic devices are strictly prohibited inside the exam hall.</li>
+      <li>Any malpractice or violation of rules will result in immediate cancellation of the candidature.</li>
+      <li><strong>Result Date:</strong> 18 October 2026. Results will be announced on <strong>NIICT Computer Classes</strong> YouTube Channel.</li>
+    </ol>
 
-            <!-- Instructions Section -->
-            <div class="instructions-section">
-              <div class="section-title">अभ्यर्थी हेतु आवश्यकता निर्देश</div>
-              <ol class="instructions-list">
-                <li>कृपया परीक्षा की तिथि से पर्यात समय पूर्व परीक्षा केंद्र का सही पता मालूम अवश्य कर लें ।</li>
-                <li>अभ्यर्थी रिपोर्टिंग समय से 25 मिनट पहले परीक्षा केंद्र पर अवश्य पहुचें ।</li>
-                <li>अभ्यर्थी परीक्षा हॉल में अपने साथ एडमिट कार्ड, आधार कार्ड, बॉल पेन अवय लेकर आएं ।</li>
-                <li>परीक्षा हाल में किसी भी प्रकार की नकल सामग्री ( मोबाइल, स्मार्ट watch,calculator, डिजिटल पेन आदि) लाना सख्त मना हैं।</li>
-                <li>परीक्षा केंद्र के अंदर किसी भी प्रकार की सामग्री ( मोबाइल, बैग, घड़ी आदि मूल्यवान वस्तु) रखने की व्यवस्था नहीं है, अतः अभ्यर्थी अपने अभिभावक को साथ ले आए।</li>
-                <li>किसी भी अभ्यर्थी द्वारा अनुचित व्यावहार किए जाने पर उनकी परीक्षा रद्द कर दी जाएगी, जिसका जिम्मेदार अभ्यर्थी स्वयम होगा।</li>
-              </ol>
-            </div>
-
-            <!-- Exam Details -->
-            <div class="exam-details">
-              <div class="section-title">EXAMINATION DETAILS</div>
-              <div class="exam-grid">
-                <div class="info-item">
-                  <span class="info-label">Examination Date:</span>
-                  <div class="info-value">12 Oct 2025 Sunday</div>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Reporting Time:</span>
-                  <div class="info-value">08:00 AM</div>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Gate Closing Time:</span>
-                  <div class="info-value">09:15 AM</div>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Examination Time:</span>
-                  <div class="info-value">10:00 AM</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Result Information -->
-            <div class="result-info" style="background: #e8f5e8; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 5px solid #4caf50; text-align: center;">
-              <h3 style="color: #2e7d32; margin-bottom: 10px; font-size: 16px;">परीक्षा परिणाम की तिथि</h3>
-              <p style="color: #333; font-weight: 600; margin: 0;">
-                18 Oct 2025 को Niict computer Classes के यूट्यूब चैनल के माध्यम से घोषित किया जाएगा।
-              </p>
-            </div>
-
-          </div>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.onload = () => {
-      setTimeout(() => {
-        try { printWindow.focus(); } catch (_) {}
-        printWindow.print();
-      }, 200);
-    };
+    <div class="signature">
+      <div class="sig-line">Candidate Signature</div>
+      <div class="sig-line">Invigilator Signature</div>
+      <div class="sig-line">Authorized Signatory</div>
+    </div>
+  </div>
+</div>
+</body></html>`);
+    w.document.close();
+    w.onload = () => setTimeout(() => { try { w.focus(); } catch (_) { } w.print(); }, 200);
   };
 
-  if (showPayment && admitCardData) {
-    const upiId = 'Q425549449@ybl';
-    const upiIntent = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent('NIICT')}&cu=INR&tn=${encodeURIComponent('Competition Fee')}`;
+  /* ─────────────────────────────────────────────────────── */
 
-    return (
-      <Container maxWidth="sm" sx={{ mt: 4, mb: 4, paddingTop: '80px' }}>
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <Paper elevation={6} sx={{ p: 4, borderRadius: 4 }}>
-            <Box textAlign="center" mb={2}>
-              <Typography variant="h5" fontWeight={700} color="#1e293b" gutterBottom>
-                Complete Payment
-              </Typography>
-              <Typography variant="body1" color="#64748b">
-                Please pay the registration fee using the UPI below. After payment, click "I have paid" to view your admit card.
-              </Typography>
-            </Box>
+  if (step === 3 && admitCardData) return <ThankYouScreen admitCardData={admitCardData} onDownload={printAdmitCard} />;
 
-            <Box sx={{ background: '#fff', p: 3, borderRadius: 3, boxShadow: 1, textAlign: 'center' }}>
-              <Typography variant="subtitle1" fontWeight={600} color="#1e293b" gutterBottom>
-                UPI ID
-              </Typography>
-              <Typography variant="h6" color="#1e293b" sx={{ wordBreak: 'break-all', mb: 2 }}>
-                {upiId}
-              </Typography>
-              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                <QRCode value={upiIntent} size={180} level="H" includeMargin />
-              </Box>
-              <Typography variant="body2" color="#64748b" sx={{ mb: 2 }}>
-                Scan to pay via any UPI app
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-                <Button variant="outlined" onClick={() => navigator.clipboard.writeText(upiId)}>Copy UPI ID</Button>
-                <Button variant="contained" onClick={() => window.location.href = upiIntent}>Open UPI App</Button>
-              </Box>
-            </Box>
-
-            <Box textAlign="center" mt={4}>
-              <Button variant="contained" color="success" size="large" onClick={() => { setShowPayment(false); setShowAdmitCard(true); }}>
-                I have paid - Show Admit Card
-              </Button>
-            </Box>
-          </Paper>
-        </motion.div>
-      </Container>
-    );
-  }
-
-  if (showAdmitCard && admitCardData) {
-    return (
-      <Container maxWidth="md" sx={{ mt: 4, mb: 4, paddingTop: '80px' }}>
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <Paper elevation={6} sx={{ p: 4, borderRadius: 4, background: 'white', border: '2px solid #e0e0e0' }}>
-            {/* Header Section */}
-            <Box sx={{ textAlign: 'center', mb: 4, pb: 2 }}>
-              <Box sx={{
-                display: 'inline-block',
-                px: 3,
-                py: 2,
-                borderRadius: 2,
-                background: 'linear-gradient(90deg, #1976d2, #0d47a1)',
-                boxShadow: '0 6px 20px rgba(25, 118, 210, 0.2)'
-              }}>
-                <Typography variant="h5" fontWeight={800} color="#ffffff" gutterBottom sx={{ letterSpacing: 0.5 }}>
-                  NIICT Computer Institute of IT Management
-                </Typography>
-                <Typography variant="body2" fontWeight={600} color="#e3f2fd">
-                  AN ISO 9001:2015 CERTIFIED ORGANIZATION
-                </Typography>
-              </Box>
-              <Box sx={{ mt: 2, borderBottom: '2px solid #1976d2' }} />
-            </Box>
-
-            {/* Admit Card Title */}
-            <Box sx={{ textAlign: 'center', mb: 3 }}>
-              <Typography variant="h5" fontWeight={700} color="#1976d2">
-                CANDIDATE ADMIT CARD (Competition Exam)
-              </Typography>
-            </Box>
-
-            {/* Candidate Information Section */}
-            <Box sx={{ 
-              border: '2px solid #e0e0e0', 
-              borderRadius: 2, 
-              p: 3, 
-              mb: 3,
-              background: '#f9f9f9'
-            }}>
-              <Grid container spacing={3}>
-                {/* Left Column - Candidate Info */}
-                <Grid item xs={8}>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Roll No:</Typography>
-                    <Typography variant="h6" fontWeight={700} color="#1976d2">
-                      {admitCardData.rollNumber}
-                    </Typography>
-                  </Box>
-                  
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Name:</Typography>
-                    <Typography variant="h6" fontWeight={600} color="#333">
-                      {admitCardData.name}
-                    </Typography>
-                  </Box>
-                  
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Date of Birth:</Typography>
-                    <Typography variant="body1" fontWeight={500} color="#333">
-                      {new Date(admitCardData.dateOfBirth).toLocaleDateString('en-GB')}
-                    </Typography>
-                  </Box>
-                  
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Father Name:</Typography>
-                    <Typography variant="body1" fontWeight={500} color="#333">
-                      {admitCardData.fatherName}
-                    </Typography>
-                  </Box>
-                  
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Subject:</Typography>
-                    <Typography variant="body1" fontWeight={500} color="#333">
-                      {admitCardData.subject} Competition
-                    </Typography>
-                  </Box>
-                  
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Center Name:</Typography>
-                    <Typography variant="body1" fontWeight={500} color="#333">
-                      NIICT Computer Centre
-                    </Typography>
-                  </Box>
-                </Grid>
-                
-                {/* Right Column - Photo */}
-                <Grid item xs={4}>
-                  <Box sx={{ 
-                    border: '2px solid #e0e0e0', 
-                    borderRadius: 1, 
-                    p: 1, 
-                    textAlign: 'center',
-                    background: 'white'
-                  }}>
-                    <Typography variant="body2" color="#666" sx={{ mb: 1, fontSize: '12px' }}>
-                      PHOTOGRAPH
-                    </Typography>
-                    {admitCardData.image ? (
-                      <img
-                        src={admitCardData.image}
-                        alt="Candidate Photo"
-                        style={{
-                          width: '120px',
-                          height: '150px',
-                          objectFit: 'cover',
-                          borderRadius: '4px',
-                          border: '1px solid #ddd'
-                        }}
-                      />
-                    ) : (
-                      <Box sx={{ 
-                        width: '120px', 
-                        height: '150px', 
-                        border: '2px dashed #ccc',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        mx: 'auto'
-                      }}>
-                        <Typography variant="body2" color="#999">
-                          No Photo
-                        </Typography>
-                      </Box>
-                    )}
-                  </Box>
-                </Grid>
-              </Grid>
-            </Box>
-
-            {/* Instructions Section */}
-            <Box sx={{ 
-              border: '2px solid #e0e0e0', 
-              borderRadius: 2, 
-              p: 3, 
-              mb: 3,
-              background: '#f9f9f9'
-            }}>
-              <Typography variant="h6" fontWeight={700} color="#1976d2" sx={{ textAlign: 'center', mb: 2 }}>
-                INSTRUCTIONS TO BE FOLLOWED BY CANDIDATES AT EXAMINATION
-              </Typography>
-              
-              <Box component="ol" sx={{ pl: 2, m: 0 }}>
-              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                उम्मीदवारों को परीक्षा के निर्धारित समय से आधा घंटा पहले रिपोर्ट करना अनिवार्य है।
-              </Typography>
-              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                परीक्षा प्रारंभ होने से 15 मिनट पहले ही परीक्षा कक्ष में प्रवेश की अनुमति है, और प्रारंभ होने के 30 मिनट बाद प्रवेश की अनुमति नहीं होगी।
-              </Typography>
-              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                उम्मीदवारों को मूल फोटो पहचान पत्र (मतदाता पहचान पत्र, पासपोर्ट, पैन, ड्राइविंग लाइसेंस, आधार, फोटो सहित छात्र पहचान पत्र आदि) साथ लाना आवश्यक है।
-              </Typography>
-              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                उम्मीदवार केवल अपना प्रवेश पत्र, मूल फोटो पहचान पत्र और एक पेन साथ लेकर आएं।
-              </Typography>
-              <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                मोबाइल फोन या किसी भी प्रकार के इलेक्ट्रॉनिक उपकरण पूर्णतः प्रतिबंधित हैं और जब्त कर लिए जाएंगे। पॉकेटबुक, हैंडबैग, पुस्तकें, नोट्स, लिखित या मुद्रित सामग्री, सीडी या डेटा आदि लाना भी प्रतिबंधित है।
-              </Typography>
-              </Box>
-            </Box>
-
-            {/* Exam Details */}
-            <Box sx={{ 
-              border: '2px solid #e0e0e0', 
-              borderRadius: 2, 
-              p: 3, 
-              mb: 3,
-              background: '#f9f9f9'
-            }}>
-              <Typography variant="h6" fontWeight={700} color="#1976d2" sx={{ textAlign: 'center', mb: 2 }}>
-                EXAMINATION DETAILS
-              </Typography>
-              
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Exam Date:</Typography>
-                  <Typography variant="body1" fontWeight={500} color="#333">
-                    {admitCardData.examDate}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Exam Time:</Typography>
-                  <Typography variant="body1" fontWeight={500} color="#333">
-                    {admitCardData.examTime}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Reporting Time:</Typography>
-                  <Typography variant="body1" fontWeight={500} color="#333">
-                    {admitCardData.reportingTime}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="#666" sx={{ fontWeight: 600 }}>Exam Center:</Typography>
-                  <Typography variant="body1" fontWeight={500} color="#333">
-                    {admitCardData.examCenter}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Box>
-
-            {/* QR Code Section */}
-            <Box sx={{ 
-              border: '2px solid #e0e0e0', 
-              borderRadius: 2, 
-              p: 3, 
-              mb: 3,
-              background: '#f9f9f9',
-              textAlign: 'center'
-            }}>
-              <Typography variant="h6" fontWeight={700} color="#1976d2" sx={{ mb: 2 }}>
-                VERIFICATION QR CODE
-              </Typography>
-              <Box display="flex" justifyContent="center">
-                <QRCode
-                  value={admitCardData.qrCode}
-                  size={120}
-                  bgColor="#ffffff"
-                  fgColor="#000000"
-                  level="M"
-                  includeMargin={true}
-                />
-              </Box>
-            </Box>
-
-            {/* Action Buttons */}
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-              <Button
-                variant="contained"
-                color="primary"
-                size="large"
-                onClick={printAdmitCard}
-                sx={{ 
-                  px: 4, 
-                  py: 1.5, 
-                  fontSize: '16px', 
-                  fontWeight: 600,
-                  background: '#1976d2',
-                  '&:hover': {
-                    background: '#1565c0',
-                  }
-                }}
-              >
-                🖨️ Print Admit Card
-              </Button>
-              <Button
-                variant="outlined"
-                color="primary"
-                size="large"
-                onClick={() => setShowAdmitCard(false)}
-                sx={{ 
-                  px: 4, 
-                  py: 1.5, 
-                  fontSize: '16px', 
-                  fontWeight: 600,
-                  borderColor: '#1976d2',
-                  color: '#1976d2',
-                  '&:hover': {
-                    borderColor: '#1565c0',
-                    color: '#1565c0',
-                  }
-                }}
-              >
-                Register Another Student
-              </Button>
-            </Box>
-          </Paper>
-        </motion.div>
-      </Container>
-    );
-  }
+  if (step === 2) return (
+    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.canvas }}>
+      <Box sx={{ textAlign: 'center' }}>
+        <CircularProgress size={56} sx={{ color: C.accent, mb: 3 }} />
+        <Typography variant="h6" color={C.ink} fontWeight={700}>Verifying your payment…</Typography>
+        <Typography variant="body2" color={C.inkSoft} sx={{ mt: 1 }}>Please wait, do not close this page.</Typography>
+      </Box>
+    </Box>
+  );
 
   return (
-    <Box sx={{ 
-      minHeight: '100vh', 
-      pt: { xs: 12, md: 16 }, 
-      pb: 12, 
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%)',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Decorative Background Elements */}
-      <Box sx={{ position: 'absolute', top: '-10%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(139,92,246,0.15) 0%, rgba(0,0,0,0) 70%)', filter: 'blur(60px)', zIndex: 0 }} />
-      <Box sx={{ position: 'absolute', bottom: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(56,189,248,0.15) 0%, rgba(0,0,0,0) 70%)', filter: 'blur(60px)', zIndex: 0 }} />
-      
-      {/* Animated glowing particles */}
-      <Box sx={{ position: 'absolute', top: '20%', left: '15%', width: 8, height: 8, borderRadius: '50%', background: '#fbbf24', boxShadow: '0 0 20px 4px rgba(251,191,36,0.6)', animation: 'pulse 3s infinite' }} />
-      <Box sx={{ position: 'absolute', top: '60%', right: '20%', width: 12, height: 12, borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 20px 4px rgba(56,189,248,0.6)', animation: 'pulse 4s infinite' }} />
-
+    <Box sx={{ minHeight: '100vh', pt: { xs: 10, md: 14 }, pb: 12, background: `linear-gradient(180deg, ${C.canvas} 0%, #FFFFFF 40%)`, position: 'relative', overflow: 'hidden' }}>
+      <Box sx={{ position: 'absolute', top: '-15%', left: '-10%', width: '55vw', height: '55vw', background: `radial-gradient(circle, ${C.accentSoft} 0%, rgba(0,0,0,0) 70%)`, filter: 'blur(60px)', zIndex: 0, borderRadius: '50%' }} />
+      <Box sx={{ position: 'absolute', bottom: '-15%', right: '-10%', width: '45vw', height: '45vw', background: `radial-gradient(circle, ${C.goldSoft} 0%, rgba(0,0,0,0) 70%)`, filter: 'blur(60px)', zIndex: 0, borderRadius: '50%' }} />
       <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
-        >
-          <Paper elevation={0} sx={{ 
-            p: { xs: 4, md: 8 }, 
-            borderRadius: '32px', 
-            background: 'rgba(255, 255, 255, 0.03)', 
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.05)',
-            color: 'white'
-          }}>
-            <Box textAlign="center" mb={6}>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Box sx={{ 
-                  display: 'inline-flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  width: 90, 
-                  height: 90, 
-                  borderRadius: '24px',
-                  background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)',
-                  boxShadow: '0 15px 30px -5px rgba(217, 119, 6, 0.4), inset 0 2px 4px rgba(255,255,255,0.4)',
-                  mb: 4,
-                  border: '1px solid rgba(255,255,255,0.2)'
-                }}>
-                  <FaTrophy size={44} color="#fff" />
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, type: 'spring', bounce: 0.3 }}>
+          <Paper elevation={0} sx={{ p: { xs: 4, md: 7 }, borderRadius: '32px', background: C.paper, border: `1px solid ${C.border}`, boxShadow: '0 30px 70px -25px rgba(30,27,58,0.18)' }}>
+
+            <Box textAlign="center" mb={2}>
+              <motion.div whileHover={{ scale: 1.05, rotate: 3 }} whileTap={{ scale: 0.95 }}>
+                <Box sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 88, height: 88, borderRadius: '24px', background: `linear-gradient(135deg, ${C.gold} 0%, #A67C1F 100%)`, boxShadow: `0 18px 35px -10px rgba(200,155,60,0.5)`, mb: 3 }}>
+                  <FaTrophy size={42} color="#fff" />
                 </Box>
               </motion.div>
-              <Typography variant="h2" fontWeight={900} gutterBottom sx={{
-                background: 'linear-gradient(to right, #ffffff, #a5b4fc)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                letterSpacing: '-1px',
-                fontSize: { xs: '2.5rem', md: '3.5rem' },
-                mb: 2
-              }}>
-                GK & Computer Competition
+              <Typography variant="h2" fontWeight={900} sx={{ color: C.ink, letterSpacing: '-1.5px', fontSize: { xs: '2.2rem', md: '3.4rem' }, mb: 1.5 }}>
+                GK &amp; Computer <br />Competition
               </Typography>
-              <Typography variant="h6" color="rgba(255,255,255,0.7)" fontWeight={400} sx={{ maxWidth: '600px', mx: 'auto', mb: 5, lineHeight: 1.6 }}>
-                Join our state-level competition, test your knowledge, and win exciting prizes & scholarships!
+              <Typography variant="h6" color={C.inkSoft} fontWeight={400} sx={{ maxWidth: '600px', mx: 'auto', mb: 4, lineHeight: 1.7 }}>
+                State-level competition — test your knowledge and win prizes &amp; scholarships!
               </Typography>
-
-              <Box sx={{ 
-                background: 'rgba(255,255,255,0.05)',
-                p: { xs: 3, md: 4 }, 
-                borderRadius: '24px', 
-                border: '1px solid rgba(255,255,255,0.1)',
-                textAlign: 'left',
-                position: 'relative',
-                overflow: 'hidden'
-              }}>
-                <Box sx={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: 'linear-gradient(to bottom, #38bdf8, #818cf8)' }} />
-                <Typography variant="h6" fontWeight={700} color="#e0e7ff" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-                  <FaCalendarAlt color="#818cf8" />
-                  Exam Details
-                </Typography>
-                <Grid container spacing={4}>
-                  <Grid item xs={12} sm={6}>
-                    <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'center' }}>
-                      <Box sx={{ p: 2, borderRadius: '16px', background: 'rgba(56,189,248,0.1)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.2)' }}>
-                        <FaClock size={24} />
-                      </Box>
-                      <Box>
-                        <Typography variant="body2" color="rgba(255,255,255,0.5)" fontWeight={600} textTransform="uppercase" letterSpacing="1px" fontSize="0.75rem">Date & Time</Typography>
-                        <Typography variant="body1" color="white" fontWeight={700} fontSize="1.1rem">20 Oct 2026, 8:00 AM</Typography>
-                        <Typography variant="body2" color="rgba(255,255,255,0.6)">Reporting: 7:00 AM</Typography>
-                      </Box>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'center' }}>
-                      <Box sx={{ p: 2, borderRadius: '16px', background: 'rgba(167,139,250,0.1)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.2)' }}>
-                        <FaMapMarkerAlt size={24} />
-                      </Box>
-                      <Box>
-                        <Typography variant="body2" color="rgba(255,255,255,0.5)" fontWeight={600} textTransform="uppercase" letterSpacing="1px" fontSize="0.75rem">Exam Center</Typography>
-                        <Typography variant="body1" color="white" fontWeight={700} fontSize="1.1rem">SK Modern Inter College</Typography>
-                        <Typography variant="body2" color="rgba(255,255,255,0.6)">Semari, Jaunpur</Typography>
-                      </Box>
-                    </Box>
-                  </Grid>
-                </Grid>
-              </Box>
             </Box>
 
-            {error && (
-              <Alert severity="error" sx={{ mb: 4, borderRadius: '12px', '& .MuiAlert-icon': { alignItems: 'center' } }}>
-                {error}
-              </Alert>
-            )}
+            <StepBar current={step} />
 
-            <form onSubmit={handleSubmit}>
-              <Typography variant="h5" fontWeight={700} color="#ffffff" gutterBottom sx={{ mb: 4, mt: 2 }}>
+            {/* Exam Info */}
+            <Box sx={{ background: C.canvas, p: { xs: 3, md: 4 }, borderRadius: '24px', border: `1px solid ${C.border}`, textAlign: 'left', position: 'relative', overflow: 'hidden', mb: 4 }}>
+              <Box sx={{ position: 'absolute', top: 0, left: 0, width: '5px', height: '100%', background: `linear-gradient(to bottom, ${C.accent}, ${C.gold})` }} />
+              <Typography variant="h6" fontWeight={800} color={C.ink} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+                <FaCalendarAlt color={C.accent} size={20} /> Exam Details
+              </Typography>
+              <Grid container spacing={4}>
+                <Grid item xs={12} sm={6}>
+                  <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'center' }}>
+                    <Box sx={{ p: 2, borderRadius: '16px', background: C.accentSoft, color: C.accent }}><FaClock size={22} /></Box>
+                    <Box>
+                      <Typography variant="body2" color={C.inkSoft} fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '1.2px', fontSize: '0.7rem' }}>Date &amp; Time</Typography>
+                      <Typography variant="body1" color={C.ink} fontWeight={700} sx={{ mt: 0.5 }}>12 Oct 2025, 10:00 AM</Typography>
+                      <Typography variant="body2" color={C.inkSoft}>Reporting: 8:00 AM</Typography>
+                    </Box>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'center' }}>
+                    <Box sx={{ p: 2, borderRadius: '16px', background: C.goldSoft, color: C.gold }}><FaMapMarkerAlt size={22} /></Box>
+                    <Box>
+                      <Typography variant="body2" color={C.inkSoft} fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '1.2px', fontSize: '0.7rem' }}>Exam Center</Typography>
+                      <Typography variant="body1" color={C.ink} fontWeight={700} sx={{ mt: 0.5 }}>S.K. Modern Inter College</Typography>
+                      <Typography variant="body2" color={C.inkSoft}>Semari, Jaunpur</Typography>
+                    </Box>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Box>
+
+            {/* Fee badge */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4, p: 2.5, background: `linear-gradient(135deg, ${C.accentSoft}, ${C.goldSoft})`, borderRadius: '18px', border: `1px solid ${C.accentMid}` }}>
+              <FaCreditCard size={24} color={C.accent} />
+              <Box>
+                <Typography variant="body2" color={C.inkSoft} fontWeight={600}>Registration Fee</Typography>
+                <Typography variant="h5" fontWeight={900} color={C.accent}>Rs. 150 <Typography component="span" variant="body2" color={C.inkSoft} fontWeight={400}>· Secured by Cashfree</Typography></Typography>
+              </Box>
+              <FaShieldAlt size={20} color={C.success} style={{ marginLeft: 'auto' }} />
+            </Box>
+
+            {error && <Alert severity="error" sx={{ mb: 3, borderRadius: '14px' }}>{error}</Alert>}
+
+            <form onSubmit={handleOpenPreview}>
+              <Typography variant="h5" fontWeight={800} color={C.ink} gutterBottom sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box sx={{ width: 8, height: 26, background: C.accent, borderRadius: 4 }} />
                 Applicant Details
               </Typography>
+
               <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Full Name *"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
-                  />
+                <Grid size={{ xs: 12, sm: 6, md: 6 }}><TextField fullWidth label="Full Name" name="name" value={formData.name} onChange={setField('name')} required sx={fieldSx} /></Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 6 }}><TextField fullWidth label="Phone Number" name="phone" value={formData.phone} onChange={setField('phone')} required sx={fieldSx} /></Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 6 }}><TextField fullWidth label="Father's Name" name="fatherName" value={formData.fatherName} onChange={setField('fatherName')} required sx={fieldSx} /></Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 6 }}><TextField fullWidth label="Mother's Name" name="motherName" value={formData.motherName} onChange={setField('motherName')} required sx={fieldSx} /></Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                  <TextField fullWidth label="Aadhaar Number" name="aadhaar" value={formData.aadhaar}
+                    onChange={e => setFormData(p => ({ ...p, aadhaar: e.target.value.replace(/\D/g, '').slice(0, 12) }))}
+                    inputProps={{ inputMode: 'numeric', maxLength: 12 }} helperText="12-digit Aadhaar (optional)" sx={fieldSx} />
                 </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Phone Number *"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    required
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Father's Name *"
-                    name="fatherName"
-                    value={formData.fatherName}
-                    onChange={handleInputChange}
-                    required
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Mother's Name *"
-                    name="motherName"
-                    value={formData.motherName}
-                    onChange={handleInputChange}
-                    required
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
-                  />
-                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 6 }}><TextField fullWidth label="Date of Birth" type="date" value={formData.dateOfBirth} onChange={setField('dateOfBirth')} required InputLabelProps={{ shrink: true }} sx={fieldSx} /></Grid>
                 
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Aadhaar Number"
-                    name="aadhaar"
-                    value={formData.aadhaar}
-                    onChange={(e) => {
-                      const onlyDigits = e.target.value.replace(/[^0-9]/g, '');
-                      setFormData(prev => ({ ...prev, aadhaar: onlyDigits.slice(0, 12) }));
-                    }}
-                    inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 12 }}
-                    helperText="12-digit Aadhaar number (optional)"
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Date of Birth *"
-                    name="dateOfBirth"
-                    type="date"
-                    value={formData.dateOfBirth}
-                    onChange={handleInputChange}
-                    required
-                    InputLabelProps={{ shrink: true }}
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
-                  />
-                </Grid>
+                <Grid size={{ xs: 12, sm: 12, md: 12 }}><TextField fullWidth label="School / College Name" name="school" value={formData.school} onChange={setField('school')} required sx={fieldSx} /></Grid>
                 
-                <Grid item xs={12} md={8}>
-                  <TextField
-                    fullWidth
-                    label="School/College Name *"
-                    name="school"
-                    value={formData.school}
-                    onChange={handleInputChange}
-                    required
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <FormControl fullWidth sx={{ '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}>
-                    <InputLabel sx={{ background: 'transparent', px: 1, '&.Mui-focused': { color: '#818cf8' } }}>Class Passed *</InputLabel>
-                    <Select
-                      name="classPassed"
-                      value={formData.classPassed}
-                      onChange={handleInputChange}
-                      required
-                      sx={{
-                        borderRadius: '12px',
-                        background: 'rgba(255,255,255,0.05)',
-                        color: 'white',
-                        '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' },
-                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.4)' },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#818cf8' },
-                        '& .MuiSvgIcon-root': { color: 'rgba(255,255,255,0.7)' }
-                      }}
-                    >
-                      <MenuItem value="8th">8th</MenuItem>
-                      <MenuItem value="9th">9th</MenuItem>
-                      <MenuItem value="10th">10th</MenuItem>
-                      <MenuItem value="11th">11th</MenuItem>
-                      <MenuItem value="12th">12th</MenuItem>
-                      <MenuItem value="Diploma">Diploma</MenuItem>
-                      <MenuItem value="Undergraduate">Undergraduate</MenuItem>
-                      <MenuItem value="Graduation">Graduation</MenuItem>
+                <Grid size={{ xs: 12, sm: 6, md: 6 }}><TextField fullWidth label="Parent/Guardian Phone" value={formData.parentPhone} onChange={setField('parentPhone')} helperText="Optional" sx={fieldSx} /></Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                  <FormControl fullWidth required sx={{ ...fieldSx, minWidth: '100%' }}>
+                    <InputLabel id="class-label">Class Passed</InputLabel>
+                    <Select fullWidth labelId="class-label" label="Class Passed" value={formData.classPassed} onChange={setField('classPassed')} sx={{ width: '100%', flex: 1 }}>
+                      {['8th', '9th', '10th', '11th', '12th', 'Diploma', 'Undergraduate', 'Graduation'].map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
                     </Select>
                   </FormControl>
                 </Grid>
                 
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Parent/Guardian Phone"
-                    name="parentPhone"
-                    value={formData.parentPhone}
-                    onChange={handleInputChange}
-                    helperText="Optional - if available"
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Complete Address *"
-                    name="address"
-                    multiline
-                    rows={3}
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    required
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' }, '&.Mui-focused fieldset': { borderColor: '#818cf8' } }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }, '& .MuiInputLabel-root.Mui-focused': { color: '#818cf8' } }}
-                  />
-                </Grid>
-                
-                <Grid item xs={12}>
-                  <Box sx={{ 
-                    p: 4, 
-                    border: '2px dashed rgba(255,255,255,0.2)', 
-                    borderRadius: '20px', 
-                    background: 'rgba(255,255,255,0.02)',
-                    textAlign: 'center',
-                    transition: 'all 0.3s',
-                    '&:hover': {
-                      borderColor: '#818cf8',
-                      background: 'rgba(255,255,255,0.05)'
-                    }
-                  }}>
-                    <Typography variant="subtitle1" fontWeight={600} color="white" gutterBottom>
-                      Student Image (Optional)
-                    </Typography>
-                    <Typography variant="body2" color="rgba(255,255,255,0.6)" mb={3}>
-                      Upload a clear passport size photograph (Max 5MB)
-                    </Typography>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      style={{ display: 'none' }}
-                      id="image-upload"
-                    />
-                    <label htmlFor="image-upload">
-                      <Button
-                        variant="outlined"
-                        component="span"
-                        disabled={uploadingImage}
-                        sx={{
-                          borderRadius: '12px',
-                          px: 4,
-                          py: 1.5,
-                          borderWidth: '2px',
-                          borderColor: 'rgba(255,255,255,0.3)',
-                          color: 'white',
-                          '&:hover': { borderWidth: '2px', borderColor: 'white', background: 'rgba(255,255,255,0.1)' }
-                        }}
-                      >
-                        {uploadingImage ? 'Uploading...' : 'Choose Image'}
+                <Grid size={{ xs: 12, sm: 12, md: 12 }}><TextField fullWidth label="Complete Address" multiline rows={3} value={formData.address} onChange={setField('address')} required sx={fieldSx} /></Grid>
+
+                {/* Photo */}
+                <Grid size={{ xs: 12 }}>
+                  <Box sx={{ p: 5, border: `2px dashed ${C.border}`, borderRadius: '24px', background: C.canvas, textAlign: 'center', transition: 'all 0.3s', '&:hover': { borderColor: C.accent, background: C.accentSoft } }}>
+                    <Typography variant="subtitle1" fontWeight={700} color={C.ink} gutterBottom>Student Photo (Optional)</Typography>
+                    <Typography variant="body2" color={C.inkSoft} mb={3}>Passport-size, max 5MB</Typography>
+                    <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} id="photo-upload" />
+                    <label htmlFor="photo-upload">
+                      <Button variant="outlined" component="span" disabled={uploadingImage}
+                        sx={{ borderRadius: '14px', px: 5, py: 1.5, borderWidth: '1.5px', borderColor: C.accent, color: C.accent, fontWeight: 700, textTransform: 'none', '&:hover': { borderWidth: '1.5px', background: C.accentSoft } }}>
+                        {uploadingImage ? 'Uploading…' : 'Choose Photo'}
                       </Button>
                     </label>
                     {imagePreview && (
                       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-                        <Box sx={{ mt: 3, position: 'relative', display: 'inline-block' }}>
-                          <img
-                            src={imagePreview}
-                            alt="Preview"
-                            style={{
-                              width: '120px',
-                              height: '150px',
-                              objectFit: 'cover',
-                              borderRadius: '12px',
-                              border: '4px solid white',
-                              boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'
-                            }}
-                          />
+                        <Box sx={{ mt: 3 }}>
+                          <img src={imagePreview} alt="Preview" style={{ width: '110px', height: '140px', objectFit: 'cover', borderRadius: '14px', border: `4px solid ${C.paper}`, boxShadow: '0 10px 20px -5px rgba(30,27,58,0.2)' }} />
                         </Box>
                       </motion.div>
                     )}
@@ -1210,42 +581,20 @@ const CompetitionForm = () => {
               </Grid>
 
               <Box textAlign="center" mt={5}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={loading}
-                  sx={{ 
-                    borderRadius: '50px', 
-                    py: 2, 
-                    px: 6, 
-                    fontSize: '1.1rem',
-                    fontWeight: 700,
-                    textTransform: 'none',
-                    letterSpacing: '0.5px',
-                    background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
-                    boxShadow: '0 10px 20px -5px rgba(79, 70, 229, 0.4)',
-                    transition: 'all 0.3s',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%)',
-                      boxShadow: '0 15px 25px -5px rgba(79, 70, 229, 0.5)',
-                      transform: 'translateY(-2px)'
-                    }
-                  }}
-                >
-                  {loading ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    <>
-                      <FaUserGraduate style={{ marginRight: '10px' }} size={20} />
-                      Complete Registration
-                    </>
-                  )}
+                <Button type="submit" variant="contained" size="large" disabled={loading} startIcon={<FaEye />}
+                  sx={{ borderRadius: '50px', py: 2, px: 6, fontSize: '1.15rem', fontWeight: 800, textTransform: 'none', color: '#fff', background: `linear-gradient(90deg, ${C.accent}, #7C5CFC)`, boxShadow: `0 15px 35px -10px rgba(91,61,245,0.55)`, '&:hover': { boxShadow: `0 20px 45px -10px rgba(91,61,245,0.7)`, transform: 'translateY(-2px)' } }}>
+                  Preview &amp; Pay Rs.150
                 </Button>
+                <Typography variant="caption" display="block" color={C.inkSoft} sx={{ mt: 2 }}>
+                  Secured by Cashfree Payments · Your data is safe
+                </Typography>
               </Box>
             </form>
           </Paper>
         </motion.div>
       </Container>
+
+      <PreviewModal open={previewOpen} formData={formData} imagePreview={imagePreview} onConfirm={handleConfirmAndPay} onEdit={() => setPreviewOpen(false)} loading={loading} />
     </Box>
   );
 };

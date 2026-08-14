@@ -44,14 +44,7 @@ const Navbar = () => {
         { label: 'Verification', path: '/student-portal' },
       ]
     },
-    {
-      label: 'Online Exam',
-      dropdown: [
-        { label: 'Test Paper', path: '/student-portal' },
-        { label: 'Semester Exam', path: '/student-portal' },
-        { label: 'Final Exam', path: '/student-portal' },
-      ]
-    },
+    { label: 'GKExam', path: '/competition' },
   ];
 
   const isActive = (path) => location.pathname === path;

@@ -5,10 +5,15 @@ import { motion } from 'framer-motion';
 import { FaTrophy, FaSearch, FaPrint, FaEye, FaTrash, FaDownload } from 'react-icons/fa';
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
 
+const CURRENT_SESSION = '2026-2027'; // Update this each year
+
 const CompetitionManagement = () => {
   const [applications, setApplications] = useState([]);
+  const [availableSessions, setAvailableSessions] = useState([]);
+  const [activeSession, setActiveSession] = useState(CURRENT_SESSION);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchType, setSearchType] = useState('all');
+  const [paymentFilter, setPaymentFilter] = useState('all');
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -18,13 +23,38 @@ const CompetitionManagement = () => {
   const jsPDFRef = useRef(null);
 
   useEffect(() => {
-    loadApplications();
+    loadSessions();
   }, []);
 
-  const loadApplications = async () => {
+  useEffect(() => {
+    loadApplications(activeSession);
+    setSearchTerm('');
+    setPaymentFilter('all');
+  }, [activeSession]);
+
+  const loadSessions = async () => {
     try {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000');
-      const res = await fetch(`${API_BASE_URL}/api/competition-applications`);
+      const res = await fetch(`${API_BASE_URL}/api/competition-applications/sessions`);
+      if (res.ok) {
+        const data = await res.json();
+        // Always include current session even if empty
+        const merged = Array.from(new Set([CURRENT_SESSION, ...data])).sort().reverse();
+        setAvailableSessions(merged);
+      }
+    } catch (e) {
+      console.error('Failed to load sessions:', e);
+      setAvailableSessions([CURRENT_SESSION]);
+    }
+  };
+
+  const loadApplications = async (session) => {
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000');
+      const url = session
+        ? `${API_BASE_URL}/api/competition-applications?session=${encodeURIComponent(session)}`
+        : `${API_BASE_URL}/api/competition-applications`;
+      const res = await fetch(url);
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to load');
       setApplications(data);
@@ -619,23 +649,21 @@ const CompetitionManagement = () => {
   };
 
   const filteredApplications = applications.filter(app => {
+    // Payment filter
+    if (paymentFilter !== 'all') {
+      if (paymentFilter === 'paid' && app.paymentStatus !== 'paid' && app.paymentStatus !== 'verified') return false;
+      if (paymentFilter === 'pending' && app.paymentStatus !== 'pending') return false;
+      if (paymentFilter === 'failed' && app.paymentStatus !== 'failed') return false;
+    }
     if (!searchTerm) return true;
-    
     const term = searchTerm.toLowerCase();
-    
     switch (searchType) {
-      case 'name':
-        return app.name.toLowerCase().includes(term);
-      case 'phone':
-        return app.phone && app.phone.includes(searchTerm);
-      case 'aadhaar':
-        return app.aadhaar && app.aadhaar.includes(searchTerm);
-      case 'roll':
-        return app.rollNumber.includes(searchTerm);
-      case 'school':
-        return app.school.toLowerCase().includes(term);
-      case 'subject':
-        return app.subject.toLowerCase().includes(term);
+      case 'name': return app.name.toLowerCase().includes(term);
+      case 'phone': return app.phone && app.phone.includes(searchTerm);
+      case 'aadhaar': return app.aadhaar && app.aadhaar.includes(searchTerm);
+      case 'roll': return app.rollNumber.includes(searchTerm);
+      case 'school': return app.school.toLowerCase().includes(term);
+      case 'subject': return app.subject.toLowerCase().includes(term);
       default:
         return app.name.toLowerCase().includes(term) ||
                app.rollNumber.includes(searchTerm) ||
@@ -650,6 +678,7 @@ const CompetitionManagement = () => {
   const gkApplications = applications.filter(app => app.subject === 'GK').length;
   const computerApplications = applications.filter(app => app.subject === 'Computer').length;
   const bothApplications = applications.filter(app => app.subject === 'Both').length;
+  const paidApplications = applications.filter(app => app.paymentStatus === 'paid' || app.paymentStatus === 'verified').length;
 
   if (showDetails && selectedApplication) {
     return (
@@ -683,6 +712,14 @@ const CompetitionManagement = () => {
                       <Grid item xs={6}>
                         <Typography variant="body2" color="#94a3b8">Subject</Typography>
                         <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.subject}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="#94a3b8">Session / Exam Year</Typography>
+                        <Chip
+                          label={selectedApplication.session || 'N/A'}
+                          size="small"
+                          sx={{ background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.4)', fontWeight: 700, mt: 0.5 }}
+                        />
                       </Grid>
                       <Grid item xs={12}>
                         <Typography variant="body2" color="#94a3b8">Full Name</Typography>
@@ -726,10 +763,30 @@ const CompetitionManagement = () => {
                       </Grid>
                       <Grid item xs={6}>
                         <Typography variant="body2" color="#94a3b8">Payment Status</Typography>
-                        <Typography variant="h6" fontWeight={600} color={selectedApplication.paymentStatus === 'verified' ? '#34d399' : '#fbbf24'}>
-                          {selectedApplication.paymentStatus === 'verified' ? 'Verified' : 'Pending'}
+                        <Typography variant="h6" fontWeight={600} color={selectedApplication.paymentStatus === 'paid' || selectedApplication.paymentStatus === 'verified' ? '#34d399' : selectedApplication.paymentStatus === 'failed' ? '#f87171' : '#fbbf24'}>
+                          {selectedApplication.paymentStatus === 'paid' ? '✓ PAID' : selectedApplication.paymentStatus === 'verified' ? '✓ Verified' : selectedApplication.paymentStatus === 'failed' ? '✗ Failed' : 'Pending'}
                         </Typography>
                       </Grid>
+                      {(selectedApplication.paymentStatus === 'paid' || selectedApplication.paymentStatus === 'verified') && (
+                        <>
+                          <Grid item xs={6}>
+                            <Typography variant="body2" color="#94a3b8">Transaction ID</Typography>
+                            <Typography variant="body1" fontWeight={600} color="#fff" sx={{ fontSize: '0.9rem', wordBreak: 'break-all' }}>{selectedApplication.paymentTransactionId || 'N/A'}</Typography>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <Typography variant="body2" color="#94a3b8">Amount Paid</Typography>
+                            <Typography variant="h6" fontWeight={600} color="#34d399">Rs. {selectedApplication.paymentAmount || 150}</Typography>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <Typography variant="body2" color="#94a3b8">Payment Date</Typography>
+                            <Typography variant="body1" fontWeight={600} color="#fff">{selectedApplication.paidAt ? new Date(selectedApplication.paidAt).toLocaleString('en-IN') : 'N/A'}</Typography>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <Typography variant="body2" color="#94a3b8">Order ID</Typography>
+                            <Typography variant="body1" fontWeight={600} color="#fff" sx={{ fontSize: '0.8rem', wordBreak: 'break-all' }}>{selectedApplication.paymentOrderId || 'N/A'}</Typography>
+                          </Grid>
+                        </>
+                      )}
                     </Grid>
                   </Box>
                 </Grid>
@@ -781,14 +838,63 @@ const CompetitionManagement = () => {
       <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
         <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           
-          <Box display="flex" alignItems="center" mb={6} gap={2}>
+          <Box display="flex" alignItems="center" mb={4} gap={2} flexWrap="wrap">
             <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #fbbf24, #f59e42)', boxShadow: '0 0 20px rgba(251,191,36,0.4)', display: 'flex' }}>
               <FaTrophy size={32} color="#fff" />
             </Box>
-            <Box>
+            <Box flex={1}>
               <Typography variant="h3" fontWeight={800} color="#fff" sx={{ letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Saira Condensed", sans-serif', lineHeight: 1 }}>
                 Competition <span style={{ color: '#fbbf24' }}>Management</span>
               </Typography>
+            </Box>
+          </Box>
+
+          {/* Session Selector */}
+          <Box sx={{ mb: 5, p: 1, background: 'rgba(15,23,42,0.7)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+            <Typography variant="caption" sx={{ color: '#64748b', px: 1.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', whiteSpace: 'nowrap' }}>
+              Session:
+            </Typography>
+            {availableSessions.map(session => {
+              const isActive = session === activeSession;
+              const isCurrent = session === CURRENT_SESSION;
+              return (
+                <Button
+                  key={session}
+                  onClick={() => setActiveSession(session)}
+                  size="small"
+                  sx={{
+                    borderRadius: '10px',
+                    px: 2.5, py: 0.8,
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    textTransform: 'none',
+                    transition: 'all 0.2s',
+                    background: isActive
+                      ? 'linear-gradient(90deg, #fbbf24, #f59e0b)'
+                      : 'rgba(255,255,255,0.04)',
+                    color: isActive ? '#0B1120' : '#94a3b8',
+                    border: `1px solid ${isActive ? '#fbbf24' : 'rgba(255,255,255,0.08)'}`,
+                    boxShadow: isActive ? '0 4px 14px rgba(251,191,36,0.35)' : 'none',
+                    '&:hover': {
+                      background: isActive ? 'linear-gradient(90deg, #fbbf24, #f59e0b)' : 'rgba(255,255,255,0.08)',
+                      color: isActive ? '#0B1120' : '#fff',
+                    },
+                  }}
+                >
+                  {session}
+                  {isCurrent && (
+                    <Box component="span" sx={{ ml: 1, fontSize: '0.65rem', background: isActive ? 'rgba(0,0,0,0.2)' : 'rgba(251,191,36,0.2)', color: isActive ? '#0B1120' : '#fbbf24', px: 0.8, py: 0.2, borderRadius: '6px', fontWeight: 800 }}>
+                      CURRENT
+                    </Box>
+                  )}
+                </Button>
+              );
+            })}
+            <Box sx={{ ml: 'auto' }}>
+              <Button size="small" onClick={() => loadApplications(activeSession)}
+                sx={{ borderRadius: '10px', px: 2, color: '#64748b', fontSize: '0.8rem', textTransform: 'none', '&:hover': { color: '#fff' } }}>
+                ↻ Refresh
+              </Button>
             </Box>
           </Box>
 
@@ -825,6 +931,15 @@ const CompetitionManagement = () => {
                 </CardContent>
               </Card>
             </Grid>
+            <Grid item xs={12} md={3}>
+              <Card sx={{ background: 'linear-gradient(135deg, rgba(52,211,153,0.2), rgba(16,185,129,0.05))', border: '1px solid rgba(52,211,153,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(52,211,153,0.15)' }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>💳 Payments Received</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#34d399', fontFamily: '"Saira Condensed", sans-serif' }}>{paidApplications}</Typography>
+                  <Typography variant="caption" sx={{ color: '#64748b' }}>Rs. {paidApplications * 150} collected</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
           </Grid>
 
           <Paper elevation={0} sx={{ p: 4, mb: 6, borderRadius: 4, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
@@ -835,12 +950,8 @@ const CompetitionManagement = () => {
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
               <FormControl sx={{ minWidth: 160 }}>
                 <InputLabel sx={{ color: '#94a3b8', '&.Mui-focused': { color: '#fbbf24' } }}>Search By</InputLabel>
-                <Select
-                  value={searchType}
-                  label="Search By"
-                  onChange={(e) => { setSearchType(e.target.value); setSearchTerm(''); }}
-                  sx={{ color: '#fff', '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.1)' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#fbbf24' }, '.MuiSvgIcon-root': { color: '#94a3b8' } }}
-                >
+                <Select value={searchType} label="Search By" onChange={(e) => { setSearchType(e.target.value); setSearchTerm(''); }}
+                  sx={{ color: '#fff', '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.1)' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#fbbf24' }, '.MuiSvgIcon-root': { color: '#94a3b8' } }}>
                   <MenuItem value="all">🔍 All Fields</MenuItem>
                   <MenuItem value="name">👤 Name</MenuItem>
                   <MenuItem value="phone">📱 Phone</MenuItem>
@@ -848,6 +959,17 @@ const CompetitionManagement = () => {
                   <MenuItem value="roll">🎫 Roll Number</MenuItem>
                   <MenuItem value="school">🏫 School</MenuItem>
                   <MenuItem value="subject">📚 Subject</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl sx={{ minWidth: 160 }}>
+                <InputLabel sx={{ color: '#94a3b8', '&.Mui-focused': { color: '#34d399' } }}>Payment</InputLabel>
+                <Select value={paymentFilter} label="Payment" onChange={(e) => setPaymentFilter(e.target.value)}
+                  sx={{ color: '#fff', '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.1)' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#34d399' }, '.MuiSvgIcon-root': { color: '#94a3b8' } }}>
+                  <MenuItem value="all">💳 All Payments</MenuItem>
+                  <MenuItem value="paid">✅ Paid</MenuItem>
+                  <MenuItem value="pending">⏳ Pending</MenuItem>
+                  <MenuItem value="failed">❌ Failed</MenuItem>
                 </Select>
               </FormControl>
               
@@ -876,7 +998,7 @@ const CompetitionManagement = () => {
               <Table>
                 <TableHead sx={{ background: 'rgba(15,23,42,0.6)' }}>
                   <TableRow>
-                    {['Roll Number', 'Name', 'Father\'s Name', 'Photo', 'Signature', 'Actions'].map((header) => (
+                    {['Roll Number', 'Name', "Father's Name", 'Payment', 'Photo', 'Signature', 'Actions'].map((header) => (
                       <TableCell key={header} sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                         {header}
                       </TableCell>
@@ -892,6 +1014,27 @@ const CompetitionManagement = () => {
                         <Typography variant="body2" sx={{ color: '#94a3b8' }}>{application.email}</Typography>
                       </TableCell>
                       <TableCell sx={{ color: '#cbd5e1', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{application.fatherName || 'Not provided'}</TableCell>
+                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <Chip
+                          label={application.paymentStatus === 'paid' || application.paymentStatus === 'verified' ? 'PAID' : application.paymentStatus === 'failed' ? 'FAILED' : 'PENDING'}
+                          size="small"
+                          sx={{
+                            background: application.paymentStatus === 'paid' || application.paymentStatus === 'verified'
+                              ? 'rgba(52,211,153,0.15)' : application.paymentStatus === 'failed'
+                              ? 'rgba(248,113,113,0.15)' : 'rgba(251,191,36,0.15)',
+                            color: application.paymentStatus === 'paid' || application.paymentStatus === 'verified'
+                              ? '#34d399' : application.paymentStatus === 'failed'
+                              ? '#f87171' : '#fbbf24',
+                            fontWeight: 700, fontSize: '0.7rem', border: '1px solid',
+                            borderColor: application.paymentStatus === 'paid' || application.paymentStatus === 'verified'
+                              ? 'rgba(52,211,153,0.4)' : application.paymentStatus === 'failed'
+                              ? 'rgba(248,113,113,0.4)' : 'rgba(251,191,36,0.4)',
+                          }}
+                        />
+                        {application.paymentTransactionId && (
+                          <Typography variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: '0.65rem', mt: 0.3 }}>{application.paymentTransactionId.slice(0, 12)}…</Typography>
+                        )}
+                      </TableCell>
                       <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                         {application.image ? (
                           <Box component="img" src={application.image} alt="photo" sx={{ width: 50, height: 50, borderRadius: 2, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
