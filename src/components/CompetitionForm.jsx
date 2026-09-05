@@ -300,7 +300,7 @@ const CompetitionForm = () => {
 
       // Open Cashfree checkout
       const { load } = await import('@cashfreepayments/cashfree-js');
-      const cashfree = await load({ mode: 'sandbox' });
+      const cashfree = await load({ mode: 'production' });
       cashfree.checkout({ paymentSessionId: orderData.paymentSessionId, redirectTarget: '_modal' })
         .then(async (result) => {
           if (result.error) { setError(`Payment failed: ${result.error.message}`); setLoading(false); return; }
