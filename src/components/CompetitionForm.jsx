@@ -194,7 +194,7 @@ const ThankYouScreen = ({ admitCardData, onDownload }) => (
             Download Admit Card
           </Button>
           <Typography variant="caption" color={C.inkSoft}>
-            Exam: 12 Oct 2025 | S.K. Modern Inter College, Semari, Jaunpur
+            Exam: 18 Oct 2026 | Result: 25 Oct 2026
           </Typography>
         </Paper>
       </motion.div>
@@ -384,7 +384,7 @@ body { padding: 15px; color: #000; background: #fff; }
       <div style="flex: 1;">
         <div class="row-table">
           <div class="col"><div class="col-label">Registration / Roll No.</div><div class="col-value">${admitCardData.rollNumber}</div></div>
-          <div class="col"><div class="col-label">Exam Date &amp; Time</div><div class="col-value">12 Oct 2026, 10:00 AM</div></div>
+          <div class="col"><div class="col-label">Exam Date &amp; Time</div><div class="col-value">18 Oct 2026, 10:00 AM</div></div>
         </div>
         <div class="row-table">
           <div class="col"><div class="col-label">Candidate Name</div><div class="col-value">${admitCardData.name}</div></div>
@@ -430,7 +430,7 @@ body { padding: 15px; color: #000; background: #fff; }
       <li>Original photo ID (Aadhaar Card / Voter ID) is mandatory along with this printed Admit Card.</li>
       <li>Mobile phones, calculators, smart watches, and other electronic devices are strictly prohibited inside the exam hall.</li>
       <li>Any malpractice or violation of rules will result in immediate cancellation of the candidature.</li>
-      <li><strong>Result Date:</strong> 18 October 2026. Results will be announced on <strong>NIICT Computer Classes</strong> YouTube Channel.</li>
+      <li><strong>Result Date:</strong> 25 October 2026. Results will be announced on <strong>NIICT Computer Classes</strong> YouTube Channel.</li>
     </ol>
 
     <div class="signature">
@@ -494,8 +494,18 @@ body { padding: 15px; color: #000; background: #fff; }
                   <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'center' }}>
                     <Box sx={{ p: 2, borderRadius: '16px', background: C.accentSoft, color: C.accent }}><FaClock size={22} /></Box>
                     <Box>
-                      <Typography variant="body2" color={C.inkSoft} fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '1.2px', fontSize: '0.7rem' }}>Date &amp; Time</Typography>
-                      <Typography variant="body1" color={C.ink} fontWeight={700} sx={{ mt: 0.5 }}>12 Oct 2025, 10:00 AM</Typography>
+                      <Typography variant="body2" color={C.inkSoft} fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '1.2px', fontSize: '0.7rem' }}>Form Filling Dates</Typography>
+                      <Typography variant="body1" color={C.ink} fontWeight={700} sx={{ mt: 0.5 }}>05 Sep – 10 Oct 2026</Typography>
+                      <Typography variant="body2" color={C.inkSoft}>Last Date: 10 Oct 2026</Typography>
+                    </Box>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'center' }}>
+                    <Box sx={{ p: 2, borderRadius: '16px', background: C.accentSoft, color: C.accent }}><FaClock size={22} /></Box>
+                    <Box>
+                      <Typography variant="body2" color={C.inkSoft} fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '1.2px', fontSize: '0.7rem' }}>Exam Date &amp; Time</Typography>
+                      <Typography variant="body1" color={C.ink} fontWeight={700} sx={{ mt: 0.5 }}>18 Oct 2026, 10:00 AM</Typography>
                       <Typography variant="body2" color={C.inkSoft}>Reporting: 8:00 AM</Typography>
                     </Box>
                   </Box>
@@ -507,6 +517,16 @@ body { padding: 15px; color: #000; background: #fff; }
                       <Typography variant="body2" color={C.inkSoft} fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '1.2px', fontSize: '0.7rem' }}>Exam Center</Typography>
                       <Typography variant="body1" color={C.ink} fontWeight={700} sx={{ mt: 0.5 }}>S.K. Modern Inter College</Typography>
                       <Typography variant="body2" color={C.inkSoft}>Semari, Jaunpur</Typography>
+                    </Box>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'center' }}>
+                    <Box sx={{ p: 2, borderRadius: '16px', background: C.goldSoft, color: C.gold }}><FaTrophy size={22} /></Box>
+                    <Box>
+                      <Typography variant="body2" color={C.inkSoft} fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '1.2px', fontSize: '0.7rem' }}>Result Date</Typography>
+                      <Typography variant="body1" color={C.ink} fontWeight={700} sx={{ mt: 0.5 }}>25 Oct 2026</Typography>
+                      <Typography variant="body2" color={C.inkSoft}>NIICT YouTube Channel</Typography>
                     </Box>
                   </Box>
                 </Grid>

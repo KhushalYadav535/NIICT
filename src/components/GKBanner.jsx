@@ -69,7 +69,7 @@ const GKBanner = () => {
                 className="relative z-10 inline-flex items-center gap-2 px-5 py-2 mb-6 text-xs font-bold tracking-widest text-amber-950 uppercase bg-gradient-to-r from-amber-200 to-amber-400 rounded-full shadow-lg shadow-amber-500/20"
               >
                 <Sparkles className="w-4 h-4" />
-                Registrations Open
+                Registrations Open · Last Date: 10 Oct 2026
               </motion.div>
 
               <motion.h2 
@@ -89,6 +89,29 @@ const GKBanner = () => {
               >
                 Test your knowledge, compete with the best, and win exciting prizes & scholarships!
               </motion.p>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45 }}
+                className="relative z-10 mt-4 grid grid-cols-2 gap-2 max-w-sm mx-auto text-xs"
+              >
+                <div className="bg-white/10 rounded-xl px-3 py-2 text-left">
+                  <div className="text-amber-300 font-bold uppercase tracking-wider" style={{fontSize:'0.6rem'}}>Exam Date</div>
+                  <div className="text-white font-bold">18 Oct 2026</div>
+                </div>
+                <div className="bg-white/10 rounded-xl px-3 py-2 text-left">
+                  <div className="text-amber-300 font-bold uppercase tracking-wider" style={{fontSize:'0.6rem'}}>Result Date</div>
+                  <div className="text-white font-bold">25 Oct 2026</div>
+                </div>
+                <div className="bg-white/10 rounded-xl px-3 py-2 text-left">
+                  <div className="text-amber-300 font-bold uppercase tracking-wider" style={{fontSize:'0.6rem'}}>1st Prize</div>
+                  <div className="text-white font-bold">Electric Scooty 🛵</div>
+                </div>
+                <div className="bg-white/10 rounded-xl px-3 py-2 text-left">
+                  <div className="text-amber-300 font-bold uppercase tracking-wider" style={{fontSize:'0.6rem'}}>Form Fee</div>
+                  <div className="text-white font-bold">₹150 Only</div>
+                </div>
+              </motion.div>
             </div>
 
             {/* Bottom Content & Action Buttons */}

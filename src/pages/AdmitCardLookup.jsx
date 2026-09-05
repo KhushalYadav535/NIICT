@@ -393,7 +393,7 @@ const AdmitCardLookup = () => {
               <div class="exam-grid">
                 <div class="exam-item">
                   <span class="exam-label">Examination Date:</span>
-                  <span class="exam-value">12 Oct 2025 Sunday</span>
+                  <span class="exam-value">18 Oct 2026 Sunday</span>
                 </div>
                 <div class="exam-item">
                   <span class="exam-label">Reporting Time:</span>
@@ -414,7 +414,7 @@ const AdmitCardLookup = () => {
             <div class="result-info" style="background: #e8f5e8; padding: 20px; margin: 0 30px 30px; border-radius: 10px; border-left: 5px solid #4caf50; text-align: center;">
               <h3 style="color: #2e7d32; margin-bottom: 10px; font-size: 16px;">परीक्षा परिणाम की तिथि</h3>
               <p style="color: #333; font-weight: 600; margin: 0;">
-                18 Oct 2025 को Niict computer Classes के यूट्यूब चैनल के माध्यम से घोषित किया जाएगा।
+                25 Oct 2026 को Niict computer Classes के यूट्यूब चैनल के माध्यम से घोषित किया जाएगा।
               </p>
             </div>
           </div>
@@ -546,7 +546,7 @@ const AdmitCardLookup = () => {
                   </Box>
                   <Box sx={{ mt: 2, p: 2, backgroundColor: '#e3f2fd', borderRadius: 1, border: '2px solid #1976d2' }}>
                     <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold', color: '#0d47a1', textAlign: 'center' }}>EXAMINATION DETAILS</Typography>
-                    <Typography><b>Examination Date:</b> 12 Oct 2025 Sunday</Typography>
+                    <Typography><b>Examination Date:</b> 18 Oct 2026 Sunday</Typography>
                     <Typography><b>Reporting Time:</b> 08:00 AM</Typography>
                     <Typography><b>Gate Closing Time:</b> 09:15 AM</Typography>
                     <Typography><b>Examination Time:</b> 10:00 AM</Typography>

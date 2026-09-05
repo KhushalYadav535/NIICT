@@ -369,7 +369,7 @@ const CompetitionManagement = () => {
               <div class="exam-grid">
                 <div class="exam-item">
                   <span class="exam-label">Examination Date:</span>
-                  <span class="exam-value">12 Oct 2025 Sunday</span>
+                  <span class="exam-value">18 Oct 2026 Sunday</span>
                 </div>
                 <div class="exam-item">
                   <span class="exam-label">Reporting Time:</span>
@@ -390,7 +390,7 @@ const CompetitionManagement = () => {
             <div class="result-info" style="background: #e8f5e8; padding: 20px; margin: 0 30px 30px; border-radius: 10px; border-left: 5px solid #4caf50; text-align: center;">
               <h3 style="color: #2e7d32; margin-bottom: 10px; font-size: 16px;">परीक्षा परिणाम की तिथि</h3>
               <p style="color: #333; font-weight: 600; margin: 0;">
-                18 Oct 2025 को Niict computer Classes के यूट्यूब चैनल के माध्यम से घोषित किया जाएगा।
+                25 Oct 2026 को Niict computer Classes के यूट्यूब चैनल के माध्यम से घोषित किया जाएगा।
               </p>
             </div>
           </div>
