@@ -210,8 +210,8 @@ const CourseManagement = () => {
               <Grid item xs={12}>
                 <Typography variant="subtitle2" sx={{ color: '#94a3b8', mb: 2, mt: 2, textTransform: 'uppercase', letterSpacing: '1px' }}>Syllabus Modules</Typography>
                 <Box display="flex" gap={2} mb={2}>
-                  <TextField sx={inputSx} label="Module Title" name="syllabusTitle" value={formData.syllabusTitle} onChange={handleInputChange} sx={{ ...inputSx, flex: 1 }} />
-                  <TextField sx={inputSx} label="Module Description" name="syllabusDesc" value={formData.syllabusDesc} onChange={handleInputChange} sx={{ ...inputSx, flex: 2 }} />
+                  <TextField label="Module Title" name="syllabusTitle" value={formData.syllabusTitle} onChange={handleInputChange} sx={{ ...inputSx, flex: 1 }} />
+                  <TextField label="Module Description" name="syllabusDesc" value={formData.syllabusDesc} onChange={handleInputChange} sx={{ ...inputSx, flex: 2 }} />
                   <Button variant="outlined" onClick={addSyllabusItem} sx={{ color: '#38bdf8', borderColor: '#38bdf8', '&:hover': { background: 'rgba(56,189,248,0.1)' } }}>Add</Button>
                 </Box>
                 {syllabus.map((item, index) => (

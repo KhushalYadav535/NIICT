@@ -44,7 +44,7 @@ const fieldSx = {
   '& .MuiFormHelperText-root': { color: C.inkSoft, marginLeft: 0, fontSize: '0.8rem' },
 };
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ||
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_BASE_URL ||
   (import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000');
 
 // Current academic/exam session — update this each year
@@ -88,7 +88,7 @@ const StepBar = ({ current }) => (
 );
 
 /* ─── Preview Modal ──────────────────────────────────────── */
-const PreviewModal = ({ open, formData, imagePreview, onConfirm, onEdit, loading }) => {
+const PreviewModal = ({ open, formData, imagePreview, onConfirm, onEdit, loading, error }) => {
   const rows = [
     ['Full Name', formData.name],
     ['Phone', formData.phone],
@@ -110,6 +110,11 @@ const PreviewModal = ({ open, formData, imagePreview, onConfirm, onEdit, loading
         </Typography>
       </DialogTitle>
       <DialogContent sx={{ pt: 2 }}>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2, borderRadius: '12px' }}>
+            {error}
+          </Alert>
+        )}
         {imagePreview && (
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
             <img src={imagePreview} alt="Student" style={{ width: 90, height: 112, objectFit: 'cover', borderRadius: 12, border: `3px solid ${C.border}` }} />
@@ -265,6 +270,16 @@ const CompetitionForm = () => {
     setPreviewOpen(true);
   };
 
+  // Handle return from redirect payment flow (e.g. mobile browsers / UPI)
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const orderIdParam = params.get('order_id');
+    const appIdParam = params.get('app_id');
+    if (orderIdParam && appIdParam) {
+      verifyPayment(appIdParam, orderIdParam);
+    }
+  }, []);
+
   /* ── Step 2: Save → Create Order → Open Cashfree ── */
   const handleConfirmAndPay = async () => {
     setLoading(true); setError('');
@@ -293,22 +308,40 @@ const CompetitionForm = () => {
         body: JSON.stringify({ applicationId: saved._id }),
       });
       const orderData = await orderRes.json();
-      if (!orderRes.ok) throw new Error(orderData.message || 'Failed to create payment order');
+      if (!orderRes.ok) {
+        throw new Error(orderData.detail || orderData.message || 'Failed to create payment order');
+      }
       orderId = orderData.orderId;
+
+      if (!orderData.paymentSessionId) {
+        throw new Error('Payment session is invalid. Please try again.');
+      }
 
       setPreviewOpen(false);
 
       // Open Cashfree checkout
       const { load } = await import('@cashfreepayments/cashfree-js');
-      const cashfree = await load({ mode: 'production' });
+      const cfMode = orderData.cfMode || (import.meta.env.VITE_CASHFREE_MODE || 'sandbox');
+      const cashfree = await load({ mode: cfMode });
+      
       cashfree.checkout({ paymentSessionId: orderData.paymentSessionId, redirectTarget: '_modal' })
         .then(async (result) => {
-          if (result.error) { setError(`Payment failed: ${result.error.message}`); setLoading(false); return; }
+          if (result.error) {
+            setError(`Payment failed: ${result.error.message || 'Payment cancelled'}`);
+            setLoading(false);
+            return;
+          }
           if (result.paymentDetails || result.redirect) {
             await verifyPayment(appId, orderId, enriched);
           }
+        })
+        .catch((cfErr) => {
+          console.error('Cashfree checkout error:', cfErr);
+          setError(cfErr.message || 'Payment window could not open');
+          setLoading(false);
         });
     } catch (err) {
+      console.error('Payment error:', err);
       setError(err.message || 'Something went wrong');
       setLoading(false);
     }
@@ -324,10 +357,23 @@ const CompetitionForm = () => {
       });
       const vData = await vRes.json();
       if (vRes.ok && vData.success) {
-        setAdmitCardData(prev => ({ ...(prev || enriched), paymentTransactionId: vData.transactionId, paidAt: vData.paidAt, paymentStatus: 'paid', paymentAmount: 150 }));
+        const appInfo = vData.application || {};
+        const b = new Date(appInfo.dateOfBirth || Date.now());
+        const t = new Date();
+        const age = t.getFullYear() - b.getFullYear();
+        setAdmitCardData(prev => ({
+          ...(prev || enriched || appInfo),
+          ...appInfo,
+          age,
+          qrCode: `COMPETITION_${appInfo.rollNumber || (prev && prev.rollNumber)}_${((appInfo.name || (prev && prev.name)) || '').replace(/\s+/g, '_')}`,
+          paymentTransactionId: vData.transactionId,
+          paidAt: vData.paidAt,
+          paymentStatus: 'paid',
+          paymentAmount: 150
+        }));
         setStep(3);
       } else {
-        setError('Payment verified but confirmation failed. Contact support with Order ID: ' + orderId);
+        setError('Payment verification failed: ' + (vData.message || 'Contact support with Order ID: ' + orderId));
         setStep(0);
       }
     } catch (err) {
@@ -614,7 +660,7 @@ body { padding: 15px; color: #000; background: #fff; }
         </motion.div>
       </Container>
 
-      <PreviewModal open={previewOpen} formData={formData} imagePreview={imagePreview} onConfirm={handleConfirmAndPay} onEdit={() => setPreviewOpen(false)} loading={loading} />
+      <PreviewModal open={previewOpen} formData={formData} imagePreview={imagePreview} onConfirm={handleConfirmAndPay} onEdit={() => setPreviewOpen(false)} loading={loading} error={error} />
     </Box>
   );
 };
