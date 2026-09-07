@@ -55,7 +55,7 @@ const InstituteCertificate = () => {
             <h1 className="text-5xl font-black text-indigo-900 tracking-wider uppercase mb-2">
               Certificate of Affiliation
             </h1>
-            <p className="text-xl text-slate-600 tracking-widest uppercase mb-12">National Institute of Information & Computer Technology</p>
+            <p className="text-xl text-slate-600 tracking-widest uppercase mb-12">Nihanshi Institute of Information & Computer Technology</p>
             
             <p className="text-lg text-slate-700 italic mb-6">This is to certify that</p>
             

@@ -8,8 +8,9 @@ import { motion } from 'framer-motion';
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
 import {
   FaTrophy, FaCalendarAlt, FaClock, FaMapMarkerAlt,
-  FaCheckCircle, FaCreditCard, FaDownload, FaEye, FaShieldAlt
+  FaCheckCircle, FaCreditCard, FaDownload, FaEye, FaShieldAlt, FaReceipt, FaPrint
 } from 'react-icons/fa';
+import { openAdmitCardPrintWindow, openApplicationFormPrintWindow } from '../utils/admitCardGenerator';
 
 /* ─── Design Tokens ─────────────────────────────────────── */
 const C = {
@@ -158,7 +159,7 @@ const PreviewModal = ({ open, formData, imagePreview, onConfirm, onEdit, loading
 };
 
 /* ─── Thank You Screen ───────────────────────────────────── */
-const ThankYouScreen = ({ admitCardData, onDownload }) => (
+const ThankYouScreen = ({ admitCardData, onDownloadAdmitCard, onDownloadAppForm }) => (
   <Box sx={{ minHeight: '100vh', background: `linear-gradient(135deg, ${C.canvas}, #fff)`, display: 'flex', alignItems: 'center', justifyContent: 'center', pt: 10, pb: 8 }}>
     <Container maxWidth="sm">
       <motion.div initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', bounce: 0.4 }}>
@@ -185,7 +186,7 @@ const ThankYouScreen = ({ admitCardData, onDownload }) => (
               ['Amount Paid', 'Rs. 150'],
               ['Transaction ID', admitCardData.paymentTransactionId || 'N/A'],
               ['Payment Date', admitCardData.paidAt ? new Date(admitCardData.paidAt).toLocaleString('en-IN') : new Date().toLocaleString('en-IN')],
-              ['Status', 'PAID'],
+              ['Status', 'PAID & VERIFIED'],
             ].map(([k, v]) => (
               <Box key={k} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="body2" color={C.inkSoft}>{k}</Typography>
@@ -194,12 +195,41 @@ const ThankYouScreen = ({ admitCardData, onDownload }) => (
             ))}
           </Box>
 
-          <Button variant="contained" size="large" fullWidth onClick={onDownload} startIcon={<FaDownload />}
-            sx={{ borderRadius: '16px', py: 1.8, fontWeight: 800, textTransform: 'none', fontSize: '1.05rem', background: `linear-gradient(90deg, ${C.accent}, #7C5CFC)`, boxShadow: `0 12px 28px ${C.accentMid}`, mb: 2 }}>
-            Download Admit Card
-          </Button>
+          <Box display="flex" flexDirection="column" gap={1.5} mb={2}>
+            <Button 
+              variant="contained" 
+              size="large" 
+              fullWidth 
+              onClick={onDownloadAdmitCard} 
+              startIcon={<FaPrint />}
+              sx={{ 
+                borderRadius: '16px', py: 1.8, fontWeight: 800, textTransform: 'none', fontSize: '1.05rem', 
+                background: 'linear-gradient(90deg, #2563EB, #1D4ED8)', 
+                boxShadow: '0 8px 24px rgba(37,99,235,0.35)' 
+              }}
+            >
+              Print Official E-Admit Card
+            </Button>
+
+            <Button 
+              variant="outlined" 
+              size="large" 
+              fullWidth 
+              onClick={onDownloadAppForm} 
+              startIcon={<FaReceipt />}
+              sx={{ 
+                borderRadius: '16px', py: 1.6, fontWeight: 800, textTransform: 'none', fontSize: '1rem', 
+                borderColor: '#059669', color: '#059669',
+                backgroundColor: '#ECFDF5',
+                '&:hover': { backgroundColor: '#D1FAE5', borderColor: '#047857' }
+              }}
+            >
+              Print Application Form &amp; Fee Receipt
+            </Button>
+          </Box>
+
           <Typography variant="caption" color={C.inkSoft}>
-            Exam: 18 Oct 2026 | Result: 25 Oct 2026
+            Exam: 18 Oct 2026 | Reporting: 08:00 AM | Result: 25 Oct 2026
           </Typography>
         </Paper>
       </motion.div>
@@ -365,7 +395,6 @@ const CompetitionForm = () => {
           ...(prev || enriched || appInfo),
           ...appInfo,
           age,
-          qrCode: `COMPETITION_${appInfo.rollNumber || (prev && prev.rollNumber)}_${((appInfo.name || (prev && prev.name)) || '').replace(/\s+/g, '_')}`,
           paymentTransactionId: vData.transactionId,
           paidAt: vData.paidAt,
           paymentStatus: 'paid',
@@ -384,116 +413,28 @@ const CompetitionForm = () => {
     }
   };
 
-  /* ── Print Admit Card ── */
+  /* ── Print Documents ── */
   const printAdmitCard = () => {
     if (!admitCardData) return;
-    const paidDate = admitCardData.paidAt ? new Date(admitCardData.paidAt).toLocaleString('en-IN') : new Date().toLocaleString('en-IN');
-    const w = window.open('', '_blank');
-    w.document.write(`<!DOCTYPE html><html><head><title>NIICT Admit Card - ${admitCardData.name}</title>
-<style>
-* { margin:0; padding:0; box-sizing:border-box; font-family: 'Arial', sans-serif; }
-body { padding: 15px; color: #000; background: #fff; }
-.card { border: 2px solid #000; max-width: 800px; margin: 0 auto; background: #fff; }
-.hdr { border-bottom: 2px solid #000; padding: 12px; text-align: center; }
-.hdr h1 { font-size: 20px; font-weight: 900; margin-bottom: 4px; text-transform: uppercase; }
-.hdr p { font-size: 11px; font-weight: 600; }
-.title { text-align: center; font-size: 15px; font-weight: bold; padding: 8px; border-bottom: 2px solid #000; background: #e5e5e5; text-transform: uppercase; letter-spacing: 1px; }
-.body { padding: 12px; }
-.row-table { display: flex; border: 1px solid #000; margin-bottom: 8px; }
-.col { border-right: 1px solid #000; padding: 6px 10px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
-.col:last-child { border-right: none; }
-.col-label { font-size: 9px; font-weight: bold; color: #444; text-transform: uppercase; margin-bottom: 3px; }
-.col-value { font-size: 13px; font-weight: bold; color: #000; text-transform: uppercase; }
-.photo-box { width: 110px; height: 140px; border: 1px solid #000; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #666; background: #f9f9f9; }
-.photo-box img { width: 100%; height: 100%; object-fit: cover; }
-.sec-title { font-size: 12px; font-weight: bold; background: #e5e5e5; padding: 6px 10px; border: 1px solid #000; border-bottom: none; text-transform: uppercase; margin-top: 4px; }
-.sec-table { border: 1px solid #000; margin-bottom: 8px; width: 100%; border-collapse: collapse; }
-.sec-table td { border: 1px solid #000; padding: 6px 10px; width: 50%; }
-.instructions { border: 1px solid #000; padding: 10px 10px 10px 30px; margin-bottom: 15px; font-size: 11px; line-height: 1.6; }
-.instructions li { margin-bottom: 4px; }
-.signature { margin-top: 40px; display: flex; justify-content: space-between; padding: 0 10px; margin-bottom: 10px; }
-.sig-line { border-top: 1px solid #000; width: 180px; text-align: center; font-size: 11px; padding-top: 5px; font-weight: bold; text-transform: uppercase; }
-@media print { 
-  body { padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
-  .card { border: 1px solid #000; } 
-  .title, .sec-title { background: #e5e5e5 !important; }
-}
-</style></head><body>
-<div class="card">
-  <div class="hdr">
-    <h1>NIICT Computer Institute of IT Management</h1>
-    <p>AN ISO 9001:2015 CERTIFIED ORGANIZATION</p>
-  </div>
-  <div class="title">Candidate Admit Card &amp; Application Form</div>
-  <div class="body">
-    <div style="display: flex; gap: 10px; margin-bottom: 8px;">
-      <div style="flex: 1;">
-        <div class="row-table">
-          <div class="col"><div class="col-label">Registration / Roll No.</div><div class="col-value">${admitCardData.rollNumber}</div></div>
-          <div class="col"><div class="col-label">Exam Date &amp; Time</div><div class="col-value">18 Oct 2026, 10:00 AM</div></div>
-        </div>
-        <div class="row-table">
-          <div class="col"><div class="col-label">Candidate Name</div><div class="col-value">${admitCardData.name}</div></div>
-        </div>
-        <div class="row-table">
-          <div class="col"><div class="col-label">Father's Name</div><div class="col-value">${admitCardData.fatherName}</div></div>
-          <div class="col"><div class="col-label">Mother's Name</div><div class="col-value">${admitCardData.motherName}</div></div>
-        </div>
-        <div class="row-table">
-          <div class="col"><div class="col-label">Date of Birth</div><div class="col-value">${new Date(admitCardData.dateOfBirth).toLocaleDateString('en-GB')}</div></div>
-          <div class="col"><div class="col-label">Class Passed</div><div class="col-value">${admitCardData.classPassed || admitCardData.class || 'N/A'}</div></div>
-        </div>
-      </div>
-      <div class="photo-box">
-        ${admitCardData.image ? `<img src="${admitCardData.image}" alt="Photo"/>` : 'AFFIX PHOTO'}
-      </div>
-    </div>
-    
-    <div class="row-table">
-      <div class="col"><div class="col-label">School / College Name</div><div class="col-value">${admitCardData.school}</div></div>
-    </div>
-    
-    <div class="row-table">
-      <div class="col"><div class="col-label">Exam Center</div><div class="col-value">S.K. Modern Inter College, Semari, Jaunpur</div></div>
-    </div>
+    openAdmitCardPrintWindow(admitCardData);
+  };
 
-    <div class="sec-title">Fee &amp; Payment Details</div>
-    <table class="sec-table">
-      <tr>
-        <td><div class="col-label">Amount Paid</div><div class="col-value">Rs. ${admitCardData.paymentAmount || 150}</div></td>
-        <td><div class="col-label">Payment Date</div><div class="col-value">${paidDate}</div></td>
-      </tr>
-      <tr>
-        <td><div class="col-label">Transaction ID</div><div class="col-value">${admitCardData.paymentTransactionId || 'N/A'}</div></td>
-        <td><div class="col-label">Payment Status</div><div class="col-value">SUCCESS</div></td>
-      </tr>
-    </table>
-
-    <div class="sec-title">Instructions to Candidates</div>
-    <ol class="instructions">
-      <li><strong>Reporting Time: 08:00 AM.</strong> Reporting half hour before scheduled time is mandatory.</li>
-      <li>Entry is allowed 15 mins before the exam starts. No entry will be permitted 30 mins after commencement.</li>
-      <li>Original photo ID (Aadhaar Card / Voter ID) is mandatory along with this printed Admit Card.</li>
-      <li>Mobile phones, calculators, smart watches, and other electronic devices are strictly prohibited inside the exam hall.</li>
-      <li>Any malpractice or violation of rules will result in immediate cancellation of the candidature.</li>
-      <li><strong>Result Date:</strong> 25 October 2026. Results will be announced on <strong>NIICT Computer Classes</strong> YouTube Channel.</li>
-    </ol>
-
-    <div class="signature">
-      <div class="sig-line">Candidate Signature</div>
-      <div class="sig-line">Invigilator Signature</div>
-      <div class="sig-line">Authorized Signatory</div>
-    </div>
-  </div>
-</div>
-</body></html>`);
-    w.document.close();
-    w.onload = () => setTimeout(() => { try { w.focus(); } catch (_) { } w.print(); }, 200);
+  const printApplicationForm = () => {
+    if (!admitCardData) return;
+    openApplicationFormPrintWindow(admitCardData);
   };
 
   /* ─────────────────────────────────────────────────────── */
 
-  if (step === 3 && admitCardData) return <ThankYouScreen admitCardData={admitCardData} onDownload={printAdmitCard} />;
+  if (step === 3 && admitCardData) {
+    return (
+      <ThankYouScreen 
+        admitCardData={admitCardData} 
+        onDownloadAdmitCard={printAdmitCard}
+        onDownloadAppForm={printApplicationForm}
+      />
+    );
+  }
 
   if (step === 2) return (
     <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.canvas }}>

@@ -75,103 +75,106 @@ const FranchiseManagement = () => {
 
   if (showDetails && selectedFranchise) {
     return (
-      <Box sx={{ minHeight: '100vh', backgroundColor: '#0B1120', pt: 12, pb: 8 }}>
+      <Box sx={{ minHeight: '100vh', backgroundColor: '#F8FAFC', pt: 4, pb: 8 }}>
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <Box display="flex" alignItems="center" mb={6} gap={2}>
-              <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #38bdf8, #3b82f6)', boxShadow: '0 0 20px rgba(56,189,248,0.4)', display: 'flex' }}>
-                <FaStore size={32} color="#fff" />
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <Box display="flex" alignItems="center" mb={4} gap={2}>
+              <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', boxShadow: '0 10px 20px -5px rgba(37,99,235,0.4)', display: 'flex' }}>
+                <FaStore size={28} color="#fff" />
               </Box>
               <Box>
-                <Typography variant="h3" fontWeight={800} color="#fff" sx={{ letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Saira Condensed", sans-serif', lineHeight: 1 }}>
-                  Franchise <span style={{ color: '#38bdf8' }}>Details</span>
+                <Typography variant="h4" fontWeight={800} color="#0F172A" sx={{ letterSpacing: '0.5px' }}>
+                  Franchise <span style={{ color: '#2563EB' }}>Details</span>
+                </Typography>
+                <Typography variant="body2" color="#64748B">
+                  Review applicant profile, center infrastructure, and manage accreditation status.
                 </Typography>
               </Box>
             </Box>
 
-            <Paper elevation={0} sx={{ p: 4, borderRadius: 4, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
-              <Grid container spacing={3}>
+            <Paper elevation={0} sx={{ p: 4, borderRadius: 3, background: '#FFFFFF', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px -2px rgba(15,23,42,0.05)' }}>
+              <Grid container spacing={4}>
                 <Grid item xs={12} md={8}>
-                  <Box sx={{ background: 'rgba(15,23,42,0.6)', p: 3, borderRadius: 3, border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <Typography variant="h6" fontWeight={600} color="#fff" gutterBottom sx={{ textTransform: 'uppercase', letterSpacing: '1px', mb: 3 }}>
+                  <Box sx={{ background: '#F8FAFC', p: 3.5, borderRadius: 3, border: '1px solid #E2E8F0' }}>
+                    <Typography variant="h6" fontWeight={700} color="#0F172A" gutterBottom sx={{ textTransform: 'uppercase', letterSpacing: '0.5px', mb: 3, fontSize: '0.95rem' }}>
                       Applicant Information
                     </Typography>
                     <Grid container spacing={3}>
-                      <Grid item xs={6}>
-                        <Typography variant="body2" color="#94a3b8">Institute Name</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedFranchise.instituteName}</Typography>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ textTransform: 'uppercase' }}>Institute Name</Typography>
+                        <Typography variant="h6" fontWeight={700} color="#0F172A">{selectedFranchise.instituteName}</Typography>
                       </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="body2" color="#94a3b8">Owner Name</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedFranchise.ownerName}</Typography>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ textTransform: 'uppercase' }}>Owner Name</Typography>
+                        <Typography variant="h6" fontWeight={700} color="#0F172A">{selectedFranchise.ownerName}</Typography>
                       </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="body2" color="#94a3b8">Status</Typography>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ textTransform: 'uppercase', display: 'block', mb: 0.5 }}>Status</Typography>
                         <Chip label={selectedFranchise.status.charAt(0).toUpperCase() + selectedFranchise.status.slice(1)}
                           sx={{
-                            fontWeight: 600,
-                            backgroundColor: selectedFranchise.status === 'approved' ? 'rgba(52,211,153,0.1)' : selectedFranchise.status === 'rejected' ? 'rgba(248,113,113,0.1)' : 'rgba(251,191,36,0.1)',
-                            color: selectedFranchise.status === 'approved' ? '#34d399' : selectedFranchise.status === 'rejected' ? '#f87171' : '#fbbf24',
-                            border: `1px solid ${selectedFranchise.status === 'approved' ? '#34d399' : selectedFranchise.status === 'rejected' ? '#f87171' : '#fbbf24'}40`,
+                            fontWeight: 700,
+                            backgroundColor: selectedFranchise.status === 'approved' ? '#ECFDF5' : selectedFranchise.status === 'rejected' ? '#FEF2F2' : '#FFFBEB',
+                            color: selectedFranchise.status === 'approved' ? '#059669' : selectedFranchise.status === 'rejected' ? '#DC2626' : '#D97706',
+                            border: `1px solid ${selectedFranchise.status === 'approved' ? '#A7F3D0' : selectedFranchise.status === 'rejected' ? '#FECACA' : '#FDE68A'}`,
                             borderRadius: 2
                           }}
                         />
                       </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="body2" color="#94a3b8">Email</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedFranchise.email}</Typography>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ textTransform: 'uppercase' }}>Email</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#2563EB">{selectedFranchise.email}</Typography>
                       </Grid>
-                      <Grid item xs={4}>
-                        <Typography variant="body2" color="#94a3b8">Primary Contact</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedFranchise.contact1}</Typography>
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ textTransform: 'uppercase' }}>Primary Contact</Typography>
+                        <Typography variant="body1" fontWeight={600} color="#0F172A">{selectedFranchise.contact1}</Typography>
                       </Grid>
-                      <Grid item xs={4}>
-                        <Typography variant="body2" color="#94a3b8">Secondary Contact</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedFranchise.contact2 || 'N/A'}</Typography>
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ textTransform: 'uppercase' }}>Secondary Contact</Typography>
+                        <Typography variant="body1" fontWeight={600} color="#475569">{selectedFranchise.contact2 || 'N/A'}</Typography>
                       </Grid>
-                      <Grid item xs={4}>
-                        <Typography variant="body2" color="#94a3b8">WhatsApp</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedFranchise.whatsapp || 'N/A'}</Typography>
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ textTransform: 'uppercase' }}>WhatsApp</Typography>
+                        <Typography variant="body1" fontWeight={600} color="#059669">{selectedFranchise.whatsapp || 'N/A'}</Typography>
                       </Grid>
                       {selectedFranchise.dob && (
-                        <Grid item xs={6}>
-                          <Typography variant="body2" color="#94a3b8">Date of Birth</Typography>
-                          <Typography variant="h6" fontWeight={600} color="#fff">{new Date(selectedFranchise.dob).toLocaleDateString('en-GB')}</Typography>
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ textTransform: 'uppercase' }}>Date of Birth</Typography>
+                          <Typography variant="body1" fontWeight={600} color="#0F172A">{new Date(selectedFranchise.dob).toLocaleDateString('en-GB')}</Typography>
                         </Grid>
                       )}
-                      <Grid item xs={6}>
-                        <Typography variant="body2" color="#94a3b8">PAN Number</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedFranchise.pan || 'N/A'}</Typography>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ textTransform: 'uppercase' }}>PAN Number</Typography>
+                        <Typography variant="body1" fontWeight={600} color="#0F172A">{selectedFranchise.pan || 'N/A'}</Typography>
                       </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="body2" color="#94a3b8">GST Number</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedFranchise.gst || 'N/A'}</Typography>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ textTransform: 'uppercase' }}>GST Number</Typography>
+                        <Typography variant="body1" fontWeight={600} color="#0F172A">{selectedFranchise.gst || 'N/A'}</Typography>
                       </Grid>
                       <Grid item xs={12}>
-                        <Typography variant="body2" color="#94a3b8">Institute Address</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedFranchise.instituteAddress}</Typography>
+                        <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ textTransform: 'uppercase' }}>Institute Address</Typography>
+                        <Typography variant="body1" fontWeight={600} color="#0F172A">{selectedFranchise.instituteAddress}</Typography>
                       </Grid>
                       {selectedFranchise.ownerAddress && (
                         <Grid item xs={12}>
-                          <Typography variant="body2" color="#94a3b8">Owner Address</Typography>
-                          <Typography variant="h6" fontWeight={600} color="#fff">{selectedFranchise.ownerAddress}</Typography>
+                          <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ textTransform: 'uppercase' }}>Owner Address</Typography>
+                          <Typography variant="body1" fontWeight={600} color="#0F172A">{selectedFranchise.ownerAddress}</Typography>
                         </Grid>
                       )}
                       <Grid item xs={4}>
-                        <Typography variant="body2" color="#94a3b8">District</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedFranchise.district}</Typography>
+                        <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ textTransform: 'uppercase' }}>District</Typography>
+                        <Typography variant="body1" fontWeight={600} color="#0F172A">{selectedFranchise.district}</Typography>
                       </Grid>
                       <Grid item xs={4}>
-                        <Typography variant="body2" color="#94a3b8">State</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedFranchise.state}</Typography>
+                        <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ textTransform: 'uppercase' }}>State</Typography>
+                        <Typography variant="body1" fontWeight={600} color="#0F172A">{selectedFranchise.state}</Typography>
                       </Grid>
                       <Grid item xs={4}>
-                        <Typography variant="body2" color="#94a3b8">Pin Code</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedFranchise.pinCode}</Typography>
+                        <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ textTransform: 'uppercase' }}>Pin Code</Typography>
+                        <Typography variant="body1" fontWeight={600} color="#0F172A">{selectedFranchise.pinCode}</Typography>
                       </Grid>
                       <Grid item xs={12}>
-                        <Typography variant="body2" color="#94a3b8">Applied On</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{new Date(selectedFranchise.applicationDate || selectedFranchise.createdAt).toLocaleDateString('en-GB')}</Typography>
+                        <Typography variant="caption" color="#64748B" fontWeight={600} sx={{ textTransform: 'uppercase' }}>Applied On</Typography>
+                        <Typography variant="body1" fontWeight={600} color="#0F172A">{new Date(selectedFranchise.applicationDate || selectedFranchise.createdAt).toLocaleDateString('en-GB')}</Typography>
                       </Grid>
                     </Grid>
                   </Box>
@@ -181,28 +184,28 @@ const FranchiseManagement = () => {
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {selectedFranchise.status === 'pending' && (
                       <>
-                        <Button variant="contained" size="large" onClick={() => handleStatusUpdate(selectedFranchise._id, 'approved')} startIcon={<FaCheck />} sx={{ background: 'linear-gradient(135deg, #34d399, #10b981)', color: '#fff', '&:hover': { boxShadow: '0 0 20px rgba(52,211,153,0.4)' } }}>
+                        <Button variant="contained" size="large" onClick={() => handleStatusUpdate(selectedFranchise._id, 'approved')} startIcon={<FaCheck />} sx={{ background: 'linear-gradient(135deg, #10B981, #059669)', color: '#fff', textTransform: 'none', fontWeight: 600, py: 1.5, borderRadius: 2, boxShadow: '0 4px 12px rgba(16,185,129,0.25)' }}>
                           Approve Application
                         </Button>
-                        <Button variant="contained" size="large" onClick={() => handleStatusUpdate(selectedFranchise._id, 'rejected')} startIcon={<FaTimes />} sx={{ background: 'linear-gradient(135deg, #f87171, #ef4444)', color: '#fff', '&:hover': { boxShadow: '0 0 20px rgba(248,113,113,0.4)' } }}>
+                        <Button variant="contained" size="large" onClick={() => handleStatusUpdate(selectedFranchise._id, 'rejected')} startIcon={<FaTimes />} sx={{ background: 'linear-gradient(135deg, #EF4444, #DC2626)', color: '#fff', textTransform: 'none', fontWeight: 600, py: 1.5, borderRadius: 2, boxShadow: '0 4px 12px rgba(239,68,68,0.25)' }}>
                           Reject Application
                         </Button>
                       </>
                     )}
                     {selectedFranchise.status === 'approved' && (
-                      <Button variant="outlined" color="warning" size="large" onClick={() => handleStatusUpdate(selectedFranchise._id, 'pending')} sx={{ borderColor: '#fbbf24', color: '#fbbf24', '&:hover': { background: 'rgba(251,191,36,0.1)' } }}>
+                      <Button variant="outlined" size="large" onClick={() => handleStatusUpdate(selectedFranchise._id, 'pending')} sx={{ borderColor: '#FDE68A', color: '#D97706', backgroundColor: '#FFFBEB', textTransform: 'none', fontWeight: 600, py: 1.5, borderRadius: 2, '&:hover': { backgroundColor: '#FEF3C7', borderColor: '#F59E0B' } }}>
                         Revert to Pending
                       </Button>
                     )}
                     {selectedFranchise.status === 'rejected' && (
-                      <Button variant="outlined" color="warning" size="large" onClick={() => handleStatusUpdate(selectedFranchise._id, 'pending')} sx={{ borderColor: '#fbbf24', color: '#fbbf24', '&:hover': { background: 'rgba(251,191,36,0.1)' } }}>
+                      <Button variant="outlined" size="large" onClick={() => handleStatusUpdate(selectedFranchise._id, 'pending')} sx={{ borderColor: '#FDE68A', color: '#D97706', backgroundColor: '#FFFBEB', textTransform: 'none', fontWeight: 600, py: 1.5, borderRadius: 2, '&:hover': { backgroundColor: '#FEF3C7', borderColor: '#F59E0B' } }}>
                         Reopen Application
                       </Button>
                     )}
-                    <Button variant="outlined" size="large" onClick={() => handleDelete(selectedFranchise._id)} startIcon={<FaTrash />} sx={{ borderColor: '#f87171', color: '#f87171', '&:hover': { background: 'rgba(248,113,113,0.1)' } }}>
+                    <Button variant="outlined" size="large" onClick={() => handleDelete(selectedFranchise._id)} startIcon={<FaTrash />} sx={{ borderColor: '#FECACA', color: '#DC2626', backgroundColor: '#FEF2F2', textTransform: 'none', fontWeight: 600, py: 1.5, borderRadius: 2, '&:hover': { backgroundColor: '#FEE2E2', borderColor: '#EF4444' } }}>
                       Delete Application
                     </Button>
-                    <Button variant="outlined" size="large" onClick={() => setShowDetails(false)} sx={{ borderColor: '#64748b', color: '#cbd5e1', '&:hover': { background: 'rgba(100,116,139,0.1)', borderColor: '#cbd5e1' } }}>
+                    <Button variant="outlined" size="large" onClick={() => setShowDetails(false)} sx={{ borderColor: '#CBD5E1', color: '#475569', backgroundColor: '#FFFFFF', textTransform: 'none', fontWeight: 600, py: 1.5, borderRadius: 2, '&:hover': { backgroundColor: '#F8FAFC', borderColor: '#94A3B8' } }}>
                       Back to List
                     </Button>
                   </Box>
@@ -216,41 +219,44 @@ const FranchiseManagement = () => {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#0B1120', pt: 12, pb: 8 }}>
-      <Box sx={{ position: 'fixed', top: '-10%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(56,189,248,0.1) 0%, rgba(11,17,32,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
-      <Box sx={{ position: 'fixed', bottom: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(59,130,246,0.1) 0%, rgba(11,17,32,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#F8FAFC', pt: 4, pb: 8 }}>
+      <Box sx={{ position: 'fixed', top: '-10%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(37,99,235,0.05) 0%, rgba(248,250,252,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
+      <Box sx={{ position: 'fixed', bottom: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(99,102,241,0.05) 0%, rgba(248,250,252,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
 
       <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
-        <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           
-          <Box display="flex" alignItems="center" mb={6} gap={2}>
-            <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #38bdf8, #3b82f6)', boxShadow: '0 0 20px rgba(56,189,248,0.4)', display: 'flex' }}>
-              <FaStore size={32} color="#fff" />
+          <Box display="flex" alignItems="center" mb={4} gap={2}>
+            <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', boxShadow: '0 10px 20px -5px rgba(37,99,235,0.4)', display: 'flex' }}>
+              <FaStore size={28} color="#fff" />
             </Box>
             <Box>
-              <Typography variant="h3" fontWeight={800} color="#fff" sx={{ letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Saira Condensed", sans-serif', lineHeight: 1 }}>
-                Franchise <span style={{ color: '#38bdf8' }}>Management</span>
+              <Typography variant="h4" fontWeight={800} color="#0F172A" sx={{ letterSpacing: '0.5px' }}>
+                Franchise <span style={{ color: '#2563EB' }}>Management</span>
+              </Typography>
+              <Typography variant="body2" color="#64748B">
+                Manage partner study center registrations, applications, and verification.
               </Typography>
             </Box>
           </Box>
 
-          <Grid container spacing={3} mb={6}>
+          <Grid container spacing={3} mb={4}>
             {[
-              { title: 'Total Applications', value: total, icon: <StoreIcon />, color: '#38bdf8', gradient: 'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(59,130,246,0.05))' },
-              { title: 'Approved', value: approved, icon: <AssignmentTurnedInIcon />, color: '#34d399', gradient: 'linear-gradient(135deg, rgba(52,211,153,0.2), rgba(16,185,129,0.05))' },
-              { title: 'Pending', value: pending, icon: <PendingActionsIcon />, color: '#fbbf24', gradient: 'linear-gradient(135deg, rgba(251,191,36,0.2), rgba(245,158,11,0.05))' },
-              { title: 'Rejected', value: rejected, icon: <CancelIcon />, color: '#f87171', gradient: 'linear-gradient(135deg, rgba(248,113,113,0.2), rgba(239,68,68,0.05))' }
+              { title: 'Total Applications', value: total, icon: <StoreIcon />, color: '#0284C7', bg: '#FFFFFF' },
+              { title: 'Approved Centers', value: approved, icon: <AssignmentTurnedInIcon />, color: '#059669', bg: '#FFFFFF' },
+              { title: 'Pending Approval', value: pending, icon: <PendingActionsIcon />, color: '#D97706', bg: '#FFFFFF' },
+              { title: 'Rejected', value: rejected, icon: <CancelIcon />, color: '#DC2626', bg: '#FFFFFF' }
             ].map((metric, idx) => (
               <Grid item xs={12} sm={6} md={3} key={idx}>
-                <Card sx={{ background: metric.gradient, border: `1px solid ${metric.color}40`, backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: `0 0 30px ${metric.color}15`, position: 'relative', overflow: 'hidden' }}>
-                  <Box sx={{ position: 'absolute', top: -20, right: -20, color: `${metric.color}20`, transform: 'scale(3)' }}>
+                <Card sx={{ background: metric.bg, border: '1px solid #E2E8F0', borderRadius: 3, boxShadow: '0 4px 20px -2px rgba(15,23,42,0.05)', position: 'relative', overflow: 'hidden' }}>
+                  <Box sx={{ position: 'absolute', top: -10, right: -10, color: `${metric.color}15`, transform: 'scale(2.5)' }}>
                     {metric.icon}
                   </Box>
-                  <CardContent sx={{ p: 4, position: 'relative', zIndex: 1 }}>
-                    <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>
+                  <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
+                    <Typography variant="caption" sx={{ color: '#64748B', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>
                       {metric.title}
                     </Typography>
-                    <Typography variant="h2" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>
+                    <Typography variant="h4" fontWeight={800} sx={{ color: metric.color, mt: 0.5 }}>
                       {metric.value}
                     </Typography>
                   </CardContent>
@@ -259,13 +265,13 @@ const FranchiseManagement = () => {
             ))}
           </Grid>
 
-          <Paper sx={{ borderRadius: 4, overflow: 'hidden', background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+          <Paper sx={{ borderRadius: 3, overflow: 'hidden', background: '#FFFFFF', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px -2px rgba(15,23,42,0.05)' }}>
             <TableContainer>
               <Table>
-                <TableHead sx={{ background: 'rgba(15,23,42,0.6)' }}>
+                <TableHead sx={{ background: '#F8FAFC' }}>
                   <TableRow>
                     {['Institute', 'Owner / Email', 'Contact', 'Location', 'Status', 'Actions'].map((header) => (
-                      <TableCell key={header} sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <TableCell key={header} sx={{ color: '#475569', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #E2E8F0', py: 1.8 }}>
                         {header}
                       </TableCell>
                     ))}
@@ -273,48 +279,48 @@ const FranchiseManagement = () => {
                 </TableHead>
                 <TableBody>
                   {franchises.map((franchise) => (
-                    <TableRow key={franchise._id} hover sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.02) !important' } }}>
-                      <TableCell>
-                        <Typography sx={{ color: '#fff', fontWeight: 500 }}>{franchise.instituteName}</Typography>
-                        <Typography variant="body2" sx={{ color: '#94a3b8' }}>{franchise.ownerName}</Typography>
+                    <TableRow key={franchise._id} hover sx={{ '&:hover': { backgroundColor: '#F8FAFC !important' } }}>
+                      <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
+                        <Typography sx={{ color: '#0F172A', fontWeight: 700 }}>{franchise.instituteName}</Typography>
+                        <Typography variant="body2" sx={{ color: '#64748B' }}>{franchise.ownerName}</Typography>
                       </TableCell>
-                      <TableCell>
-                        <Typography sx={{ color: '#fff', fontWeight: 500 }}>{franchise.email}</Typography>
-                        <Typography variant="body2" sx={{ color: '#94a3b8' }}>{franchise.contact1}</Typography>
+                      <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
+                        <Typography sx={{ color: '#2563EB', fontWeight: 600 }}>{franchise.email}</Typography>
+                        <Typography variant="body2" sx={{ color: '#64748B' }}>{franchise.contact1}</Typography>
                       </TableCell>
-                      <TableCell sx={{ color: '#cbd5e1', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <TableCell sx={{ color: '#475569', fontWeight: 500, borderBottom: '1px solid #F1F5F9' }}>
                         {franchise.contact1}
-                        {franchise.whatsapp && <Typography variant="body2" sx={{ color: '#94a3b8' }}>WA: {franchise.whatsapp}</Typography>}
+                        {franchise.whatsapp && <Typography variant="caption" sx={{ color: '#059669', display: 'block', fontWeight: 600 }}>WA: {franchise.whatsapp}</Typography>}
                       </TableCell>
-                      <TableCell sx={{ color: '#cbd5e1', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{franchise.district}, {franchise.state}</TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <TableCell sx={{ color: '#475569', borderBottom: '1px solid #F1F5F9' }}>{franchise.district}, {franchise.state}</TableCell>
+                      <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
                         <Chip 
                           label={franchise.status.charAt(0).toUpperCase() + franchise.status.slice(1)}
                           sx={{ 
-                            fontWeight: 600, 
-                            backgroundColor: franchise.status === 'approved' ? 'rgba(52,211,153,0.1)' : franchise.status === 'rejected' ? 'rgba(248,113,113,0.1)' : 'rgba(251,191,36,0.1)',
-                            color: franchise.status === 'approved' ? '#34d399' : franchise.status === 'rejected' ? '#f87171' : '#fbbf24',
-                            border: `1px solid ${franchise.status === 'approved' ? '#34d399' : franchise.status === 'rejected' ? '#f87171' : '#fbbf24'}40`,
+                            fontWeight: 700, 
+                            backgroundColor: franchise.status === 'approved' ? '#ECFDF5' : franchise.status === 'rejected' ? '#FEF2F2' : '#FFFBEB',
+                            color: franchise.status === 'approved' ? '#059669' : franchise.status === 'rejected' ? '#DC2626' : '#D97706',
+                            border: `1px solid ${franchise.status === 'approved' ? '#A7F3D0' : franchise.status === 'rejected' ? '#FECACA' : '#FDE68A'}`,
                             borderRadius: 2
                           }}
                         />
                       </TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
                         <Box display="flex" gap={1}>
-                          <Button variant="outlined" size="small" onClick={() => handleViewDetails(franchise)} startIcon={<FaEye />} sx={{ color: '#38bdf8', borderColor: '#38bdf850', '&:hover': { borderColor: '#38bdf8', background: 'rgba(56,189,248,0.1)' } }}>
+                          <Button variant="outlined" size="small" onClick={() => handleViewDetails(franchise)} startIcon={<FaEye />} sx={{ color: '#2563EB', borderColor: '#BFDBFE', backgroundColor: '#EFF6FF', textTransform: 'none', fontWeight: 600, borderRadius: 1.5, '&:hover': { borderColor: '#2563EB', background: '#DBEAFE' } }}>
                             View
                           </Button>
                           {franchise.status === 'pending' && (
                             <>
-                              <Button variant="outlined" size="small" onClick={() => handleStatusUpdate(franchise._id, 'approved')} startIcon={<FaCheck />} sx={{ color: '#34d399', borderColor: '#34d39950', '&:hover': { borderColor: '#34d399', background: 'rgba(52,211,153,0.1)' } }}>
+                              <Button variant="outlined" size="small" onClick={() => handleStatusUpdate(franchise._id, 'approved')} startIcon={<FaCheck />} sx={{ color: '#059669', borderColor: '#A7F3D0', backgroundColor: '#ECFDF5', textTransform: 'none', fontWeight: 600, borderRadius: 1.5, '&:hover': { borderColor: '#059669', background: '#D1FAE5' } }}>
                                 Approve
                               </Button>
-                              <Button variant="outlined" size="small" onClick={() => handleStatusUpdate(franchise._id, 'rejected')} startIcon={<FaTimes />} sx={{ color: '#f87171', borderColor: '#f8717150', '&:hover': { borderColor: '#f87171', background: 'rgba(248,113,113,0.1)' } }}>
+                              <Button variant="outlined" size="small" onClick={() => handleStatusUpdate(franchise._id, 'rejected')} startIcon={<FaTimes />} sx={{ color: '#DC2626', borderColor: '#FECACA', backgroundColor: '#FEF2F2', textTransform: 'none', fontWeight: 600, borderRadius: 1.5, '&:hover': { borderColor: '#DC2626', background: '#FEE2E2' } }}>
                                 Reject
                               </Button>
                             </>
                           )}
-                          <Button variant="outlined" size="small" onClick={() => handleDelete(franchise._id)} startIcon={<FaTrash />} sx={{ color: '#f87171', borderColor: '#f8717150', '&:hover': { borderColor: '#f87171', background: 'rgba(248,113,113,0.1)' } }}>
+                          <Button variant="outlined" size="small" onClick={() => handleDelete(franchise._id)} startIcon={<FaTrash />} sx={{ color: '#DC2626', borderColor: '#FECACA', backgroundColor: '#FEF2F2', textTransform: 'none', fontWeight: 600, borderRadius: 1.5, '&:hover': { borderColor: '#DC2626', background: '#FEE2E2' } }}>
                             Delete
                           </Button>
                         </Box>
@@ -327,8 +333,8 @@ const FranchiseManagement = () => {
           </Paper>
 
           {franchises.length === 0 && (
-            <Box textAlign="center" py={4}>
-              <Typography variant="h6" color="#64748b">No franchise applications yet.</Typography>
+            <Box textAlign="center" py={6} sx={{ backgroundColor: '#FFFFFF', borderRadius: 3, border: '1px solid #E2E8F0', mt: 3 }}>
+              <Typography variant="h6" color="#64748B" fontWeight={500}>No franchise applications yet.</Typography>
             </Box>
           )}
         </motion.div>

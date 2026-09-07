@@ -210,114 +210,118 @@ const ResultManagement = () => {
   const computerResults = results.filter(r => r.subject === 'Computer').length;
 
   const inputSx = {
-    input: { color: '#fff' },
-    label: { color: '#94a3b8' },
-    '& label.Mui-focused': { color: '#fbbf24' },
+    input: { color: '#0F172A' },
+    label: { color: '#64748B' },
+    '& label.Mui-focused': { color: '#2563EB', fontWeight: 600 },
     '& .MuiOutlinedInput-root': {
-      '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
-      '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-      '&.Mui-focused fieldset': { borderColor: '#fbbf24', boxShadow: '0 0 10px rgba(251,191,36,0.2)' },
+      backgroundColor: '#FFFFFF',
+      '& fieldset': { borderColor: '#CBD5E1' },
+      '&:hover fieldset': { borderColor: '#94A3B8' },
+      '&.Mui-focused fieldset': { borderColor: '#2563EB', borderWidth: '2px', boxShadow: '0 0 0 4px rgba(37,99,235,0.1)' },
     },
-    '& .MuiSelect-icon': { color: '#94a3b8' },
-    '& .MuiSelect-select': { color: '#fff' }
+    '& .MuiSelect-icon': { color: '#64748B' },
+    '& .MuiSelect-select': { color: '#0F172A' }
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#0B1120', pt: 12, pb: 8 }}>
-      <Box sx={{ position: 'fixed', top: '-10%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(251,191,36,0.1) 0%, rgba(11,17,32,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
-      <Box sx={{ position: 'fixed', bottom: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(167,139,250,0.1) 0%, rgba(11,17,32,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#F8FAFC', pt: 4, pb: 8 }}>
+      <Box sx={{ position: 'fixed', top: '-10%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(245,158,11,0.06) 0%, rgba(248,250,252,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
+      <Box sx={{ position: 'fixed', bottom: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(37,99,235,0.05) 0%, rgba(248,250,252,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
 
       <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
-        <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <Box display="flex" alignItems="center" mb={6} gap={2}>
-            <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #fbbf24, #f59e42)', boxShadow: '0 0 20px rgba(251,191,36,0.4)', display: 'flex' }}>
-              <FaTrophy size={32} color="#fff" />
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <Box display="flex" alignItems="center" mb={4} gap={2}>
+            <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #F59E0B, #D97706)', boxShadow: '0 10px 20px -5px rgba(245,158,11,0.4)', display: 'flex' }}>
+              <FaTrophy size={28} color="#fff" />
             </Box>
             <Box>
-              <Typography variant="h3" fontWeight={800} color="#fff" sx={{ letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Saira Condensed", sans-serif', lineHeight: 1 }}>
-                Result <span style={{ color: '#fbbf24' }}>Management</span>
+              <Typography variant="h4" fontWeight={800} color="#0F172A" sx={{ letterSpacing: '0.5px' }}>
+                Result <span style={{ color: '#D97706' }}>Management</span>
+              </Typography>
+              <Typography variant="body2" color="#64748B">
+                Manage student examination scores, publish batch results, and export merit lists.
               </Typography>
             </Box>
           </Box>
 
-          <Grid container spacing={3} mb={6}>
-            <Grid item xs={12} md={3}>
-              <Card sx={{ background: 'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(59,130,246,0.05))', border: '1px solid rgba(56,189,248,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(56,189,248,0.15)' }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>Total Results</Typography>
-                  <Typography variant="h3" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>{totalResults}</Typography>
+          <Grid container spacing={3} mb={4}>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card sx={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 3, boxShadow: '0 4px 20px -2px rgba(15,23,42,0.05)' }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Typography variant="caption" sx={{ color: '#64748B', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>Total Results</Typography>
+                  <Typography variant="h4" fontWeight={800} sx={{ color: '#0284C7', mt: 0.5 }}>{totalResults}</Typography>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} md={3}>
-              <Card sx={{ background: 'linear-gradient(135deg, rgba(52,211,153,0.2), rgba(16,185,129,0.05))', border: '1px solid rgba(52,211,153,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(52,211,153,0.15)' }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>Published</Typography>
-                  <Typography variant="h3" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>{publishedResults}</Typography>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card sx={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 3, boxShadow: '0 4px 20px -2px rgba(15,23,42,0.05)' }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Typography variant="caption" sx={{ color: '#64748B', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>Published</Typography>
+                  <Typography variant="h4" fontWeight={800} sx={{ color: '#059669', mt: 0.5 }}>{publishedResults}</Typography>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} md={3}>
-              <Card sx={{ background: 'linear-gradient(135deg, rgba(251,191,36,0.2), rgba(245,158,11,0.05))', border: '1px solid rgba(251,191,36,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(251,191,36,0.15)' }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>GK Results</Typography>
-                  <Typography variant="h3" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>{gkResults}</Typography>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card sx={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 3, boxShadow: '0 4px 20px -2px rgba(15,23,42,0.05)' }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Typography variant="caption" sx={{ color: '#64748B', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>GK Results</Typography>
+                  <Typography variant="h4" fontWeight={800} sx={{ color: '#D97706', mt: 0.5 }}>{gkResults}</Typography>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} md={3}>
-              <Card sx={{ background: 'linear-gradient(135deg, rgba(167,139,250,0.2), rgba(139,92,246,0.05))', border: '1px solid rgba(167,139,250,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(167,139,250,0.15)' }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>Computer Results</Typography>
-                  <Typography variant="h3" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>{computerResults}</Typography>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card sx={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 3, boxShadow: '0 4px 20px -2px rgba(15,23,42,0.05)' }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Typography variant="caption" sx={{ color: '#64748B', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>Computer Results</Typography>
+                  <Typography variant="h4" fontWeight={800} sx={{ color: '#7C3AED', mt: 0.5 }}>{computerResults}</Typography>
                 </CardContent>
               </Card>
             </Grid>
           </Grid>
 
           <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap' }}>
-            <Button variant="contained" onClick={openAddDialog} startIcon={<FaPlus />} sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #fbbf24, #f59e42)', color: '#fff', '&:hover': { boxShadow: '0 0 20px rgba(251,191,36,0.4)' } }}>
+            <Button variant="contained" onClick={openAddDialog} startIcon={<FaPlus />} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, px: 2.5, py: 1, background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', color: '#fff', boxShadow: '0 4px 12px rgba(37,99,235,0.25)', '&:hover': { background: 'linear-gradient(135deg, #1D4ED8, #1E40AF)' } }}>
               Add Result
             </Button>
-            <Button variant="contained" onClick={handlePublish} startIcon={<FaUpload />} sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff' }}>
+            <Button variant="contained" onClick={handlePublish} startIcon={<FaUpload />} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, px: 2.5, py: 1, background: 'linear-gradient(135deg, #10B981, #059669)', color: '#fff', boxShadow: '0 4px 12px rgba(16,185,129,0.25)' }}>
               Publish All Results
             </Button>
-            <Button variant="contained" onClick={exportToCSV} startIcon={<FaDownload />} sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #6366f1, #4f46e5)', color: '#fff' }}>
+            <Button variant="outlined" onClick={exportToCSV} startIcon={<FaDownload />} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, px: 2.5, py: 1, color: '#475569', borderColor: '#CBD5E1', backgroundColor: '#FFFFFF', '&:hover': { backgroundColor: '#F8FAFC', borderColor: '#94A3B8' } }}>
               Export CSV
             </Button>
           </Box>
 
-          <Paper elevation={4} sx={{ borderRadius: 4, overflow: 'hidden', background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+          <Paper elevation={0} sx={{ borderRadius: 3, overflow: 'hidden', background: '#FFFFFF', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px -2px rgba(15,23,42,0.05)' }}>
             <TableContainer>
               <Table>
-                <TableHead sx={{ background: 'rgba(15,23,42,0.6)' }}>
+                <TableHead sx={{ background: '#F8FAFC' }}>
                   <TableRow>
                     {['Roll Number', 'Name', 'Father Name', 'Subject', 'Marks', 'Rank', 'Status', 'Published', 'Actions'].map(h => (
-                      <TableCell key={h} sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{h}</TableCell>
+                      <TableCell key={h} sx={{ color: '#475569', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #E2E8F0', py: 1.8 }}>{h}</TableCell>
                     ))}
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {results.map((result) => (
-                    <TableRow key={result._id} hover sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.02) !important' } }}>
-                      <TableCell sx={{ color: '#fbbf24', fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{result.rollNumber}</TableCell>
-                      <TableCell sx={{ color: '#f8fafc', fontWeight: 500, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{result.name}</TableCell>
-                      <TableCell sx={{ color: '#cbd5e1', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{result.fatherName}</TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <Chip label={result.subject} size="small" sx={{ background: result.subject === 'GK' ? 'rgba(56,189,248,0.1)' : 'rgba(167,139,250,0.1)', color: result.subject === 'GK' ? '#38bdf8' : '#a78bfa', border: `1px solid ${result.subject === 'GK' ? 'rgba(56,189,248,0.2)' : 'rgba(167,139,250,0.2)'}` }} />
+                    <TableRow key={result._id} hover sx={{ '&:hover': { backgroundColor: '#F8FAFC !important' } }}>
+                      <TableCell sx={{ color: '#2563EB', fontWeight: 700, borderBottom: '1px solid #F1F5F9' }}>{result.rollNumber}</TableCell>
+                      <TableCell sx={{ color: '#0F172A', fontWeight: 600, borderBottom: '1px solid #F1F5F9' }}>{result.name}</TableCell>
+                      <TableCell sx={{ color: '#64748B', borderBottom: '1px solid #F1F5F9' }}>{result.fatherName}</TableCell>
+                      <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
+                        <Chip label={result.subject} size="small" sx={{ background: result.subject === 'GK' ? '#EFF6FF' : '#F5F3FF', color: result.subject === 'GK' ? '#2563EB' : '#7C3AED', fontWeight: 600, border: `1px solid ${result.subject === 'GK' ? '#BFDBFE' : '#DDD6FE'}` }} />
                       </TableCell>
-                      <TableCell sx={{ color: '#34d399', fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{result.marks}/100</TableCell>
-                      <TableCell sx={{ color: '#fbbf24', fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>#{result.rank}</TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <Chip label={result.status} size="small" sx={{ background: result.status === 'Passed' ? 'rgba(52,211,153,0.1)' : 'rgba(248,113,113,0.1)', color: result.status === 'Passed' ? '#34d399' : '#f87171', border: `1px solid ${result.status === 'Passed' ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'}` }} />
+                      <TableCell sx={{ color: '#059669', fontWeight: 700, borderBottom: '1px solid #F1F5F9' }}>{result.marks}/100</TableCell>
+                      <TableCell sx={{ color: '#D97706', fontWeight: 700, borderBottom: '1px solid #F1F5F9' }}>#{result.rank}</TableCell>
+                      <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
+                        <Chip label={result.status} size="small" sx={{ background: result.status === 'Passed' ? '#ECFDF5' : '#FEF2F2', color: result.status === 'Passed' ? '#059669' : '#DC2626', fontWeight: 600, border: `1px solid ${result.status === 'Passed' ? '#A7F3D0' : '#FECACA'}` }} />
                       </TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <Chip label={result.isPublished ? 'Yes' : 'No'} size="small" sx={{ background: result.isPublished ? 'rgba(52,211,153,0.1)' : 'rgba(251,191,36,0.1)', color: result.isPublished ? '#34d399' : '#fbbf24', border: `1px solid ${result.isPublished ? 'rgba(52,211,153,0.2)' : 'rgba(251,191,36,0.2)'}` }} />
+                      <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
+                        <Chip label={result.isPublished ? 'Published' : 'Draft'} size="small" sx={{ background: result.isPublished ? '#ECFDF5' : '#FFFBEB', color: result.isPublished ? '#059669' : '#D97706', fontWeight: 600, border: `1px solid ${result.isPublished ? '#A7F3D0' : '#FDE68A'}` }} />
                       </TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
                         <Box display="flex" gap={1}>
-                          <Button variant="outlined" size="small" onClick={() => openEditDialog(result)} sx={{ color: '#38bdf8', borderColor: '#38bdf850', minWidth: 0, p: 1 }}><FaEdit /></Button>
-                          <Button variant="outlined" size="small" onClick={() => handleDelete(result.rollNumber)} sx={{ color: '#f87171', borderColor: '#f8717150', minWidth: 0, p: 1 }}><FaTrash /></Button>
+                          <Button variant="outlined" size="small" onClick={() => openEditDialog(result)} sx={{ color: '#2563EB', borderColor: '#BFDBFE', backgroundColor: '#EFF6FF', minWidth: 0, p: 0.8, borderRadius: 1.5, '&:hover': { backgroundColor: '#DBEAFE', borderColor: '#2563EB' } }}><FaEdit size={14} /></Button>
+                          <Button variant="outlined" size="small" onClick={() => handleDelete(result.rollNumber)} sx={{ color: '#DC2626', borderColor: '#FECACA', backgroundColor: '#FEF2F2', minWidth: 0, p: 0.8, borderRadius: 1.5, '&:hover': { backgroundColor: '#FEE2E2', borderColor: '#DC2626' } }}><FaTrash size={14} /></Button>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -327,27 +331,28 @@ const ResultManagement = () => {
             </TableContainer>
           </Paper>
 
-          {results.length === 0 && (
-            <Box textAlign="center" py={4}>
-              <Typography variant="h6" color="#64748b">No results found.</Typography>
+          {results.length === 0 && !loading && (
+            <Box textAlign="center" py={6} sx={{ backgroundColor: '#FFFFFF', borderRadius: 3, border: '1px solid #E2E8F0', mt: 3 }}>
+              <Typography variant="h6" color="#64748B" fontWeight={500}>No results found.</Typography>
+              <Typography variant="body2" color="#94A3B8">Click "Add Result" above to add new student examination results.</Typography>
             </Box>
           )}
 
-          <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth PaperProps={{ sx: { background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 3, color: '#fff' } }}>
-            <DialogTitle sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#fff', fontFamily: '"Saira Condensed", sans-serif', textTransform: 'uppercase', letterSpacing: '1px' }}>
-              {editingResult ? 'Edit Result' : 'Add New Result'}
+          <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth PaperProps={{ sx: { background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 3, boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' } }}>
+            <DialogTitle sx={{ borderBottom: '1px solid #F1F5F9', color: '#0F172A', fontWeight: 700, fontSize: '1.25rem' }}>
+              {editingResult ? 'Edit Student Result' : 'Add New Student Result'}
             </DialogTitle>
             <form onSubmit={handleSubmit}>
               <DialogContent sx={{ mt: 2 }}>
-                <Grid container spacing={3}>
+                <Grid container spacing={2.5}>
                   <Grid item xs={12} md={6}><TextField sx={inputSx} fullWidth label="Roll Number" value={formData.rollNumber} onChange={(e) => setFormData({...formData, rollNumber: e.target.value.toUpperCase()})} required /></Grid>
                   <Grid item xs={12} md={6}><TextField sx={inputSx} fullWidth label="Student Name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required /></Grid>
                   <Grid item xs={12} md={6}><TextField sx={inputSx} fullWidth label="Father Name" value={formData.fatherName} onChange={(e) => setFormData({...formData, fatherName: e.target.value})} required /></Grid>
                   <Grid item xs={12} md={6}><TextField sx={inputSx} fullWidth label="Mother Name" value={formData.motherName} onChange={(e) => setFormData({...formData, motherName: e.target.value})} /></Grid>
                   <Grid item xs={12} md={6}>
                     <FormControl fullWidth>
-                      <InputLabel sx={{ color: '#94a3b8', '&.Mui-focused': { color: '#fbbf24' } }}>Subject</InputLabel>
-                      <Select value={formData.subject} label="Subject" onChange={(e) => setFormData({...formData, subject: e.target.value})} sx={{ color: '#fff', '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.1)' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#fbbf24' }, '.MuiSvgIcon-root': { color: '#94a3b8' } }}>
+                      <InputLabel sx={{ color: '#64748B', '&.Mui-focused': { color: '#2563EB', fontWeight: 600 } }}>Subject</InputLabel>
+                      <Select value={formData.subject} label="Subject" onChange={(e) => setFormData({...formData, subject: e.target.value})} sx={{ color: '#0F172A', backgroundColor: '#FFFFFF', '.MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94A3B8' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#2563EB' }, '.MuiSvgIcon-root': { color: '#64748B' } }}>
                         <MenuItem value="GK">GK</MenuItem><MenuItem value="Computer">Computer</MenuItem><MenuItem value="Both">Both</MenuItem>
                       </Select>
                     </FormControl>
@@ -357,8 +362,8 @@ const ResultManagement = () => {
                   <Grid item xs={12} md={6}><TextField sx={inputSx} fullWidth label="Exam Date" type="date" value={formData.examDate} onChange={(e) => setFormData({...formData, examDate: e.target.value})} required InputLabelProps={{ shrink: true }} /></Grid>
                   <Grid item xs={12} md={6}>
                     <FormControl fullWidth>
-                      <InputLabel sx={{ color: '#94a3b8', '&.Mui-focused': { color: '#fbbf24' } }}>Status</InputLabel>
-                      <Select value={formData.status} label="Status" onChange={(e) => setFormData({...formData, status: e.target.value})} sx={{ color: '#fff', '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.1)' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#fbbf24' }, '.MuiSvgIcon-root': { color: '#94a3b8' } }}>
+                      <InputLabel sx={{ color: '#64748B', '&.Mui-focused': { color: '#2563EB', fontWeight: 600 } }}>Status</InputLabel>
+                      <Select value={formData.status} label="Status" onChange={(e) => setFormData({...formData, status: e.target.value})} sx={{ color: '#0F172A', backgroundColor: '#FFFFFF', '.MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94A3B8' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#2563EB' }, '.MuiSvgIcon-root': { color: '#64748B' } }}>
                         <MenuItem value="Passed">Passed</MenuItem><MenuItem value="Failed">Failed</MenuItem>
                       </Select>
                     </FormControl>
@@ -369,9 +374,9 @@ const ResultManagement = () => {
                   <Grid item xs={12}><TextField sx={inputSx} fullWidth label="Address" multiline rows={2} value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} /></Grid>
                 </Grid>
               </DialogContent>
-              <DialogActions sx={{ p: 3, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                <Button onClick={() => setOpenDialog(false)} sx={{ color: '#94a3b8' }}>Cancel</Button>
-                <Button type="submit" variant="contained" sx={{ background: 'linear-gradient(135deg, #fbbf24, #f59e42)', color: '#fff' }}>Save Result</Button>
+              <DialogActions sx={{ p: 2.5, borderTop: '1px solid #F1F5F9' }}>
+                <Button onClick={() => setOpenDialog(false)} sx={{ color: '#64748B', textTransform: 'none', fontWeight: 600 }}>Cancel</Button>
+                <Button type="submit" variant="contained" sx={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', color: '#fff', textTransform: 'none', fontWeight: 600, px: 3, borderRadius: 2, boxShadow: '0 4px 12px rgba(37,99,235,0.25)' }}>Save Result</Button>
               </DialogActions>
             </form>
           </Dialog>

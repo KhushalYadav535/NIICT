@@ -208,7 +208,7 @@ const FinalResult = () => {
 
                     {/* Header */}
                     <div className="text-center border-b-2 border-indigo-900 pb-6 mb-6">
-                      <h1 className="text-3xl font-black text-indigo-900 tracking-wider uppercase mb-2">National Institute of Information & Computer Technology</h1>
+                      <h1 className="text-3xl font-black text-indigo-900 tracking-wider uppercase mb-2">Nihanshi Institute of Information & Computer Technology</h1>
                       <p className="text-sm font-bold text-slate-600 uppercase tracking-widest">Govt. Regd. ISO 9001:2015 Certified Organization</p>
                       <h2 className="text-xl font-bold bg-indigo-900 text-white inline-block px-8 py-2 rounded-full mt-4 uppercase tracking-widest">Statement of Marks</h2>
                     </div>
@@ -305,7 +305,7 @@ const FinalResult = () => {
 
                     {/* Header */}
                     <div className="text-center mb-10 relative z-10 pt-4">
-                      <h1 className="text-4xl font-black text-emerald-900 tracking-wider uppercase mb-2">National Institute of Information & Computer Technology</h1>
+                      <h1 className="text-4xl font-black text-emerald-900 tracking-wider uppercase mb-2">Nihanshi Institute of Information & Computer Technology</h1>
                       <p className="text-sm font-bold text-slate-600 uppercase tracking-widest">ISO 9001:2015 Certified Educational Institution</p>
                     </div>
 

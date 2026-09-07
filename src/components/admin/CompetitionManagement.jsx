@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Container, Typography, Paper, Table, TableBody, TableCell, 
-         TableContainer, TableHead, TableRow, Button, Box, Chip, Grid, Card, CardContent, TextField, InputAdornment, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+         TableContainer, TableHead, TableRow, Button, Box, Chip, Grid, Card, CardContent, TextField, InputAdornment, FormControl, InputLabel, Select, MenuItem, Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
-import { FaTrophy, FaSearch, FaPrint, FaEye, FaTrash, FaDownload } from 'react-icons/fa';
+import { FaTrophy, FaSearch, FaPrint, FaEye, FaTrash, FaDownload, FaFileAlt, FaReceipt } from 'react-icons/fa';
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
+import { openAdmitCardPrintWindow, openApplicationFormPrintWindow } from '../../utils/admitCardGenerator';
+import GovernmentAdmitCardModal from './GovernmentAdmitCardModal';
 
 const CURRENT_SESSION = '2026-2027'; // Update this each year
 
@@ -17,10 +19,27 @@ const CompetitionManagement = () => {
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewApplication, setPreviewApplication] = useState(null);
+  const [previewDocType, setPreviewDocType] = useState('admit_card');
   const [libsLoaded, setLibsLoaded] = useState(false);
   const attendanceContainerId = 'attendance-export-container';
   const html2canvasRef = useRef(null);
   const jsPDFRef = useRef(null);
+
+  const handleOpenAdmitCardPreview = (app, docType = 'admit_card') => {
+    setPreviewApplication(app);
+    setPreviewDocType(docType);
+    setPreviewModalOpen(true);
+  };
+
+  const printAdmitCard = (application) => {
+    openAdmitCardPrintWindow(application);
+  };
+
+  const printApplicationForm = (application) => {
+    openApplicationFormPrintWindow(application);
+  };
 
   useEffect(() => {
     loadSessions();
@@ -103,302 +122,6 @@ const CompetitionManagement = () => {
     } finally {
       setUpdating(false);
     }
-  };
-
-  const printAdmitCard = (application) => {
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Competition Admit Card - ${application.name}</title>
-          <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { 
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-              background: #f5f5f5; 
-              padding: 20px;
-            }
-            .admit-card { 
-              background: white; 
-              border: 3px solid #1976d2; 
-              border-radius: 15px; 
-              padding: 0; 
-              max-width: 800px; 
-              margin: 0 auto; 
-              box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-              overflow: hidden;
-            }
-            .header { 
-              background: linear-gradient(135deg, #1976d2, #0d47a1); 
-              color: white; 
-              padding: 25px; 
-              text-align: center; 
-              position: relative;
-            }
-            .institute-name { 
-              font-size: 18px; 
-              font-weight: bold; 
-              margin-bottom: 5px;
-            }
-            .certification { 
-              font-size: 12px; 
-              opacity: 0.9; 
-              margin-bottom: 15px;
-            }
-            .admit-title { 
-              font-size: 24px; 
-              font-weight: bold; 
-              text-transform: uppercase; 
-              letter-spacing: 1px;
-              border-top: 2px solid rgba(255,255,255,0.3);
-              padding-top: 15px;
-            }
-            .main-content { 
-              display: flex; 
-              padding: 30px;
-            }
-            .candidate-info { 
-              flex: 2; 
-              padding-right: 30px;
-            }
-            .photo-section { 
-              flex: 1; 
-              text-align: center;
-            }
-            .info-item { 
-              display: flex; 
-              margin-bottom: 15px; 
-              align-items: center;
-            }
-            .info-label { 
-              font-weight: bold; 
-              color: #333; 
-              min-width: 120px; 
-              font-size: 14px;
-            }
-            .info-value { 
-              color: #1976d2; 
-              font-weight: 600; 
-              font-size: 15px;
-            }
-            .roll-number { 
-              font-size: 18px; 
-              color: #0d47a1; 
-              font-weight: bold;
-            }
-            .photo-box { 
-              border: 2px solid #ddd; 
-              width: 120px; 
-              height: 150px; 
-              margin: 0 auto 20px; 
-              display: flex; 
-              align-items: center; 
-              justify-content: center; 
-              background: #f9f9f9;
-              border-radius: 8px;
-            }
-            .photo-placeholder { 
-              color: #999; 
-              font-size: 12px; 
-              text-align: center;
-            }
-            .instructions { 
-              background: #fff3e0; 
-              padding: 25px; 
-              margin: 0 30px 30px;
-              border-radius: 10px;
-              border-left: 5px solid #ff9800;
-            }
-            .instructions h3 { 
-              color: #e65100; 
-              margin-bottom: 15px; 
-              font-size: 18px;
-              text-align: center;
-            }
-            .instructions ol { 
-              padding-left: 20px;
-            }
-            .instructions li { 
-              margin-bottom: 8px; 
-              line-height: 1.5;
-              color: #333;
-            }
-            .exam-details { 
-              background: linear-gradient(135deg, #e3f2fd, #bbdefb); 
-              padding: 25px; 
-              margin: 0 30px 30px;
-              border-radius: 10px;
-              border: 2px solid #1976d2;
-            }
-            .exam-details h3 { 
-              color: #0d47a1; 
-              margin-bottom: 20px; 
-              font-size: 20px;
-              text-align: center;
-              text-transform: uppercase;
-              letter-spacing: 1px;
-            }
-            .exam-grid { 
-              display: grid; 
-              grid-template-columns: 1fr 1fr; 
-              gap: 15px;
-            }
-            .exam-item { 
-              display: flex; 
-              justify-content: space-between; 
-              align-items: center;
-              padding: 8px 0;
-              border-bottom: 1px solid rgba(25, 118, 210, 0.2);
-            }
-            .exam-label { 
-              font-weight: bold; 
-              color: #0d47a1;
-            }
-            .exam-value { 
-              color: #1976d2; 
-              font-weight: 600;
-            }
-            @media print { 
-              body { margin: 0; background: white; font-size: 12px; }
-              .admit-card { 
-                box-shadow: none; 
-                border: 2px solid #000; 
-                max-width: 100%; 
-                padding: 0;
-                page-break-inside: avoid;
-              }
-              .header { padding: 15px; }
-              .institute-name { font-size: 14px; }
-              .certification { font-size: 10px; }
-              .admit-title { font-size: 16px; padding-top: 10px; }
-              .main-content { padding: 15px; }
-              .info-item { margin-bottom: 8px; }
-              .info-label { font-size: 11px; min-width: 100px; }
-              .info-value { font-size: 12px; }
-              .photo-box { width: 80px; height: 100px; }
-              .instructions { padding: 15px; margin: 0 15px 15px; }
-              .instructions h3 { font-size: 14px; margin-bottom: 10px; }
-              .instructions li { margin-bottom: 4px; font-size: 10px; line-height: 1.3; }
-              .exam-details { padding: 15px; margin: 0 15px 15px; }
-              .exam-details h3 { font-size: 14px; margin-bottom: 10px; }
-              .exam-item { padding: 4px 0; }
-              .exam-label, .exam-value { font-size: 11px; }
-              .result-info { padding: 10px; margin: 0 15px 15px; }
-              .result-info h3 { font-size: 12px; margin-bottom: 5px; }
-              .result-info p { font-size: 11px; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="admit-card">
-            <!-- Header Section -->
-            <div class="header">
-              <div class="institute-name">NIICT Computer Institute of IT Management</div>
-              <div class="certification">AN ISO 9001:2015 CERTIFIED ORGANIZATION</div>
-              <div class="admit-title">Candidate Admit Card (Competition Exam)</div>
-            </div>
-
-            <!-- Main Content -->
-            <div class="main-content">
-              <!-- Candidate Information -->
-              <div class="candidate-info">
-                <div class="info-item">
-                  <span class="info-label">Roll No:</span>
-                  <span class="info-value roll-number">${application.rollNumber}</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Name:</span>
-                  <span class="info-value">${application.name}</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Date of Birth:</span>
-                  <span class="info-value">${new Date(application.dateOfBirth).toLocaleDateString('en-GB')}</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Father Name:</span>
-                  <span class="info-value">${application.fatherName}</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Class:</span>
-                  <span class="info-value">${application.classPassed}</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">School:</span>
-                  <span class="info-value">${application.school}</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Subject:</span>
-                  <span class="info-value">${application.subject} Competition</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Center Name:</span>
-                  <span class="info-value">S K Modern Intermediate College Semari Janghai Jaunpur</span>
-                </div>
-              </div>
-
-              <!-- Photo Section -->
-              <div class="photo-section">
-                <div class="photo-box">
-                  <div class="photo-placeholder">
-                    ${application.image ? 
-                      `<img src="${application.image}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px; display: block;" onload="this.style.display='block'" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
-                       <div style="display: none; font-size: 10px; color: #999;">PHOTOGRAPH</div>` : 
-                      'PHOTOGRAPH'
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Instructions Section -->
-            <div class="instructions">
-              <h3>अभ्यर्थी हेतु आवश्यकता निर्देश</h3>
-              <ol>
-                <li>कृपया परीक्षा की तिथि से पर्यात समय पूर्व परीक्षा केंद्र का सही पता मालूम अवश्य कर लें ।</li>
-                <li>अभ्यर्थी रिपोर्टिंग समय से 25 मिनट पहले परीक्षा केंद्र पर अवश्य पहुचें ।</li>
-                <li>अभ्यर्थी परीक्षा हॉल में अपने साथ एडमिट कार्ड, आधार कार्ड, बॉल पेन अवय लेकर आएं ।</li>
-                <li>परीक्षा हाल में किसी भी प्रकार की नकल सामग्री ( मोबाइल, स्मार्ट watch,calculator, डिजिटल पेन आदि) लाना सख्त मना हैं।</li>
-                <li>परीक्षा केंद्र के अंदर किसी भी प्रकार की सामग्री ( मोबाइल, बैग, घड़ी आदि मूल्यवान वस्तु) रखने की व्यवस्था नहीं है, अतः अभ्यर्थी अपने अभिभावक को साथ ले आए।</li>
-                <li>किसी भी अभ्यर्थी द्वारा अनुचित व्यावहार किए जाने पर उनकी परीक्षा रद्द कर दी जाएगी, जिसका जिम्मेदार अभ्यर्थी स्वयम होगा।</li>
-              </ol>
-            </div>
-
-            <!-- Exam Details -->
-            <div class="exam-details">
-              <h3>Examination Details</h3>
-              <div class="exam-grid">
-                <div class="exam-item">
-                  <span class="exam-label">Examination Date:</span>
-                  <span class="exam-value">18 Oct 2026 Sunday</span>
-                </div>
-                <div class="exam-item">
-                  <span class="exam-label">Reporting Time:</span>
-                  <span class="exam-value">08:00 AM</span>
-                </div>
-                <div class="exam-item">
-                  <span class="exam-label">Gate Closing Time:</span>
-                  <span class="exam-value">09:15 AM</span>
-                </div>
-                <div class="exam-item">
-                  <span class="exam-label">Examination Time:</span>
-                  <span class="exam-value">10:00 AM</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Result Information -->
-            <div class="result-info" style="background: #e8f5e8; padding: 20px; margin: 0 30px 30px; border-radius: 10px; border-left: 5px solid #4caf50; text-align: center;">
-              <h3 style="color: #2e7d32; margin-bottom: 10px; font-size: 16px;">परीक्षा परिणाम की तिथि</h3>
-              <p style="color: #333; font-weight: 600; margin: 0;">
-                25 Oct 2026 को Niict computer Classes के यूट्यूब चैनल के माध्यम से घोषित किया जाएगा।
-              </p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.print();
   };
 
   const exportToCSV = () => {
@@ -658,17 +381,17 @@ const CompetitionManagement = () => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     switch (searchType) {
-      case 'name': return app.name.toLowerCase().includes(term);
+      case 'name': return app.name && app.name.toLowerCase().includes(term);
       case 'phone': return app.phone && app.phone.includes(searchTerm);
       case 'aadhaar': return app.aadhaar && app.aadhaar.includes(searchTerm);
-      case 'roll': return app.rollNumber.includes(searchTerm);
-      case 'school': return app.school.toLowerCase().includes(term);
-      case 'subject': return app.subject.toLowerCase().includes(term);
+      case 'roll': return app.rollNumber && app.rollNumber.toLowerCase().includes(term);
+      case 'school': return app.school && app.school.toLowerCase().includes(term);
+      case 'subject': return app.subject && app.subject.toLowerCase().includes(term);
       default:
-        return app.name.toLowerCase().includes(term) ||
-               app.rollNumber.includes(searchTerm) ||
-               app.school.toLowerCase().includes(term) ||
-               app.subject.toLowerCase().includes(term) ||
+        return (app.name && app.name.toLowerCase().includes(term)) ||
+               (app.rollNumber && app.rollNumber.toLowerCase().includes(term)) ||
+               (app.school && app.school.toLowerCase().includes(term)) ||
+               (app.subject && app.subject.toLowerCase().includes(term)) ||
                (app.phone && app.phone.includes(searchTerm)) ||
                (app.aadhaar && app.aadhaar.includes(searchTerm));
     }
@@ -682,108 +405,108 @@ const CompetitionManagement = () => {
 
   if (showDetails && selectedApplication) {
     return (
-      <Box sx={{ minHeight: '100vh', backgroundColor: '#0B1120', pt: 12, pb: 8 }}>
+      <Box sx={{ minHeight: '100vh', backgroundColor: '#F8FAFC', pt: 4, pb: 8 }}>
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <Box display="flex" alignItems="center" mb={6} gap={2}>
-              <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #fbbf24, #f59e42)', boxShadow: '0 0 20px rgba(251,191,36,0.4)', display: 'flex' }}>
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+            <Box display="flex" alignItems="center" mb={4} gap={2}>
+              <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', boxShadow: '0 8px 20px -4px rgba(37,99,235,0.3)', display: 'flex' }}>
                 <FaTrophy size={32} color="#fff" />
               </Box>
               <Box>
-                <Typography variant="h3" fontWeight={800} color="#fff" sx={{ letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Saira Condensed", sans-serif', lineHeight: 1 }}>
-                  Application <span style={{ color: '#fbbf24' }}>Details</span>
+                <Typography variant="h3" fontWeight={800} color="#0F172A" sx={{ letterSpacing: '1px', textTransform: 'uppercase', fontFamily: '"Saira Condensed", sans-serif', lineHeight: 1 }}>
+                  Application <span style={{ color: '#2563EB' }}>Details</span>
                 </Typography>
               </Box>
             </Box>
 
-            <Paper elevation={0} sx={{ p: 4, borderRadius: 4, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+            <Paper elevation={0} sx={{ p: 4, borderRadius: 4, background: '#FFFFFF', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px -2px rgba(15,23,42,0.05)' }}>
               <Grid container spacing={3}>
                 <Grid item xs={12} md={8}>
-                  <Box sx={{ background: 'rgba(15,23,42,0.6)', p: 3, borderRadius: 3, border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <Typography variant="h6" fontWeight={600} color="#fff" gutterBottom sx={{ textTransform: 'uppercase', letterSpacing: '1px', mb: 3 }}>
+                  <Box sx={{ background: '#F8FAFC', p: 3, borderRadius: 3, border: '1px solid #E2E8F0' }}>
+                    <Typography variant="h6" fontWeight={700} color="#0F172A" gutterBottom sx={{ textTransform: 'uppercase', letterSpacing: '0.5px', mb: 3 }}>
                       Candidate Information
                     </Typography>
                     
                     <Grid container spacing={3}>
                       <Grid item xs={6}>
-                        <Typography variant="body2" color="#94a3b8">Roll Number</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fbbf24">{selectedApplication.rollNumber}</Typography>
+                        <Typography variant="body2" color="#64748B">Roll Number</Typography>
+                        <Typography variant="h6" fontWeight={700} color="#2563EB">{selectedApplication.rollNumber}</Typography>
                       </Grid>
                       <Grid item xs={6}>
-                        <Typography variant="body2" color="#94a3b8">Subject</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.subject}</Typography>
+                        <Typography variant="body2" color="#64748B">Subject</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#0F172A">{selectedApplication.subject}</Typography>
                       </Grid>
                       <Grid item xs={6}>
-                        <Typography variant="body2" color="#94a3b8">Session / Exam Year</Typography>
+                        <Typography variant="body2" color="#64748B">Session / Exam Year</Typography>
                         <Chip
                           label={selectedApplication.session || 'N/A'}
                           size="small"
-                          sx={{ background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.4)', fontWeight: 700, mt: 0.5 }}
+                          sx={{ background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE', fontWeight: 700, mt: 0.5 }}
                         />
                       </Grid>
                       <Grid item xs={12}>
-                        <Typography variant="body2" color="#94a3b8">Full Name</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.name}</Typography>
+                        <Typography variant="body2" color="#64748B">Full Name</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#0F172A">{selectedApplication.name}</Typography>
                       </Grid>
                       <Grid item xs={6}>
-                        <Typography variant="body2" color="#94a3b8">Phone</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.phone}</Typography>
+                        <Typography variant="body2" color="#64748B">Phone</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#0F172A">{selectedApplication.phone}</Typography>
                       </Grid>
                       <Grid item xs={6}>
-                        <Typography variant="body2" color="#94a3b8">Aadhaar Number</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.aadhaar || 'Not provided'}</Typography>
+                        <Typography variant="body2" color="#64748B">Aadhaar Number</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#0F172A">{selectedApplication.aadhaar || 'Not provided'}</Typography>
                       </Grid>
                       <Grid item xs={6}>
-                        <Typography variant="body2" color="#94a3b8">Date of Birth</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.dateOfBirth ? new Date(selectedApplication.dateOfBirth).toLocaleDateString('en-GB') : 'Not provided'}</Typography>
+                        <Typography variant="body2" color="#64748B">Date of Birth</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#0F172A">{selectedApplication.dateOfBirth ? new Date(selectedApplication.dateOfBirth).toLocaleDateString('en-GB') : 'Not provided'}</Typography>
                       </Grid>
                       <Grid item xs={6}>
-                        <Typography variant="body2" color="#94a3b8">Class</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.classPassed || selectedApplication.class || 'Not provided'}</Typography>
+                        <Typography variant="body2" color="#64748B">Class</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#0F172A">{selectedApplication.classPassed || selectedApplication.class || 'Not provided'}</Typography>
                       </Grid>
                       <Grid item xs={12}>
-                        <Typography variant="body2" color="#94a3b8">School</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.school}</Typography>
+                        <Typography variant="body2" color="#64748B">School</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#0F172A">{selectedApplication.school}</Typography>
                       </Grid>
                       <Grid item xs={6}>
-                        <Typography variant="body2" color="#94a3b8">Father's Name</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.fatherName || 'Not provided'}</Typography>
+                        <Typography variant="body2" color="#64748B">Father's Name</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#0F172A">{selectedApplication.fatherName || 'Not provided'}</Typography>
                       </Grid>
                       <Grid item xs={6}>
-                        <Typography variant="body2" color="#94a3b8">Mother's Name</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.motherName || 'Not provided'}</Typography>
+                        <Typography variant="body2" color="#64748B">Mother's Name</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#0F172A">{selectedApplication.motherName || 'Not provided'}</Typography>
                       </Grid>
                       <Grid item xs={6}>
-                        <Typography variant="body2" color="#94a3b8">Parent Phone</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.parentPhone || 'Not provided'}</Typography>
+                        <Typography variant="body2" color="#64748B">Parent Phone</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#0F172A">{selectedApplication.parentPhone || 'Not provided'}</Typography>
                       </Grid>
                       <Grid item xs={12}>
-                        <Typography variant="body2" color="#94a3b8">Address</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#fff">{selectedApplication.address}</Typography>
+                        <Typography variant="body2" color="#64748B">Address</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#0F172A">{selectedApplication.address}</Typography>
                       </Grid>
                       <Grid item xs={6}>
-                        <Typography variant="body2" color="#94a3b8">Payment Status</Typography>
-                        <Typography variant="h6" fontWeight={600} color={selectedApplication.paymentStatus === 'paid' || selectedApplication.paymentStatus === 'verified' ? '#34d399' : selectedApplication.paymentStatus === 'failed' ? '#f87171' : '#fbbf24'}>
+                        <Typography variant="body2" color="#64748B">Payment Status</Typography>
+                        <Typography variant="h6" fontWeight={700} color={selectedApplication.paymentStatus === 'paid' || selectedApplication.paymentStatus === 'verified' ? '#059669' : selectedApplication.paymentStatus === 'failed' ? '#DC2626' : '#D97706'}>
                           {selectedApplication.paymentStatus === 'paid' ? '✓ PAID' : selectedApplication.paymentStatus === 'verified' ? '✓ Verified' : selectedApplication.paymentStatus === 'failed' ? '✗ Failed' : 'Pending'}
                         </Typography>
                       </Grid>
                       {(selectedApplication.paymentStatus === 'paid' || selectedApplication.paymentStatus === 'verified') && (
                         <>
                           <Grid item xs={6}>
-                            <Typography variant="body2" color="#94a3b8">Transaction ID</Typography>
-                            <Typography variant="body1" fontWeight={600} color="#fff" sx={{ fontSize: '0.9rem', wordBreak: 'break-all' }}>{selectedApplication.paymentTransactionId || 'N/A'}</Typography>
+                            <Typography variant="body2" color="#64748B">Transaction ID</Typography>
+                            <Typography variant="body1" fontWeight={600} color="#0F172A" sx={{ fontSize: '0.9rem', wordBreak: 'break-all' }}>{selectedApplication.paymentTransactionId || 'N/A'}</Typography>
                           </Grid>
                           <Grid item xs={6}>
-                            <Typography variant="body2" color="#94a3b8">Amount Paid</Typography>
-                            <Typography variant="h6" fontWeight={600} color="#34d399">Rs. {selectedApplication.paymentAmount || 150}</Typography>
+                            <Typography variant="body2" color="#64748B">Amount Paid</Typography>
+                            <Typography variant="h6" fontWeight={700} color="#059669">Rs. {selectedApplication.paymentAmount || 150}</Typography>
                           </Grid>
                           <Grid item xs={6}>
-                            <Typography variant="body2" color="#94a3b8">Payment Date</Typography>
-                            <Typography variant="body1" fontWeight={600} color="#fff">{selectedApplication.paidAt ? new Date(selectedApplication.paidAt).toLocaleString('en-IN') : 'N/A'}</Typography>
+                            <Typography variant="body2" color="#64748B">Payment Date</Typography>
+                            <Typography variant="body1" fontWeight={600} color="#0F172A">{selectedApplication.paidAt ? new Date(selectedApplication.paidAt).toLocaleString('en-IN') : 'N/A'}</Typography>
                           </Grid>
                           <Grid item xs={6}>
-                            <Typography variant="body2" color="#94a3b8">Order ID</Typography>
-                            <Typography variant="body1" fontWeight={600} color="#fff" sx={{ fontSize: '0.8rem', wordBreak: 'break-all' }}>{selectedApplication.paymentOrderId || 'N/A'}</Typography>
+                            <Typography variant="body2" color="#64748B">Order ID</Typography>
+                            <Typography variant="body1" fontWeight={600} color="#0F172A" sx={{ fontSize: '0.8rem', wordBreak: 'break-all' }}>{selectedApplication.paymentOrderId || 'N/A'}</Typography>
                           </Grid>
                         </>
                       )}
@@ -792,32 +515,100 @@ const CompetitionManagement = () => {
                 </Grid>
 
                 <Grid item xs={12} md={4}>
-                  <Box sx={{ background: 'rgba(15,23,42,0.6)', p: 3, borderRadius: 3, border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-                    <Typography variant="h6" fontWeight={600} color="#fff" gutterBottom sx={{ textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  <Box sx={{ background: '#F8FAFC', p: 3, borderRadius: 3, border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                    <Typography variant="h6" fontWeight={700} color="#0F172A" gutterBottom sx={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       QR Code
                     </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2, p: 2, background: '#fff', borderRadius: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2, p: 2, background: '#fff', borderRadius: 2, border: '1px solid #E2E8F0' }}>
                       <QRCode value={selectedApplication.qrCode} size={150} level="H" includeMargin={true} />
                     </Box>
-                    <Typography variant="body2" color="#94a3b8" gutterBottom>
+                    <Typography variant="body2" color="#64748B" gutterBottom>
                       Scan this QR code for verification
                     </Typography>
                   </Box>
 
-                  <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Button variant="contained" size="large" onClick={() => printAdmitCard(selectedApplication)} startIcon={<FaPrint />} sx={{ background: 'linear-gradient(135deg, #fbbf24, #f59e42)', color: '#fff', '&:hover': { boxShadow: '0 0 20px rgba(251,191,36,0.4)' } }}>
-                      Print Admit Card
-                    </Button>
+                  <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    {/* E-Admit Card Group */}
+                    <Box sx={{ p: 1.5, background: '#EFF6FF', borderRadius: 2, border: '1px solid #BFDBFE' }}>
+                      <Typography variant="caption" sx={{ color: '#1E40AF', fontWeight: 800, textTransform: 'uppercase', display: 'block', mb: 1 }}>
+                        1. Examination E-Admit Card (Hall Ticket)
+                      </Typography>
+                      <Box display="flex" gap={1}>
+                        <Button 
+                          variant="contained" 
+                          fullWidth
+                          size="medium" 
+                          onClick={() => printAdmitCard(selectedApplication)} 
+                          startIcon={<FaPrint />} 
+                          sx={{ 
+                            background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', 
+                            color: '#fff', fontWeight: 700, textTransform: 'none', borderRadius: 1.5,
+                            boxShadow: '0 4px 12px rgba(37,99,235,0.25)'
+                          }}
+                        >
+                          Print E-Admit Card
+                        </Button>
+                        <Button 
+                          variant="outlined" 
+                          size="medium" 
+                          onClick={() => handleOpenAdmitCardPreview(selectedApplication, 'admit_card')} 
+                          startIcon={<FaEye />} 
+                          sx={{ 
+                            borderColor: '#2563EB', color: '#2563EB', fontWeight: 700, textTransform: 'none', borderRadius: 1.5,
+                            backgroundColor: '#FFFFFF', '&:hover': { backgroundColor: '#DBEAFE' }
+                          }}
+                        >
+                          Preview
+                        </Button>
+                      </Box>
+                    </Box>
+
+                    {/* Application Form & Fee Receipt Group */}
+                    <Box sx={{ p: 1.5, background: '#ECFDF5', borderRadius: 2, border: '1px solid #A7F3D0' }}>
+                      <Typography variant="caption" sx={{ color: '#065F46', fontWeight: 800, textTransform: 'uppercase', display: 'block', mb: 1 }}>
+                        2. Application Form &amp; Fee Receipt
+                      </Typography>
+                      <Box display="flex" gap={1}>
+                        <Button 
+                          variant="contained" 
+                          fullWidth
+                          size="medium" 
+                          onClick={() => printApplicationForm(selectedApplication)} 
+                          startIcon={<FaPrint />} 
+                          sx={{ 
+                            background: 'linear-gradient(135deg, #059669, #047857)', 
+                            color: '#fff', fontWeight: 700, textTransform: 'none', borderRadius: 1.5,
+                            boxShadow: '0 4px 12px rgba(5,150,105,0.25)'
+                          }}
+                        >
+                          Print Application Form
+                        </Button>
+                        <Button 
+                          variant="outlined" 
+                          size="medium" 
+                          onClick={() => handleOpenAdmitCardPreview(selectedApplication, 'application_form')} 
+                          startIcon={<FaEye />} 
+                          sx={{ 
+                            borderColor: '#059669', color: '#059669', fontWeight: 700, textTransform: 'none', borderRadius: 1.5,
+                            backgroundColor: '#FFFFFF', '&:hover': { backgroundColor: '#D1FAE5' }
+                          }}
+                        >
+                          Preview
+                        </Button>
+                      </Box>
+                    </Box>
+
+                    {/* Verification and Navigation */}
                     {selectedApplication.paymentStatus !== 'verified' ? (
-                      <Button variant="contained" size="large" disabled={updating} onClick={() => updatePaymentStatus(selectedApplication._id, 'verified')} sx={{ background: 'linear-gradient(135deg, #34d399, #10b981)', color: '#fff' }}>
+                      <Button variant="contained" size="large" disabled={updating} onClick={() => updatePaymentStatus(selectedApplication._id, 'verified')} sx={{ background: 'linear-gradient(135deg, #059669, #047857)', color: '#fff', fontWeight: 700, textTransform: 'none', borderRadius: 2 }}>
                         Mark as Verified
                       </Button>
                     ) : (
-                      <Button variant="outlined" color="warning" size="large" disabled={updating} onClick={() => updatePaymentStatus(selectedApplication._id, 'pending')} sx={{ borderColor: '#fbbf24', color: '#fbbf24', '&:hover': { background: 'rgba(251,191,36,0.1)' } }}>
+                      <Button variant="outlined" color="warning" size="large" disabled={updating} onClick={() => updatePaymentStatus(selectedApplication._id, 'pending')} sx={{ borderColor: '#FDE68A', color: '#D97706', backgroundColor: '#FFFBEB', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { background: '#FEF3C7' } }}>
                         Revert to Pending
                       </Button>
                     )}
-                    <Button variant="outlined" size="large" onClick={() => setShowDetails(false)} sx={{ borderColor: '#64748b', color: '#cbd5e1', '&:hover': { background: 'rgba(100,116,139,0.1)', borderColor: '#cbd5e1' } }}>
+                    <Button variant="outlined" size="large" onClick={() => setShowDetails(false)} sx={{ borderColor: '#CBD5E1', color: '#64748B', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { background: '#F1F5F9', borderColor: '#94A3B8' } }}>
                       Back to List
                     </Button>
                   </Box>
@@ -831,27 +622,27 @@ const CompetitionManagement = () => {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#0B1120', pt: 12, pb: 8 }}>
-      <Box sx={{ position: 'fixed', top: '-10%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(251,191,36,0.1) 0%, rgba(11,17,32,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
-      <Box sx={{ position: 'fixed', bottom: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(245,158,11,0.1) 0%, rgba(11,17,32,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#F8FAFC', pt: 4, pb: 8 }}>
+      <Box sx={{ position: 'fixed', top: '-10%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(37,99,235,0.05) 0%, rgba(248,250,252,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
+      <Box sx={{ position: 'fixed', bottom: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(99,102,241,0.04) 0%, rgba(248,250,252,0) 70%)', zIndex: 0, pointerEvents: 'none' }} />
 
       <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
-        <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
           
           <Box display="flex" alignItems="center" mb={4} gap={2} flexWrap="wrap">
-            <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #fbbf24, #f59e42)', boxShadow: '0 0 20px rgba(251,191,36,0.4)', display: 'flex' }}>
+            <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', boxShadow: '0 8px 20px -4px rgba(37,99,235,0.3)', display: 'flex' }}>
               <FaTrophy size={32} color="#fff" />
             </Box>
             <Box flex={1}>
-              <Typography variant="h3" fontWeight={800} color="#fff" sx={{ letterSpacing: '2px', textTransform: 'uppercase', fontFamily: '"Saira Condensed", sans-serif', lineHeight: 1 }}>
-                Competition <span style={{ color: '#fbbf24' }}>Management</span>
+              <Typography variant="h3" fontWeight={800} color="#0F172A" sx={{ letterSpacing: '1px', textTransform: 'uppercase', fontFamily: '"Saira Condensed", sans-serif', lineHeight: 1 }}>
+                Competition <span style={{ color: '#2563EB' }}>Management</span>
               </Typography>
             </Box>
           </Box>
 
           {/* Session Selector */}
-          <Box sx={{ mb: 5, p: 1, background: 'rgba(15,23,42,0.7)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
-            <Typography variant="caption" sx={{ color: '#64748b', px: 1.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', whiteSpace: 'nowrap' }}>
+          <Box sx={{ mb: 4, p: 1.5, background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15,23,42,0.04)', display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+            <Typography variant="caption" sx={{ color: '#64748B', px: 1.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
               Session:
             </Typography>
             {availableSessions.map(session => {
@@ -870,20 +661,20 @@ const CompetitionManagement = () => {
                     textTransform: 'none',
                     transition: 'all 0.2s',
                     background: isActive
-                      ? 'linear-gradient(90deg, #fbbf24, #f59e0b)'
-                      : 'rgba(255,255,255,0.04)',
-                    color: isActive ? '#0B1120' : '#94a3b8',
-                    border: `1px solid ${isActive ? '#fbbf24' : 'rgba(255,255,255,0.08)'}`,
-                    boxShadow: isActive ? '0 4px 14px rgba(251,191,36,0.35)' : 'none',
+                      ? 'linear-gradient(90deg, #2563EB, #1D4ED8)'
+                      : '#FFFFFF',
+                    color: isActive ? '#FFFFFF' : '#475569',
+                    border: `1px solid ${isActive ? '#2563EB' : '#E2E8F0'}`,
+                    boxShadow: isActive ? '0 4px 14px rgba(37,99,235,0.25)' : 'none',
                     '&:hover': {
-                      background: isActive ? 'linear-gradient(90deg, #fbbf24, #f59e0b)' : 'rgba(255,255,255,0.08)',
-                      color: isActive ? '#0B1120' : '#fff',
+                      background: isActive ? 'linear-gradient(90deg, #1D4ED8, #1E40AF)' : '#F8FAFC',
+                      color: isActive ? '#FFFFFF' : '#0F172A',
                     },
                   }}
                 >
                   {session}
                   {isCurrent && (
-                    <Box component="span" sx={{ ml: 1, fontSize: '0.65rem', background: isActive ? 'rgba(0,0,0,0.2)' : 'rgba(251,191,36,0.2)', color: isActive ? '#0B1120' : '#fbbf24', px: 0.8, py: 0.2, borderRadius: '6px', fontWeight: 800 }}>
+                    <Box component="span" sx={{ ml: 1, fontSize: '0.65rem', background: isActive ? 'rgba(255,255,255,0.2)' : '#EFF6FF', color: isActive ? '#FFFFFF' : '#2563EB', px: 0.8, py: 0.2, borderRadius: '6px', fontWeight: 800 }}>
                       CURRENT
                     </Box>
                   )}
@@ -892,66 +683,66 @@ const CompetitionManagement = () => {
             })}
             <Box sx={{ ml: 'auto' }}>
               <Button size="small" onClick={() => loadApplications(activeSession)}
-                sx={{ borderRadius: '10px', px: 2, color: '#64748b', fontSize: '0.8rem', textTransform: 'none', '&:hover': { color: '#fff' } }}>
+                sx={{ borderRadius: '10px', px: 2, color: '#2563EB', fontWeight: 600, fontSize: '0.8rem', textTransform: 'none', '&:hover': { backgroundColor: '#EFF6FF' } }}>
                 ↻ Refresh
               </Button>
             </Box>
           </Box>
 
-          <Grid container spacing={3} mb={6}>
-            <Grid item xs={12} md={3}>
-              <Card sx={{ background: 'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(59,130,246,0.05))', border: '1px solid rgba(56,189,248,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(56,189,248,0.15)' }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>Total Applications</Typography>
-                  <Typography variant="h3" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>{totalApplications}</Typography>
+          <Grid container spacing={2.5} mb={4}>
+            <Grid item xs={12} sm={6} md={2.4}>
+              <Card sx={{ background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)', border: '1px solid #BFDBFE', borderRadius: 3, boxShadow: '0 4px 16px -2px rgba(15,23,42,0.04)' }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#1E40AF', textTransform: 'uppercase', letterSpacing: '1px', mb: 0.5, fontWeight: 700, fontSize: '0.7rem' }}>Total Applications</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#1E3A8A', fontFamily: '"Saira Condensed", sans-serif' }}>{totalApplications}</Typography>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} md={3}>
-              <Card sx={{ background: 'linear-gradient(135deg, rgba(52,211,153,0.2), rgba(16,185,129,0.05))', border: '1px solid rgba(52,211,153,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(52,211,153,0.15)' }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>GK Applications</Typography>
-                  <Typography variant="h3" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>{gkApplications}</Typography>
+            <Grid item xs={12} sm={6} md={2.4}>
+              <Card sx={{ background: 'linear-gradient(135deg, #ECFDF5, #D1FAE5)', border: '1px solid #A7F3D0', borderRadius: 3, boxShadow: '0 4px 16px -2px rgba(15,23,42,0.04)' }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#065F46', textTransform: 'uppercase', letterSpacing: '1px', mb: 0.5, fontWeight: 700, fontSize: '0.7rem' }}>GK Applications</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#064E3B', fontFamily: '"Saira Condensed", sans-serif' }}>{gkApplications}</Typography>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} md={3}>
-              <Card sx={{ background: 'linear-gradient(135deg, rgba(251,191,36,0.2), rgba(245,158,11,0.05))', border: '1px solid rgba(251,191,36,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(251,191,36,0.15)' }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>Computer Applications</Typography>
-                  <Typography variant="h3" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>{computerApplications}</Typography>
+            <Grid item xs={12} sm={6} md={2.4}>
+              <Card sx={{ background: 'linear-gradient(135deg, #FFFBEB, #FEF3C7)', border: '1px solid #FDE68A', borderRadius: 3, boxShadow: '0 4px 16px -2px rgba(15,23,42,0.04)' }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#92400E', textTransform: 'uppercase', letterSpacing: '1px', mb: 0.5, fontWeight: 700, fontSize: '0.7rem' }}>Computer Applications</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#78350F', fontFamily: '"Saira Condensed", sans-serif' }}>{computerApplications}</Typography>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} md={3}>
-              <Card sx={{ background: 'linear-gradient(135deg, rgba(167,139,250,0.2), rgba(139,92,246,0.05))', border: '1px solid rgba(167,139,250,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(167,139,250,0.15)' }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>Both Subjects</Typography>
-                  <Typography variant="h3" fontWeight={800} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif' }}>{bothApplications}</Typography>
+            <Grid item xs={12} sm={6} md={2.4}>
+              <Card sx={{ background: 'linear-gradient(135deg, #FAF5FF, #F3E8FF)', border: '1px solid #E9D5FF', borderRadius: 3, boxShadow: '0 4px 16px -2px rgba(15,23,42,0.04)' }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#6B21A8', textTransform: 'uppercase', letterSpacing: '1px', mb: 0.5, fontWeight: 700, fontSize: '0.7rem' }}>Both Subjects</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#581C87', fontFamily: '"Saira Condensed", sans-serif' }}>{bothApplications}</Typography>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} md={3}>
-              <Card sx={{ background: 'linear-gradient(135deg, rgba(52,211,153,0.2), rgba(16,185,129,0.05))', border: '1px solid rgba(52,211,153,0.4)', backdropFilter: 'blur(10px)', borderRadius: 4, boxShadow: '0 0 30px rgba(52,211,153,0.15)' }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '2px', mb: 1 }}>💳 Payments Received</Typography>
-                  <Typography variant="h3" fontWeight={800} sx={{ color: '#34d399', fontFamily: '"Saira Condensed", sans-serif' }}>{paidApplications}</Typography>
-                  <Typography variant="caption" sx={{ color: '#64748b' }}>Rs. {paidApplications * 150} collected</Typography>
+            <Grid item xs={12} sm={6} md={2.4}>
+              <Card sx={{ background: 'linear-gradient(135deg, #ECFDF5, #D1FAE5)', border: '1px solid #A7F3D0', borderRadius: 3, boxShadow: '0 4px 16px -2px rgba(15,23,42,0.04)' }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#065F46', textTransform: 'uppercase', letterSpacing: '1px', mb: 0.5, fontWeight: 700, fontSize: '0.7rem' }}>💳 Payments Received</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#059669', fontFamily: '"Saira Condensed", sans-serif' }}>{paidApplications}</Typography>
+                  <Typography variant="caption" sx={{ color: '#047857', fontWeight: 600 }}>Rs. {paidApplications * 150} collected</Typography>
                 </CardContent>
               </Card>
             </Grid>
           </Grid>
 
-          <Paper elevation={0} sx={{ p: 4, mb: 6, borderRadius: 4, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
-            <Typography variant="h6" mb={3} sx={{ color: '#fff', fontFamily: '"Saira Condensed", sans-serif', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: 1 }}>
-              <FaSearch size={20} color="#fbbf24" /> Search Applications
+          <Paper elevation={0} sx={{ p: 3.5, mb: 4, borderRadius: 3, background: '#FFFFFF', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px -2px rgba(15,23,42,0.05)' }}>
+            <Typography variant="h6" mb={2.5} sx={{ color: '#0F172A', fontFamily: '"Saira Condensed", sans-serif', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <FaSearch size={18} color="#2563EB" /> Search Applications
             </Typography>
             
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
               <FormControl sx={{ minWidth: 160 }}>
-                <InputLabel sx={{ color: '#94a3b8', '&.Mui-focused': { color: '#fbbf24' } }}>Search By</InputLabel>
+                <InputLabel sx={{ color: '#64748B', '&.Mui-focused': { color: '#2563EB' } }}>Search By</InputLabel>
                 <Select value={searchType} label="Search By" onChange={(e) => { setSearchType(e.target.value); setSearchTerm(''); }}
-                  sx={{ color: '#fff', '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.1)' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#fbbf24' }, '.MuiSvgIcon-root': { color: '#94a3b8' } }}>
+                  sx={{ color: '#0F172A', backgroundColor: '#FFFFFF', '.MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94A3B8' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#2563EB' } }}>
                   <MenuItem value="all">🔍 All Fields</MenuItem>
                   <MenuItem value="name">👤 Name</MenuItem>
                   <MenuItem value="phone">📱 Phone</MenuItem>
@@ -963,9 +754,9 @@ const CompetitionManagement = () => {
               </FormControl>
 
               <FormControl sx={{ minWidth: 160 }}>
-                <InputLabel sx={{ color: '#94a3b8', '&.Mui-focused': { color: '#34d399' } }}>Payment</InputLabel>
+                <InputLabel sx={{ color: '#64748B', '&.Mui-focused': { color: '#059669' } }}>Payment</InputLabel>
                 <Select value={paymentFilter} label="Payment" onChange={(e) => setPaymentFilter(e.target.value)}
-                  sx={{ color: '#fff', '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.1)' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#34d399' }, '.MuiSvgIcon-root': { color: '#94a3b8' } }}>
+                  sx={{ color: '#0F172A', backgroundColor: '#FFFFFF', '.MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94A3B8' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#059669' } }}>
                   <MenuItem value="all">💳 All Payments</MenuItem>
                   <MenuItem value="paid">✅ Paid</MenuItem>
                   <MenuItem value="pending">⏳ Pending</MenuItem>
@@ -974,32 +765,32 @@ const CompetitionManagement = () => {
               </FormControl>
               
               <TextField
-                placeholder="Search..."
+                placeholder="Search by name, roll, phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                sx={{ flexGrow: 1, minWidth: 320, input: { color: '#fff' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' }, '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&.Mui-focused fieldset': { borderColor: '#fbbf24' } } }}
-                InputProps={{ startAdornment: ( <InputAdornment position="start"><FaSearch color="#64748b" /></InputAdornment> ) }}
+                sx={{ flexGrow: 1, minWidth: 280, input: { color: '#0F172A', backgroundColor: '#FFFFFF' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: '#CBD5E1' }, '&:hover fieldset': { borderColor: '#94A3B8' }, '&.Mui-focused fieldset': { borderColor: '#2563EB' } } }}
+                InputProps={{ startAdornment: ( <InputAdornment position="start"><FaSearch color="#94A3B8" /></InputAdornment> ) }}
               />
               
               {searchTerm && (
-                <Button variant="outlined" onClick={() => setSearchTerm('')} sx={{ color: '#cbd5e1', borderColor: '#64748b', '&:hover': { borderColor: '#fff' } }}>
+                <Button variant="outlined" onClick={() => setSearchTerm('')} sx={{ color: '#64748B', borderColor: '#CBD5E1', textTransform: 'none', fontWeight: 600, '&:hover': { borderColor: '#94A3B8', background: '#F8FAFC' } }}>
                   Clear
                 </Button>
               )}
               
-              <Button variant="contained" onClick={exportToCSV} startIcon={<FaDownload />} sx={{ background: 'linear-gradient(135deg, #4ade80, #22c55e)', color: '#fff' }}>CSV</Button>
-              <Button variant="contained" onClick={exportAttendancePDF} startIcon={<FaDownload />} sx={{ background: 'linear-gradient(135deg, #f87171, #ef4444)', color: '#fff' }}>PDF</Button>
-              <Button variant="contained" onClick={exportAttendanceJPG} startIcon={<FaDownload />} sx={{ background: 'linear-gradient(135deg, #60a5fa, #3b82f6)', color: '#fff' }}>JPG</Button>
+              <Button variant="contained" onClick={exportToCSV} startIcon={<FaDownload />} sx={{ background: 'linear-gradient(135deg, #059669, #047857)', color: '#fff', textTransform: 'none', fontWeight: 700, borderRadius: 2 }}>CSV</Button>
+              <Button variant="contained" onClick={exportAttendancePDF} startIcon={<FaDownload />} sx={{ background: 'linear-gradient(135deg, #DC2626, #B91C1C)', color: '#fff', textTransform: 'none', fontWeight: 700, borderRadius: 2 }}>PDF</Button>
+              <Button variant="contained" onClick={exportAttendanceJPG} startIcon={<FaDownload />} sx={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', color: '#fff', textTransform: 'none', fontWeight: 700, borderRadius: 2 }}>JPG</Button>
             </Box>
           </Paper>
 
-          <Paper sx={{ borderRadius: 4, overflow: 'hidden', background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)' }}>
+          <Paper sx={{ borderRadius: 3, overflow: 'hidden', background: '#FFFFFF', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px -2px rgba(15,23,42,0.05)' }}>
             <TableContainer>
               <Table>
-                <TableHead sx={{ background: 'rgba(15,23,42,0.6)' }}>
+                <TableHead sx={{ background: '#F8FAFC', borderBottom: '2px solid #E2E8F0' }}>
                   <TableRow>
                     {['Roll Number', 'Name', "Father's Name", 'Payment', 'Photo', 'Signature', 'Actions'].map((header) => (
-                      <TableCell key={header} sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <TableCell key={header} sx={{ color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '0.75rem', py: 2 }}>
                         {header}
                       </TableCell>
                     ))}
@@ -1007,49 +798,61 @@ const CompetitionManagement = () => {
                 </TableHead>
                 <TableBody>
                   {filteredApplications.map((application) => (
-                    <TableRow key={application._id || application.rollNumber} hover sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.02) !important' } }}>
-                      <TableCell sx={{ color: '#fbbf24', fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{application.rollNumber}</TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <Typography sx={{ color: '#fff', fontWeight: 500 }}>{application.name}</Typography>
-                        <Typography variant="body2" sx={{ color: '#94a3b8' }}>{application.email}</Typography>
+                    <TableRow key={application._id || application.rollNumber} hover sx={{ '&:hover': { backgroundColor: '#F8FAFC !important' } }}>
+                      <TableCell sx={{ color: '#2563EB', fontWeight: 700, borderBottom: '1px solid #F1F5F9' }}>{application.rollNumber}</TableCell>
+                      <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
+                        <Typography sx={{ color: '#0F172A', fontWeight: 600 }}>{application.name}</Typography>
+                        <Typography variant="body2" sx={{ color: '#64748B', fontSize: '0.8rem' }}>{application.email}</Typography>
                       </TableCell>
-                      <TableCell sx={{ color: '#cbd5e1', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{application.fatherName || 'Not provided'}</TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <TableCell sx={{ color: '#475569', borderBottom: '1px solid #F1F5F9' }}>{application.fatherName || 'Not provided'}</TableCell>
+                      <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
                         <Chip
                           label={application.paymentStatus === 'paid' || application.paymentStatus === 'verified' ? 'PAID' : application.paymentStatus === 'failed' ? 'FAILED' : 'PENDING'}
                           size="small"
                           sx={{
                             background: application.paymentStatus === 'paid' || application.paymentStatus === 'verified'
-                              ? 'rgba(52,211,153,0.15)' : application.paymentStatus === 'failed'
-                              ? 'rgba(248,113,113,0.15)' : 'rgba(251,191,36,0.15)',
+                              ? '#ECFDF5' : application.paymentStatus === 'failed'
+                              ? '#FEF2F2' : '#FFFBEB',
                             color: application.paymentStatus === 'paid' || application.paymentStatus === 'verified'
-                              ? '#34d399' : application.paymentStatus === 'failed'
-                              ? '#f87171' : '#fbbf24',
+                              ? '#059669' : application.paymentStatus === 'failed'
+                              ? '#DC2626' : '#D97706',
                             fontWeight: 700, fontSize: '0.7rem', border: '1px solid',
                             borderColor: application.paymentStatus === 'paid' || application.paymentStatus === 'verified'
-                              ? 'rgba(52,211,153,0.4)' : application.paymentStatus === 'failed'
-                              ? 'rgba(248,113,113,0.4)' : 'rgba(251,191,36,0.4)',
+                              ? '#A7F3D0' : application.paymentStatus === 'failed'
+                              ? '#FECACA' : '#FDE68A',
                           }}
                         />
                         {application.paymentTransactionId && (
-                          <Typography variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: '0.65rem', mt: 0.3 }}>{application.paymentTransactionId.slice(0, 12)}…</Typography>
+                          <Typography variant="caption" sx={{ color: '#64748B', display: 'block', fontSize: '0.65rem', mt: 0.3 }}>{application.paymentTransactionId.slice(0, 12)}…</Typography>
                         )}
                       </TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
                         {application.image ? (
-                          <Box component="img" src={application.image} alt="photo" sx={{ width: 50, height: 50, borderRadius: 2, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
+                          <Box component="img" src={application.image} alt="photo" sx={{ width: 44, height: 44, borderRadius: 2, objectFit: 'cover', border: '1px solid #E2E8F0' }} />
                         ) : (
-                          <Box sx={{ width: 50, height: 50, borderRadius: 2, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#64748b' }}>No Photo</Box>
+                          <Box sx={{ width: 44, height: 44, borderRadius: 2, background: '#F1F5F9', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#94A3B8' }}>No Photo</Box>
                         )}
                       </TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <Box sx={{ width: 120, height: 40, border: '1px dashed rgba(255,255,255,0.2)', borderRadius: 1 }} />
+                      <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
+                        <Box sx={{ width: 100, height: 36, border: '1px dashed #CBD5E1', borderRadius: 1, backgroundColor: '#F8FAFC' }} />
                       </TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
                         <Box display="flex" gap={1}>
-                          <Button variant="outlined" size="small" onClick={() => handleViewDetails(application)} sx={{ color: '#38bdf8', borderColor: '#38bdf850', minWidth: 0, p: 1 }}><FaEye /></Button>
-                          <Button variant="outlined" size="small" onClick={() => printAdmitCard(application)} sx={{ color: '#fbbf24', borderColor: '#fbbf2450', minWidth: 0, p: 1 }}><FaPrint /></Button>
-                          <Button variant="outlined" size="small" onClick={() => handleDelete(application._id)} sx={{ color: '#f87171', borderColor: '#f8717150', minWidth: 0, p: 1 }}><FaTrash /></Button>
+                          <Tooltip title="View Candidate Application Details">
+                            <Button variant="outlined" size="small" onClick={() => handleViewDetails(application)} sx={{ color: '#2563EB', borderColor: '#BFDBFE', backgroundColor: '#EFF6FF', minWidth: 0, p: 1, '&:hover': { backgroundColor: '#DBEAFE' } }}><FaEye /></Button>
+                          </Tooltip>
+                          <Tooltip title="Print E-Admit Card (Exam Hall Ticket)">
+                            <Button variant="outlined" size="small" onClick={() => printAdmitCard(application)} sx={{ color: '#2563EB', borderColor: '#BFDBFE', backgroundColor: '#EFF6FF', minWidth: 0, p: 1, '&:hover': { backgroundColor: '#DBEAFE' } }}><FaPrint /></Button>
+                          </Tooltip>
+                          <Tooltip title="Print Application Form & Fee Confirmation Receipt">
+                            <Button variant="outlined" size="small" onClick={() => printApplicationForm(application)} sx={{ color: '#059669', borderColor: '#A7F3D0', backgroundColor: '#ECFDF5', minWidth: 0, p: 1, '&:hover': { backgroundColor: '#D1FAE5' } }}><FaReceipt /></Button>
+                          </Tooltip>
+                          <Tooltip title="Live Document Preview (Toggle Admit Card / Application Form)">
+                            <Button variant="outlined" size="small" onClick={() => handleOpenAdmitCardPreview(application, 'admit_card')} sx={{ color: '#0F172A', borderColor: '#CBD5E1', backgroundColor: '#F8FAFC', minWidth: 0, p: 1, '&:hover': { backgroundColor: '#E2E8F0', borderColor: '#94A3B8' } }}><FaFileAlt /></Button>
+                          </Tooltip>
+                          <Tooltip title="Delete Application">
+                            <Button variant="outlined" size="small" onClick={() => handleDelete(application._id)} sx={{ color: '#DC2626', borderColor: '#FECACA', backgroundColor: '#FEF2F2', minWidth: 0, p: 1, '&:hover': { backgroundColor: '#FEE2E2' } }}><FaTrash /></Button>
+                          </Tooltip>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -1068,6 +871,14 @@ const CompetitionManagement = () => {
           )}
         </motion.div>
       </Container>
+
+      {/* Government E-Admit Card & Application Form Live Preview Modal */}
+      <GovernmentAdmitCardModal 
+        open={previewModalOpen}
+        onClose={() => setPreviewModalOpen(false)}
+        application={previewApplication}
+        initialDocType={previewDocType}
+      />
     </Box>
   );
 };

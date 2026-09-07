@@ -28,11 +28,15 @@ import FlashcardManagement from './components/admin/FlashcardManagement';
 import PaperManagement from './components/admin/PaperManagement';
 import InterviewManagement from './components/admin/InterviewManagement';
 import FranchiseManagement from './components/admin/FranchiseManagement';
+import TestManagement from './components/admin/TestManagement';
+import ScheduleManagement from './components/admin/ScheduleManagement';
+import DoubtManagement from './components/admin/DoubtManagement';
 import PrintAdmission from './components/admin/PrintAdmission';
 import AdminLogin from './pages/AdminLogin';
 import ProtectedRoute from './components/ProtectedRoute';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
+import AdminNavbar from './components/admin/AdminNavbar';
 
 function AppContent() {
   const location = useLocation();
@@ -40,6 +44,7 @@ function AppContent() {
   // Check if current route is a dashboard route
   const isDashboardRoute = location.pathname.startsWith('/admin/') || 
                            location.pathname.startsWith('/franchise-dashboard');
+  const isAdminRoute = location.pathname.startsWith('/admin/') && !location.pathname.startsWith('/admin/print');
 
   useEffect(() => {
     const handleScroll = () => {};
@@ -51,6 +56,7 @@ function AppContent() {
     <div className="app">
       {!isDashboardRoute && <TopBar />}
       {!isDashboardRoute && <Navbar />}
+      {isAdminRoute && <AdminNavbar />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
@@ -81,6 +87,9 @@ function AppContent() {
         <Route path="/admin/papers" element={<ProtectedRoute><PaperManagement /></ProtectedRoute>} />
         <Route path="/admin/interview" element={<ProtectedRoute><InterviewManagement /></ProtectedRoute>} />
         <Route path="/admin/franchise" element={<ProtectedRoute><FranchiseManagement /></ProtectedRoute>} />
+        <Route path="/admin/tests" element={<ProtectedRoute><TestManagement /></ProtectedRoute>} />
+        <Route path="/admin/schedules" element={<ProtectedRoute><ScheduleManagement /></ProtectedRoute>} />
+        <Route path="/admin/doubts" element={<ProtectedRoute><DoubtManagement /></ProtectedRoute>} />
       </Routes>
       <ScrollToTop />
       {!isDashboardRoute && <Footer />}
