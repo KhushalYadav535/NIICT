@@ -122,20 +122,27 @@ export const generateAdmitCardHtml = (application = {}) => {
     .sheet {
       width: 210mm;
       min-height: 297mm;
+      height: 297mm;
       background: #FFFFFF;
-      padding: 10mm 12mm 8mm 12mm;
+      padding: 6mm 8mm;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
       position: relative;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     .border-container {
       border: 3px double #0f2744;
       outline: 1px solid #b45309;
       outline-offset: -5px;
-      padding: 8px;
+      padding: 8px 10px 6px 10px;
       position: relative;
       background: #FFFFFF;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .watermark {
@@ -159,6 +166,10 @@ export const generateAdmitCardHtml = (application = {}) => {
     .content-layer {
       position: relative;
       z-index: 2;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .header-table {
@@ -316,8 +327,8 @@ export const generateAdmitCardHtml = (application = {}) => {
 
     .profile-table td, .profile-table th {
       border: 1px solid #94a3b8;
-      padding: 4.5px 7px;
-      font-size: 10px;
+      padding: 5.5px 8px;
+      font-size: 10.5px;
       vertical-align: middle;
     }
 
@@ -352,8 +363,8 @@ export const generateAdmitCardHtml = (application = {}) => {
     }
 
     .photo-frame {
-      width: 110px;
-      height: 135px;
+      width: 115px;
+      height: 145px;
       border: 1.5px solid #0f2744;
       margin: 0 auto;
       background: #f8fafc;
@@ -378,15 +389,15 @@ export const generateAdmitCardHtml = (application = {}) => {
     }
 
     .signature-frame {
-      width: 110px;
-      height: 38px;
+      width: 115px;
+      height: 42px;
       border: 1px dashed #475569;
       margin: 4px auto 0;
       background: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 7.5px;
+      font-size: 8px;
       color: #94a3b8;
       text-transform: uppercase;
       font-weight: 600;
@@ -429,23 +440,23 @@ export const generateAdmitCardHtml = (application = {}) => {
     .instructions-box {
       border: 1px solid #cbd5e1;
       background: #fdfefe;
-      padding: 7px 9px;
+      padding: 9px 12px;
       margin-bottom: 8px;
     }
 
     .instructions-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 6px 14px;
+      gap: 7px 18px;
     }
 
     .instruction-item {
-      font-size: 8.4px;
+      font-size: 9.2px;
       color: #1e293b;
-      line-height: 1.35;
+      line-height: 1.45;
       display: flex;
       align-items: flex-start;
-      gap: 4px;
+      gap: 5px;
     }
 
     .instruction-num {
@@ -466,12 +477,12 @@ export const generateAdmitCardHtml = (application = {}) => {
       padding: 4px 4px 3px 4px;
       text-align: center;
       vertical-align: bottom;
-      height: 66px;
+      height: 72px;
       background: #fff;
     }
 
     .sign-area {
-      height: 42px;
+      height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -525,7 +536,7 @@ export const generateAdmitCardHtml = (application = {}) => {
     @media print {
       @page {
         size: A4 portrait;
-        margin: 6mm 8mm;
+        margin: 5mm 6mm;
       }
       body {
         background: #FFFFFF !important;
@@ -534,14 +545,30 @@ export const generateAdmitCardHtml = (application = {}) => {
       }
       .sheet {
         width: 100% !important;
-        min-height: auto !important;
+        height: 286mm !important;
+        min-height: 286mm !important;
+        max-height: 286mm !important;
         padding: 0 !important;
         box-shadow: none !important;
+        display: flex !important;
+        flex-direction: column !important;
       }
       .border-container {
-        border: 2px solid #0f2744 !important;
+        border: 2.5px solid #0f2744 !important;
         outline: 1px solid #b45309 !important;
         outline-offset: -4px !important;
+        flex: 1 !important;
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        padding: 8px 10px 6px 10px !important;
+      }
+      .content-layer {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
       }
       * {
         -webkit-print-color-adjust: exact !important;
@@ -839,20 +866,27 @@ export const generateApplicationFormHtml = (application = {}) => {
     .sheet {
       width: 210mm;
       min-height: 297mm;
+      height: 297mm;
       background: #FFFFFF;
-      padding: 10mm 12mm 8mm 12mm;
+      padding: 6mm 8mm;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
       position: relative;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     .border-container {
       border: 3px double #065f46;
       outline: 1px solid #059669;
       outline-offset: -5px;
-      padding: 8px;
+      padding: 8px 10px 6px 10px;
       position: relative;
       background: #FFFFFF;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .watermark {
@@ -876,6 +910,10 @@ export const generateApplicationFormHtml = (application = {}) => {
     .content-layer {
       position: relative;
       z-index: 2;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .header-table {
@@ -1184,7 +1222,7 @@ export const generateApplicationFormHtml = (application = {}) => {
     @media print {
       @page {
         size: A4 portrait;
-        margin: 6mm 8mm;
+        margin: 5mm 6mm;
       }
       body {
         background: #FFFFFF !important;
@@ -1193,14 +1231,30 @@ export const generateApplicationFormHtml = (application = {}) => {
       }
       .sheet {
         width: 100% !important;
-        min-height: auto !important;
+        height: 286mm !important;
+        min-height: 286mm !important;
+        max-height: 286mm !important;
         padding: 0 !important;
         box-shadow: none !important;
+        display: flex !important;
+        flex-direction: column !important;
       }
       .border-container {
-        border: 2px solid #065f46 !important;
+        border: 2.5px solid #065f46 !important;
         outline: 1px solid #059669 !important;
         outline-offset: -4px !important;
+        flex: 1 !important;
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        padding: 8px 10px 6px 10px !important;
+      }
+      .content-layer {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
       }
       * {
         -webkit-print-color-adjust: exact !important;
