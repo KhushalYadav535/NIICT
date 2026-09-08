@@ -10,7 +10,29 @@ import {
   FaTrophy, FaCalendarAlt, FaClock, FaMapMarkerAlt,
   FaCheckCircle, FaCreditCard, FaDownload, FaEye, FaShieldAlt, FaReceipt, FaPrint
 } from 'react-icons/fa';
-import { openAdmitCardPrintWindow, openApplicationFormPrintWindow } from '../utils/admitCardGenerator';
+import { openAdmitCardPrintWindow, openApplicationFormPrintWindow, formatAdmitCardDob } from '../utils/admitCardGenerator';
+
+// Timezone-safe age calculation directly from YYYY-MM-DD
+const calculateCandidateAge = (dob) => {
+  if (!dob) return 0;
+  let by, bm, bd;
+  if (typeof dob === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dob)) {
+    [by, bm, bd] = dob.slice(0, 10).split('-').map(Number);
+  } else {
+    const dt = new Date(dob);
+    if (isNaN(dt.getTime())) return 0;
+    by = dt.getUTCFullYear();
+    bm = dt.getUTCMonth() + 1;
+    bd = dt.getUTCDate();
+  }
+  const today = new Date();
+  const cy = today.getFullYear();
+  const cm = today.getMonth() + 1;
+  const cd = today.getDate();
+  let age = cy - by;
+  if (cm < bm || (cm === bm && cd < bd)) age -= 1;
+  return age;
+};
 
 /* ─── Design Tokens ─────────────────────────────────────── */
 const C = {
@@ -95,7 +117,7 @@ const PreviewModal = ({ open, formData, imagePreview, onConfirm, onEdit, loading
     ['Phone', formData.phone],
     ["Father's Name", formData.fatherName],
     ["Mother's Name", formData.motherName],
-    ['Date of Birth', formData.dateOfBirth ? new Date(formData.dateOfBirth).toLocaleDateString('en-GB') : ''],
+    ['Date of Birth', formatAdmitCardDob(formData.dateOfBirth)],
     ['Aadhaar', formData.aadhaar || 'Not provided'],
     ['School / College', formData.school],
     ['Class Passed', formData.classPassed],
@@ -288,10 +310,7 @@ const CompetitionForm = () => {
       !formData.fatherName || !formData.motherName || !formData.dateOfBirth || !formData.classPassed) {
       setError('Please fill all required fields'); return false;
     }
-    const today = new Date(), birth = new Date(formData.dateOfBirth);
-    const age = today.getFullYear() - birth.getFullYear();
-    const md = today.getMonth() - birth.getMonth();
-    const actualAge = md < 0 || (md === 0 && today.getDate() < birth.getDate()) ? age - 1 : age;
+    const actualAge = calculateCandidateAge(formData.dateOfBirth);
     if (actualAge > 20) { setError('Only candidates aged 20 or below can register'); return false; }
     if (formData.aadhaar && !/^\d{12}$/.test(formData.aadhaar)) { setError('Aadhaar must be 12 digits'); return false; }
     return true;
@@ -329,10 +348,7 @@ const CompetitionForm = () => {
       appId = saved._id;
 
       // Enrich for admit card
-      const today2 = new Date(), b2 = new Date(saved.dateOfBirth);
-      const age2 = today2.getFullYear() - b2.getFullYear();
-      const md2 = today2.getMonth() - b2.getMonth();
-      const actualAge2 = md2 < 0 || (md2 === 0 && today2.getDate() < b2.getDate()) ? age2 - 1 : age2;
+      const actualAge2 = calculateCandidateAge(saved.dateOfBirth || formData.dateOfBirth);
       enriched = { ...saved, age: actualAge2, qrCode: `COMPETITION_${saved.rollNumber}_${saved.name.replace(/\s+/g, '_')}` };
       setAdmitCardData(enriched);
 

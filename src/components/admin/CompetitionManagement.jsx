@@ -4,7 +4,7 @@ import { Container, Typography, Paper, Table, TableBody, TableCell,
 import { motion } from 'framer-motion';
 import { FaTrophy, FaSearch, FaPrint, FaEye, FaTrash, FaDownload, FaFileAlt, FaReceipt } from 'react-icons/fa';
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
-import { openAdmitCardPrintWindow, openApplicationFormPrintWindow } from '../../utils/admitCardGenerator';
+import { openAdmitCardPrintWindow, openApplicationFormPrintWindow, formatAdmitCardDob } from '../../utils/admitCardGenerator';
 import GovernmentAdmitCardModal from './GovernmentAdmitCardModal';
 
 const CURRENT_SESSION = '2026-2027'; // Update this each year
@@ -152,7 +152,7 @@ const CompetitionManagement = () => {
         app.image || 'No Photo',
         app.phone || '',
         app.aadhaar || 'Not provided',
-        app.dateOfBirth ? new Date(app.dateOfBirth).toLocaleDateString('en-GB') : 'Not provided',
+        app.dateOfBirth ? formatAdmitCardDob(app.dateOfBirth) : 'Not provided',
         app.classPassed || app.class || 'Not provided',
         app.school || '',
         app.fatherName || 'Not provided',
@@ -458,7 +458,7 @@ const CompetitionManagement = () => {
                       </Grid>
                       <Grid item xs={6}>
                         <Typography variant="body2" color="#64748B">Date of Birth</Typography>
-                        <Typography variant="h6" fontWeight={600} color="#0F172A">{selectedApplication.dateOfBirth ? new Date(selectedApplication.dateOfBirth).toLocaleDateString('en-GB') : 'Not provided'}</Typography>
+                        <Typography variant="h6" fontWeight={600} color="#0F172A">{selectedApplication.dateOfBirth ? formatAdmitCardDob(selectedApplication.dateOfBirth) : 'Not provided'}</Typography>
                       </Grid>
                       <Grid item xs={6}>
                         <Typography variant="body2" color="#64748B">Class</Typography>

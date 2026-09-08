@@ -61,6 +61,24 @@ const generateQrImg = (payload = '') => {
   return `<img src="${qrUrl}" alt="Verification QR" style="width: 100%; height: 100%; object-fit: contain;" />`;
 };
 
+// Timezone-safe DOB formatter (avoids UTC offset day/month shifting)
+export const formatAdmitCardDob = (dateVal) => {
+  if (!dateVal) return 'DD/MM/YYYY';
+  if (typeof dateVal === 'string') {
+    const match = dateVal.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+      const [, y, m, d] = match;
+      return `${d}/${m}/${y}`;
+    }
+  }
+  const dt = new Date(dateVal);
+  if (isNaN(dt.getTime())) return 'DD/MM/YYYY';
+  const d = String(dt.getUTCDate()).padStart(2, '0');
+  const m = String(dt.getUTCMonth() + 1).padStart(2, '0');
+  const y = dt.getUTCFullYear();
+  return `${d}/${m}/${y}`;
+};
+
 /* ═════════════════════════════════════════════════════════════════
    1. GOVERNMENT E-ADMIT CARD (HALL TICKET ONLY - NO PAYMENT DATA)
    ═════════════════════════════════════════════════════════════════ */
@@ -69,9 +87,7 @@ export const generateAdmitCardHtml = (application = {}) => {
   const name = (application.name || 'CANDIDATE NAME').toUpperCase();
   const fatherName = (application.fatherName || application.fathersName || 'FATHER NAME').toUpperCase();
   const motherName = (application.motherName || application.mothersName || 'MOTHER NAME').toUpperCase();
-  const dobFormatted = application.dateOfBirth 
-    ? new Date(application.dateOfBirth).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
-    : 'DD/MM/YYYY';
+  const dobFormatted = formatAdmitCardDob(application.dateOfBirth);
   const school = (application.school || 'NIICT AFFILIATED ACADEMY').toUpperCase();
   const classPassed = application.classPassed || application.class || 'Intermediate (12th)';
   const aadhaar = application.aadhaar 
@@ -808,9 +824,7 @@ export const generateApplicationFormHtml = (application = {}) => {
   const name = (application.name || 'CANDIDATE NAME').toUpperCase();
   const fatherName = (application.fatherName || application.fathersName || 'FATHER NAME').toUpperCase();
   const motherName = (application.motherName || application.mothersName || 'MOTHER NAME').toUpperCase();
-  const dobFormatted = application.dateOfBirth 
-    ? new Date(application.dateOfBirth).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
-    : 'DD/MM/YYYY';
+  const dobFormatted = formatAdmitCardDob(application.dateOfBirth);
   const school = (application.school || 'NIICT AFFILIATED ACADEMY').toUpperCase();
   const classPassed = application.classPassed || application.class || 'Intermediate (12th)';
   const aadhaar = application.aadhaar 
