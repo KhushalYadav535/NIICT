@@ -228,7 +228,11 @@ const ThankYouScreen = ({ admitCardData, onDownloadAdmitCard, onDownloadAppForm 
             </Button>
           </Box>
 
-          <Typography variant="caption" color={C.inkSoft}>
+          <Typography variant="body2" sx={{ fontWeight: 700, color: '#059669', mt: 1 }}>
+            Official Website: <a href="https://www.niict.in" target="_blank" rel="noopener noreferrer" style={{ color: '#059669', textDecoration: 'underline' }}>www.niict.in</a>
+          </Typography>
+
+          <Typography variant="caption" color={C.inkSoft} sx={{ mt: 0.5, display: 'block' }}>
             Exam: 18 Oct 2026 (10:00 AM – 11:30 AM) | Reporting: 08:00 AM | Result: 25 Oct 2026
           </Typography>
         </Paper>

@@ -604,7 +604,7 @@ export const generateAdmitCardHtml = (application = {}) => {
             <td class="title-cell">
               <div class="hindi-title">निहांशी सूचना प्रौद्योगिकी एवं कम्प्यूटर प्रबंधन संस्थान</div>
               <div class="institute-title">Nihanshi Institute of Information & Computer Technology</div>
-              <div class="institute-tagline">Autonomous Examination & Skill Certification Authority &bull; Regd. Govt. of India &bull; ISO 9001:2015 Certified</div>
+              <div class="institute-tagline">Autonomous Examination & Skill Certification Authority &bull; Regd. Govt. of India &bull; ISO 9001:2015 &bull; Official Website: www.niict.in</div>
               <div class="exam-title-badge">
                 All India Talent Search & GK Computer Scholarship Exam — 2026-27
               </div>
@@ -714,7 +714,7 @@ export const generateAdmitCardHtml = (application = {}) => {
             <td class="center-val-cell" colspan="3">
               <strong style="color: #0f2744; font-size: 10px;">S.K. Modern Intermediate College</strong><br>
               Semari, Janghai, District Jaunpur, Uttar Pradesh – 222201 (Landmark: Near Semari Crossing, Janghai Junction)<br>
-              <span style="color: #475569; font-size: 8.5px;">Center Helpline: +91 91208 07026 &bull; Emergency Support: info@niict.org</span>
+              <span style="color: #475569; font-size: 8.5px;">Official Website: www.niict.in &bull; Center Helpline: +91 91208 07026 &bull; Emergency Support: info@niict.org</span>
             </td>
           </tr>
         </table>
@@ -1290,7 +1290,7 @@ export const generateApplicationFormHtml = (application = {}) => {
             <td class="title-cell">
               <div class="hindi-title">निहांशी सूचना प्रौद्योगिकी एवं कम्प्यूटर प्रबंधन संस्थान</div>
               <div class="institute-title">Nihanshi Institute of Information & Computer Technology</div>
-              <div class="institute-tagline">Autonomous Examination & Skill Certification Authority &bull; Regd. Govt. of India &bull; ISO 9001:2015 Certified</div>
+              <div class="institute-tagline">Autonomous Examination & Skill Certification Authority &bull; Regd. Govt. of India &bull; ISO 9001:2015 &bull; Official Website: www.niict.in</div>
               <div class="exam-title-badge">
                 All India Talent Search & GK Computer Scholarship Exam — 2026-27
               </div>
@@ -1405,7 +1405,8 @@ export const generateApplicationFormHtml = (application = {}) => {
           <tr>
             <td class="pay-label">Examination Venue:</td>
             <td class="pay-val" colspan="3" style="font-weight: 600;">
-              S.K. Modern Intermediate College, Semari, Janghai, District Jaunpur, Uttar Pradesh – 222201
+              S.K. Modern Intermediate College, Semari, Janghai, District Jaunpur, Uttar Pradesh – 222201<br>
+              <span style="color: #065f46; font-size: 8.5px; font-weight: 700;">Official Portal: www.niict.in &bull; Helpline: +91 91208 07026 &bull; Email: info@niict.org</span>
             </td>
           </tr>
         </table>
@@ -1448,7 +1449,7 @@ export const generateApplicationFormHtml = (application = {}) => {
 
         <!-- FOOTER BAR -->
         <div class="footer-note">
-          Official Confirmation Page & Fee Receipt &bull; Nihanshi Institute of Information & Computer Technology &bull; Page 1 of 1
+          Official Confirmation Page & Fee Receipt &bull; Official Portal: www.niict.in &bull; Nihanshi Institute of Information & Computer Technology &bull; Page 1 of 1
         </div>
 
       </div>
