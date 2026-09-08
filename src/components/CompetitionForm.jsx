@@ -229,7 +229,7 @@ const ThankYouScreen = ({ admitCardData, onDownloadAdmitCard, onDownloadAppForm 
           </Box>
 
           <Typography variant="caption" color={C.inkSoft}>
-            Exam: 18 Oct 2026 | Reporting: 08:00 AM | Result: 25 Oct 2026
+            Exam: 18 Oct 2026 (10:00 AM – 11:30 AM) | Reporting: 08:00 AM | Result: 25 Oct 2026
           </Typography>
         </Paper>
       </motion.div>
@@ -492,8 +492,8 @@ const CompetitionForm = () => {
                     <Box sx={{ p: 2, borderRadius: '16px', background: C.accentSoft, color: C.accent }}><FaClock size={22} /></Box>
                     <Box>
                       <Typography variant="body2" color={C.inkSoft} fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '1.2px', fontSize: '0.7rem' }}>Exam Date &amp; Time</Typography>
-                      <Typography variant="body1" color={C.ink} fontWeight={700} sx={{ mt: 0.5 }}>18 Oct 2026, 10:00 AM</Typography>
-                      <Typography variant="body2" color={C.inkSoft}>Reporting: 8:00 AM</Typography>
+                      <Typography variant="body1" color={C.ink} fontWeight={700} sx={{ mt: 0.5 }}>18 Oct 2026, 10:00 AM – 11:30 AM</Typography>
+                      <Typography variant="body2" color={C.inkSoft}>Duration: 90 Min | Reporting: 8:00 AM</Typography>
                     </Box>
                   </Box>
                 </Grid>

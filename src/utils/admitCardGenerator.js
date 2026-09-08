@@ -80,6 +80,13 @@ export const generateAdmitCardHtml = (application = {}) => {
   const phone = application.phone || 'XXXXXXXXXX';
   const subject = application.subject ? `${application.subject.toUpperCase()} COMPETITION` : 'GENERAL KNOWLEDGE & COMPUTER LITERACY';
   
+  const examTiming = (application.examTiming && application.examTiming.includes('11:30'))
+    ? application.examTiming
+    : (application.examTime && application.examTime.includes('11:30'))
+      ? application.examTime
+      : '10:00 AM – 11:30 AM (90 Min)';
+  const examDate = application.examDate || '18 October 2026 (Sunday)';
+  
   const qrPayload = JSON.stringify({
     document: 'E_ADMIT_CARD',
     authority: 'NIICT_EXAMINATION_AUTHORITY',
@@ -692,9 +699,9 @@ export const generateAdmitCardHtml = (application = {}) => {
         <table class="exam-table">
           <tr>
             <td class="exam-label-cell">Date of Examination:</td>
-            <td class="exam-val-cell" style="color: #b45309; font-size: 11px;">18 October 2026 (Sunday)</td>
+            <td class="exam-val-cell" style="color: #b45309; font-size: 11px;">${examDate}</td>
             <td class="exam-label-cell">Examination Timings:</td>
-            <td class="exam-val-cell" style="color: #0f2744; font-size: 10.5px;">10:00 AM – 12:00 PM (120 Min)</td>
+            <td class="exam-val-cell" style="color: #0f2744; font-size: 10.5px;">${examTiming}</td>
           </tr>
           <tr>
             <td class="exam-label-cell">Reporting Time at Center:</td>
