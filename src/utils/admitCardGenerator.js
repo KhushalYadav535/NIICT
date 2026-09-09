@@ -618,8 +618,8 @@ export const generateAdmitCardHtml = (application = {}) => {
               <img src="${NIICT_LOGO_DATA_URI}" alt="NIICT Logo" onerror="this.src='/logo.jpg'" />
             </td>
             <td class="title-cell">
-              <div class="hindi-title">निहांशी सूचना प्रौद्योगिकी एवं कम्प्यूटर प्रबंधन संस्थान</div>
-              <div class="institute-title">Nihanshi Institute of Information & Computer Technology</div>
+              <div class="hindi-title">NIICT सूचना प्रौद्योगिकी एवं कम्प्यूटर प्रबंधन संस्थान</div>
+              <div class="institute-title">NIICT Institute of Information & Computer Technology</div>
               <div class="institute-tagline">Autonomous Examination & Skill Certification Authority &bull; Regd. Govt. of India &bull; ISO 9001:2015 &bull; Official Website: www.niict.in</div>
               <div class="exam-title-badge">
                 All India Talent Search & GK Computer Scholarship Exam — 2026-27
@@ -1302,8 +1302,8 @@ export const generateApplicationFormHtml = (application = {}) => {
               <img src="${NIICT_LOGO_DATA_URI}" alt="NIICT Logo" onerror="this.src='/logo.jpg'" />
             </td>
             <td class="title-cell">
-              <div class="hindi-title">निहांशी सूचना प्रौद्योगिकी एवं कम्प्यूटर प्रबंधन संस्थान</div>
-              <div class="institute-title">Nihanshi Institute of Information & Computer Technology</div>
+              <div class="hindi-title">NIICT सूचना प्रौद्योगिकी एवं कम्प्यूटर प्रबंधन संस्थान</div>
+              <div class="institute-title">NIICT Institute of Information & Computer Technology</div>
               <div class="institute-tagline">Autonomous Examination & Skill Certification Authority &bull; Regd. Govt. of India &bull; ISO 9001:2015 &bull; Official Website: www.niict.in</div>
               <div class="exam-title-badge">
                 All India Talent Search & GK Computer Scholarship Exam — 2026-27
@@ -1463,7 +1463,7 @@ export const generateApplicationFormHtml = (application = {}) => {
 
         <!-- FOOTER BAR -->
         <div class="footer-note">
-          Official Confirmation Page & Fee Receipt &bull; Official Portal: www.niict.in &bull; Nihanshi Institute of Information & Computer Technology &bull; Page 1 of 1
+          Official Confirmation Page & Fee Receipt &bull; Official Portal: www.niict.in &bull; NIICT Institute of Information & Computer Technology &bull; Page 1 of 1
         </div>
 
       </div>
