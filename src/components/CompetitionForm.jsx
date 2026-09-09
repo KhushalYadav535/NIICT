@@ -257,6 +257,9 @@ const ThankYouScreen = ({ admitCardData, onDownloadAdmitCard, onDownloadAppForm 
           <Typography variant="caption" color={C.inkSoft} sx={{ mt: 0.5, display: 'block' }}>
             Exam: 18 Oct 2026 (10:00 AM – 11:30 AM) | Reporting: 08:00 AM | Result: 25 Oct 2026
           </Typography>
+          <Typography variant="caption" color={C.inkSoft} sx={{ mt: 0.5, display: 'block' }}>
+            Helpline: +91 8182838680, +91 8423415436 | Email: niict01@gmail.com
+          </Typography>
         </Paper>
       </motion.div>
     </Container>
@@ -521,7 +524,7 @@ const CompetitionForm = () => {
                   <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'center' }}>
                     <Box sx={{ p: 2, borderRadius: '16px', background: C.goldSoft, color: C.gold }}><FaMapMarkerAlt size={22} /></Box>
                     <Box>
-                      <Typography variant="body2" color={C.inkSoft} fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '1.2px', fontSize: '0.7rem' }}>Exam Center</Typography>
+                      <Typography variant="body2" color={C.inkSoft} fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '1.2px', fontSize: '0.7rem' }}>Exam Centre</Typography>
                       <Typography variant="body1" color={C.ink} fontWeight={700} sx={{ mt: 0.5 }}>S.K. Modern Inter College</Typography>
                       <Typography variant="body2" color={C.inkSoft}>Semari, Jaunpur</Typography>
                     </Box>

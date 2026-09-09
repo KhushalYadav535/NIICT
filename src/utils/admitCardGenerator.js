@@ -726,11 +726,11 @@ export const generateAdmitCardHtml = (application = {}) => {
             <td class="exam-val-cell" style="color: #dc2626;">09:15 AM (Strictly No Entry)</td>
           </tr>
           <tr>
-            <td class="exam-label-cell">Test Centre Name & Full Address:</td>
+            <td class="exam-label-cell">Exam Centre Name & Full Address:</td>
             <td class="center-val-cell" colspan="3">
               <strong style="color: #0f2744; font-size: 10px;">S.K. Modern Intermediate College</strong><br>
               Semari, Janghai, District Jaunpur, Uttar Pradesh – 222201 (Landmark: Near Semari Crossing, Janghai Junction)<br>
-              <span style="color: #475569; font-size: 8.5px;">Official Website: www.niict.in &bull; Center Helpline: +91 91208 07026 &bull; Emergency Support: info@niict.org</span>
+              <span style="color: #475569; font-size: 8.5px;">Official Website: www.niict.in &bull; Contact Helpline: +91 81828 38680, +91 84234 15436 &bull; Email: niict01@gmail.com</span>
             </td>
           </tr>
         </table>
@@ -1417,10 +1417,10 @@ export const generateApplicationFormHtml = (application = {}) => {
             <td class="pay-val">${paymentDate}</td>
           </tr>
           <tr>
-            <td class="pay-label">Examination Venue:</td>
+            <td class="pay-label">Exam Centre / Venue:</td>
             <td class="pay-val" colspan="3" style="font-weight: 600;">
               S.K. Modern Intermediate College, Semari, Janghai, District Jaunpur, Uttar Pradesh – 222201<br>
-              <span style="color: #065f46; font-size: 8.5px; font-weight: 700;">Official Portal: www.niict.in &bull; Helpline: +91 91208 07026 &bull; Email: info@niict.org</span>
+              <span style="color: #065f46; font-size: 8.5px; font-weight: 700;">Official Portal: www.niict.in &bull; Contact Helpline: +91 81828 38680, +91 84234 15436 &bull; Email: niict01@gmail.com</span>
             </td>
           </tr>
         </table>
