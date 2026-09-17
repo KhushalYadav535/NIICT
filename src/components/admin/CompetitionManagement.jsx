@@ -2,7 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Container, Typography, Paper, Table, TableBody, TableCell, 
          TableContainer, TableHead, TableRow, Button, Box, Chip, Grid, Card, CardContent, TextField, InputAdornment, FormControl, InputLabel, Select, MenuItem, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Alert, CircularProgress, Divider, IconButton } from '@mui/material';
 import { motion } from 'framer-motion';
-import { FaTrophy, FaSearch, FaPrint, FaEye, FaTrash, FaDownload, FaFileAlt, FaReceipt, FaUserPlus, FaCheckCircle, FaTimes, FaCamera, FaCloudUploadAlt } from 'react-icons/fa';
+import { 
+  FaTrophy, FaSearch, FaPrint, FaEye, FaTrash, FaDownload, FaFileAlt, 
+  FaReceipt, FaUserPlus, FaCheckCircle, FaTimes, FaCamera, FaCloudUploadAlt,
+  FaVideo, FaUser, FaPhoneAlt, FaGraduationCap, FaMapMarkerAlt, FaCalendarAlt, 
+  FaIdCard, FaBook, FaLaptopCode, FaCheck, FaInfoCircle, FaRegLightbulb, FaPaste
+} from 'react-icons/fa';
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
 import { openAdmitCardPrintWindow, openApplicationFormPrintWindow, formatAdmitCardDob } from '../../utils/admitCardGenerator';
 import GovernmentAdmitCardModal from './GovernmentAdmitCardModal';
@@ -23,6 +28,7 @@ const CompetitionManagement = () => {
   const [previewApplication, setPreviewApplication] = useState(null);
   const [previewDocType, setPreviewDocType] = useState('admit_card');
   const [libsLoaded, setLibsLoaded] = useState(false);
+  const [imageLightBox, setImageLightBox] = useState(null);
 
   // Offline registration state
   const [offlineModalOpen, setOfflineModalOpen] = useState(false);
@@ -32,7 +38,11 @@ const CompetitionManagement = () => {
   const [offlineError, setOfflineError] = useState('');
   const [offlineImagePreview, setOfflineImagePreview] = useState(null);
   const [uploadingOfflineImage, setUploadingOfflineImage] = useState(false);
+  const [isDraggingPhoto, setIsDraggingPhoto] = useState(false);
+  const [webcamOpen, setWebcamOpen] = useState(false);
   const offlineFileInputRef = useRef(null);
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
   const [offlineFormData, setOfflineFormData] = useState({
     name: '',
     fatherName: '',
@@ -453,10 +463,9 @@ const CompetitionManagement = () => {
     if (offlineFileInputRef.current) offlineFileInputRef.current.value = '';
   };
 
-  const handleOfflineImageChange = async (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
+  const uploadImageBlob = async (blob, customFilename = null) => {
+    if (!blob) return;
+    if (blob.size > 5 * 1024 * 1024) {
       setOfflineError('Image size must be less than 5MB');
       return;
     }
@@ -465,7 +474,8 @@ const CompetitionManagement = () => {
     try {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000');
       const mf = new FormData();
-      mf.append('image', file);
+      const filename = customFilename || (blob.name ? blob.name : `candidate_${Date.now()}.jpg`);
+      mf.append('image', blob, filename);
       const mr = await fetch(`${API_BASE_URL}/api/upload-image-mongo`, { method: 'POST', body: mf });
       if (mr.ok) {
         const mj = await mr.json();
@@ -475,13 +485,19 @@ const CompetitionManagement = () => {
           return;
         }
       }
-      setOfflineError('Photo upload failed. You can continue or retry.');
+      setOfflineError('Photo upload failed. You can proceed without photo.');
     } catch (err) {
       console.error('Image upload error:', err);
-      setOfflineError('Photo upload failed. You can continue or retry.');
+      setOfflineError('Photo upload failed. You can proceed without photo.');
     } finally {
       setUploadingOfflineImage(false);
     }
+  };
+
+  const handleOfflineImageChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    uploadImageBlob(file);
   };
 
   const handleRemoveOfflineImage = () => {
@@ -491,6 +507,78 @@ const CompetitionManagement = () => {
       offlineFileInputRef.current.value = '';
     }
   };
+
+  // Webcam camera handlers
+  const startWebcam = async () => {
+    try {
+      setOfflineError('');
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }
+      });
+      streamRef.current = stream;
+      setWebcamOpen(true);
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
+      }, 150);
+    } catch (err) {
+      console.error('Webcam error:', err);
+      setOfflineError('Unable to access camera. Please check camera permissions or browse photo file.');
+    }
+  };
+
+  const stopWebcam = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+    setWebcamOpen(false);
+  };
+
+  const captureWebcamPhoto = () => {
+    if (!videoRef.current) return;
+    try {
+      const video = videoRef.current;
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      stopWebcam();
+      
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        uploadImageBlob(blob, `camera_capture_${Date.now()}.jpg`);
+      }, 'image/jpeg', 0.92);
+    } catch (err) {
+      console.error('Capture error:', err);
+      setOfflineError('Failed to capture photo from camera.');
+    }
+  };
+
+  // Clipboard paste listener (Ctrl+V anywhere in offline modal)
+  useEffect(() => {
+    const handlePaste = (e) => {
+      if (!offlineModalOpen) return;
+      const items = e.clipboardData && e.clipboardData.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type && items[i].type.startsWith('image/')) {
+          const file = items[i].getAsFile();
+          if (file) {
+            e.preventDefault();
+            uploadImageBlob(file, `clipboard_${Date.now()}.jpg`);
+            break;
+          }
+        }
+      }
+    };
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [offlineModalOpen]);
 
   const calculateAge = (dob) => {
     if (!dob) return null;
@@ -660,6 +748,48 @@ const CompetitionManagement = () => {
                 </Grid>
 
                 <Grid item xs={12} md={4}>
+                  {/* Candidate Photo Card */}
+                  <Box sx={{ background: '#F8FAFC', p: 3, borderRadius: 3, border: '1px solid #E2E8F0', textAlign: 'center', mb: 3 }}>
+                    <Typography variant="h6" fontWeight={700} color="#0F172A" gutterBottom sx={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Candidate Photo
+                    </Typography>
+                    <Box sx={{
+                      width: 130,
+                      height: 160,
+                      mx: 'auto',
+                      mb: 1.5,
+                      borderRadius: '16px',
+                      overflow: 'hidden',
+                      border: selectedApplication.image ? '3px solid #059669' : '2px dashed #94A3B8',
+                      background: '#F1F5F9',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: selectedApplication.image ? '0 8px 24px -4px rgba(5,150,105,0.3)' : 'none',
+                      cursor: selectedApplication.image ? 'pointer' : 'default'
+                    }}
+                    onClick={() => selectedApplication.image && setImageLightBox(selectedApplication.image)}
+                    >
+                      {selectedApplication.image ? (
+                        <Box component="img" src={selectedApplication.image} alt={selectedApplication.name} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <Box textAlign="center" p={1}>
+                          <FaUser size={38} color="#94A3B8" />
+                          <Typography variant="caption" sx={{ display: 'block', color: '#64748B', fontWeight: 700, mt: 0.5, fontSize: '0.75rem' }}>
+                            No Photo Uploaded
+                          </Typography>
+                          <Typography variant="caption" sx={{ display: 'block', color: '#94A3B8', fontSize: '0.65rem' }}>
+                            Affix at Center
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                    <Typography variant="caption" sx={{ color: selectedApplication.image ? '#059669' : '#64748B', fontWeight: 700, display: 'block' }}>
+                      {selectedApplication.image ? '✓ Photo Verified (Click to enlarge)' : 'Passport photo can be affixed on Admit Card'}
+                    </Typography>
+                  </Box>
+
+                  {/* QR Code Card */}
                   <Box sx={{ background: '#F8FAFC', p: 3, borderRadius: 3, border: '1px solid #E2E8F0', textAlign: 'center' }}>
                     <Typography variant="h6" fontWeight={700} color="#0F172A" gutterBottom sx={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       QR Code
@@ -968,8 +1098,10 @@ const CompetitionManagement = () => {
                     <TableRow key={application._id || application.rollNumber} hover sx={{ '&:hover': { backgroundColor: '#F8FAFC !important' } }}>
                       <TableCell sx={{ color: '#2563EB', fontWeight: 700, borderBottom: '1px solid #F1F5F9' }}>{application.rollNumber}</TableCell>
                       <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
-                        <Typography sx={{ color: '#0F172A', fontWeight: 600 }}>{application.name}</Typography>
-                        <Typography variant="body2" sx={{ color: '#64748B', fontSize: '0.8rem' }}>{application.email}</Typography>
+                        <Typography sx={{ color: '#0F172A', fontWeight: 700 }}>{application.name}</Typography>
+                        <Typography variant="body2" sx={{ color: '#64748B', fontSize: '0.78rem' }}>
+                          📱 {application.phone || 'No phone'}
+                        </Typography>
                       </TableCell>
                       <TableCell sx={{ color: '#475569', borderBottom: '1px solid #F1F5F9' }}>{application.fatherName || 'Not provided'}</TableCell>
                       <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
@@ -1011,9 +1143,43 @@ const CompetitionManagement = () => {
                       </TableCell>
                       <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
                         {application.image ? (
-                          <Box component="img" src={application.image} alt="photo" sx={{ width: 44, height: 44, borderRadius: 2, objectFit: 'cover', border: '1px solid #E2E8F0' }} />
+                          <Tooltip title="Click to view full photo">
+                            <Box 
+                              component="img" 
+                              src={application.image} 
+                              alt={application.name} 
+                              onClick={() => setImageLightBox(application.image)}
+                              sx={{ 
+                                width: 44, 
+                                height: 48, 
+                                borderRadius: '8px', 
+                                objectFit: 'cover', 
+                                border: '2px solid #059669', 
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                '&:hover': { transform: 'scale(1.12)', boxShadow: '0 4px 12px rgba(5,150,105,0.35)' }
+                              }} 
+                            />
+                          </Tooltip>
                         ) : (
-                          <Box sx={{ width: 44, height: 44, borderRadius: 2, background: '#F1F5F9', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#94A3B8' }}>No Photo</Box>
+                          <Tooltip title="No photo uploaded (Will paste physically on Admit Card)">
+                            <Box sx={{ 
+                              width: 44, 
+                              height: 48, 
+                              borderRadius: '8px', 
+                              background: '#F1F5F9', 
+                              border: '1px dashed #CBD5E1', 
+                              display: 'flex', 
+                              flexDirection: 'column', 
+                              alignItems: 'center', 
+                              justifyContent: 'center' 
+                            }}>
+                              <Typography sx={{ fontSize: '11px', fontWeight: 800, color: '#64748B' }}>
+                                {application.name ? application.name.split(' ').map(n => n[0]).slice(0, 2).join('') : 'NA'}
+                              </Typography>
+                              <Typography sx={{ fontSize: '7px', color: '#94A3B8' }}>No Photo</Typography>
+                            </Box>
+                          </Tooltip>
                         )}
                       </TableCell>
                       <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
@@ -1128,14 +1294,52 @@ const CompetitionManagement = () => {
           )}
 
           <Grid container spacing={3}>
-            {/* Left Column: Passport Photo Upload & Admission Highlights */}
+            {/* Left Column: Passport Photo Studio & Admission Highlights */}
             <Grid item xs={12} md={4}>
-              <Paper elevation={0} sx={{ p: 3, borderRadius: '20px', border: '1px solid #E2E8F0', background: '#FFFFFF', textAlign: 'center', mb: 3 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 2 }}>
-                  <FaCamera color="#059669" /> Candidate Photograph
-                </Typography>
+              {/* Photo Studio Card */}
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  p: 3, 
+                  borderRadius: '22px', 
+                  border: isDraggingPhoto ? '2px dashed #059669' : '1px solid #E2E8F0', 
+                  background: isDraggingPhoto ? '#ECFDF5' : '#FFFFFF', 
+                  textAlign: 'center', 
+                  mb: 2.5,
+                  boxShadow: '0 4px 20px -4px rgba(15,23,42,0.05)',
+                  transition: 'all 0.2s ease'
+                }}
+                onDragOver={(e) => { e.preventDefault(); setIsDraggingPhoto(true); }}
+                onDragLeave={() => setIsDraggingPhoto(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDraggingPhoto(false);
+                  const file = e.dataTransfer.files && e.dataTransfer.files[0];
+                  if (file) uploadImageBlob(file);
+                }}
+              >
+                <Box display="flex" alignItems="center" justifyContent="space-between" mb={1.5}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                    <FaCamera color="#059669" /> Candidate Photo
+                  </Typography>
+                  {offlineImagePreview ? (
+                    <Chip 
+                      icon={<FaCheck size={10} />} 
+                      label="Photo Attached" 
+                      size="small" 
+                      sx={{ bgcolor: '#DCFCE7', color: '#15803D', fontWeight: 800, fontSize: '0.68rem', height: 22 }} 
+                    />
+                  ) : (
+                    <Chip 
+                      icon={<FaInfoCircle size={10} />} 
+                      label="Optional (ऐच्छिक)" 
+                      size="small" 
+                      sx={{ bgcolor: '#F1F5F9', color: '#64748B', fontWeight: 700, fontSize: '0.68rem', height: 22 }} 
+                    />
+                  )}
+                </Box>
 
-                {/* Passport Photo Box */}
+                {/* Passport Photo Box (Standard 35mm x 45mm ratio) */}
                 <Box sx={{
                   width: 140,
                   height: 175,
@@ -1143,30 +1347,38 @@ const CompetitionManagement = () => {
                   mb: 2,
                   borderRadius: '16px',
                   border: offlineImagePreview ? '3px solid #059669' : '2px dashed #CBD5E1',
-                  background: '#F1F5F9',
+                  background: '#F8FAFC',
                   overflow: 'hidden',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   position: 'relative',
-                  boxShadow: offlineImagePreview ? '0 10px 25px -5px rgba(5,150,105,0.25)' : 'none',
+                  boxShadow: offlineImagePreview ? '0 10px 25px -5px rgba(5,150,105,0.3)' : 'none',
                   transition: 'all 0.3s ease'
                 }}>
                   {uploadingOfflineImage ? (
-                    <Box textAlign="center">
-                      <CircularProgress size={30} sx={{ color: '#059669', mb: 1 }} />
-                      <Typography variant="caption" sx={{ display: 'block', color: '#64748B', fontWeight: 600 }}>Uploading...</Typography>
+                    <Box textAlign="center" p={2}>
+                      <CircularProgress size={32} sx={{ color: '#059669', mb: 1 }} />
+                      <Typography variant="caption" sx={{ display: 'block', color: '#64748B', fontWeight: 700 }}>
+                        Uploading...
+                      </Typography>
                     </Box>
                   ) : offlineImagePreview ? (
-                    <Box component="img" src={offlineImagePreview} alt="Candidate Preview" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <Box 
+                      component="img" 
+                      src={offlineImagePreview} 
+                      alt="Candidate Preview" 
+                      sx={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
+                      onClick={() => setImageLightBox(offlineImagePreview)}
+                    />
                   ) : (
                     <Box textAlign="center" p={1.5}>
-                      <FaCloudUploadAlt size={42} color="#94A3B8" />
-                      <Typography variant="caption" sx={{ display: 'block', color: '#64748B', fontWeight: 700, mt: 0.5, fontSize: '0.75rem' }}>
+                      <FaUser size={46} color="#CBD5E1" />
+                      <Typography variant="caption" sx={{ display: 'block', color: '#64748B', fontWeight: 800, mt: 0.8, fontSize: '0.78rem' }}>
                         No Photo
                       </Typography>
-                      <Typography variant="caption" sx={{ display: 'block', color: '#94A3B8', fontSize: '0.65rem' }}>
-                        Passport Size
+                      <Typography variant="caption" sx={{ display: 'block', color: '#94A3B8', fontSize: '0.68rem', mt: 0.2 }}>
+                        Optional • 35×45mm
                       </Typography>
                     </Box>
                   )}
@@ -1181,24 +1393,43 @@ const CompetitionManagement = () => {
                   style={{ display: 'none' }} 
                 />
 
-                {/* Upload / Change Action Buttons */}
+                {/* Action Buttons: Upload + Webcam + Remove */}
                 <Box display="flex" gap={1} justifyContent="center" flexWrap="wrap">
                   <Button
                     variant="contained"
                     size="small"
                     disabled={uploadingOfflineImage}
                     onClick={() => offlineFileInputRef.current && offlineFileInputRef.current.click()}
+                    startIcon={<FaCloudUploadAlt />}
+                    sx={{
+                      borderRadius: '10px',
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      fontSize: '0.78rem',
+                      background: 'linear-gradient(135deg, #059669, #047857)',
+                      boxShadow: '0 4px 12px rgba(5,150,105,0.2)'
+                    }}
+                  >
+                    {offlineImagePreview ? 'Change File' : 'Browse File'}
+                  </Button>
+
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    disabled={uploadingOfflineImage}
+                    onClick={startWebcam}
                     startIcon={<FaCamera />}
                     sx={{
                       borderRadius: '10px',
                       textTransform: 'none',
                       fontWeight: 700,
-                      fontSize: '0.8rem',
-                      background: 'linear-gradient(135deg, #059669, #047857)',
-                      boxShadow: '0 4px 12px rgba(5,150,105,0.2)'
+                      fontSize: '0.78rem',
+                      borderColor: '#059669',
+                      color: '#059669',
+                      '&:hover': { borderColor: '#047857', backgroundColor: '#ECFDF5' }
                     }}
                   >
-                    {offlineImagePreview ? 'Change Photo' : 'Upload Photo'}
+                    Camera
                   </Button>
 
                   {offlineImagePreview && (
@@ -1208,27 +1439,43 @@ const CompetitionManagement = () => {
                       color="error"
                       onClick={handleRemoveOfflineImage}
                       startIcon={<FaTrash />}
-                      sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700, fontSize: '0.8rem' }}
+                      sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700, fontSize: '0.78rem' }}
                     >
-                      Remove
+                      Clear
                     </Button>
                   )}
                 </Box>
 
-                <Typography variant="caption" sx={{ display: 'block', color: '#64748B', mt: 1.5, fontSize: '0.7rem' }}>
-                  Photo appears on E-Admit Card and Fee Receipt (Max: 5MB)
-                </Typography>
+                {/* Photo Guidance Callout */}
+                <Paper elevation={0} sx={{ mt: 2.2, p: 1.8, borderRadius: '14px', background: '#FFFBEB', border: '1px solid #FDE68A', textAlign: 'left' }}>
+                  <Box display="flex" alignItems="center" gap={0.8} mb={0.4}>
+                    <FaRegLightbulb color="#D97706" size={14} />
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: '#92400E', fontSize: '0.75rem' }}>
+                      फ़ोटो नहीं है? (No Photo Available?)
+                    </Typography>
+                  </Box>
+                  <Typography variant="caption" sx={{ color: '#78350F', display: 'block', lineHeight: 1.35, fontSize: '0.71rem' }}>
+                    चिंता न करें! आप बिना फ़ोटो के भी फ़ॉर्म तुरंत भर सकते हैं। छात्र एडमिट कार्ड पर अपनी भौतिक फ़ोटो चिपका सकता है।
+                  </Typography>
+                  <Divider sx={{ my: 0.8, borderColor: '#FDE68A' }} />
+                  <Box display="flex" alignItems="center" gap={0.8}>
+                    <FaPaste color="#B45309" size={12} />
+                    <Typography variant="caption" sx={{ color: '#92400E', fontWeight: 700, fontSize: '0.68rem' }}>
+                      WhatsApp या स्क्रीनशॉट से कॉपी की गई फ़ोटो सीधे Ctrl+V करके पेस्ट करें!
+                    </Typography>
+                  </Box>
+                </Paper>
               </Paper>
 
               {/* Admission Verification Pill */}
-              <Paper elevation={0} sx={{ p: 2.5, borderRadius: '18px', border: '1px solid #BFDBFE', background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)' }}>
-                <Typography variant="caption" sx={{ color: '#1E40AF', fontWeight: 800, textTransform: 'uppercase', display: 'block', mb: 1, letterSpacing: '0.5px' }}>
+              <Paper elevation={0} sx={{ p: 2.5, borderRadius: '20px', border: '1px solid #BFDBFE', background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)' }}>
+                <Typography variant="caption" sx={{ color: '#1E40AF', fontWeight: 800, textTransform: 'uppercase', display: 'block', mb: 1.2, letterSpacing: '0.5px' }}>
                   Registration Highlights
                 </Typography>
                 <Box display="flex" flexDirection="column" gap={0.8} sx={{ fontSize: '0.78rem', color: '#1E3A8A' }}>
                   <Box display="flex" justifyContent="space-between">
                     <span>Payment Status:</span>
-                    <strong style={{ color: '#059669' }}>✓ AUTO PAID</strong>
+                    <strong style={{ color: '#059669' }}>✓ AUTO MARKED PAID</strong>
                   </Box>
                   <Box display="flex" justifyContent="space-between">
                     <span>Fee Received:</span>
@@ -1242,6 +1489,10 @@ const CompetitionManagement = () => {
                     <span>Exam Date:</span>
                     <strong>18 Oct 2026</strong>
                   </Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <span>Centre Venue:</span>
+                    <strong>SKMIC Semari</strong>
+                  </Box>
                 </Box>
               </Paper>
             </Grid>
@@ -1249,15 +1500,22 @@ const CompetitionManagement = () => {
             {/* Right Column: Structured Form Sections */}
             <Grid item xs={12} md={8}>
               {/* Section 1: Candidate Personal Details */}
-              <Paper elevation={0} sx={{ p: 2.8, borderRadius: '20px', border: '1px solid #E2E8F0', background: '#FFFFFF', mb: 2.5 }}>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <Box sx={{ width: 8, height: 20, borderRadius: '4px', background: '#2563EB' }} />
-                  <Typography variant="subtitle1" fontWeight={800} color="#0F172A">
-                    1. Candidate Personal Details (व्यक्तिगत विवरण)
-                  </Typography>
+              <Paper elevation={0} sx={{ p: 3, borderRadius: '22px', border: '1px solid #E2E8F0', background: '#FFFFFF', mb: 2.5, boxShadow: '0 4px 20px -4px rgba(15,23,42,0.05)' }}>
+                <Box display="flex" alignItems="center" gap={1.2} mb={2.5}>
+                  <Box sx={{ width: 34, height: 34, borderRadius: '10px', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563EB' }}>
+                    <FaUser size={16} />
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2 }}>
+                      1. Candidate Personal Details (व्यक्तिगत विवरण)
+                    </Typography>
+                    <Typography variant="caption" color="#64748B">
+                      Candidate's official credentials as per school or Aadhaar record
+                    </Typography>
+                  </Box>
                 </Box>
 
-                <Grid container spacing={2}>
+                <Grid container spacing={2.2}>
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
@@ -1266,8 +1524,16 @@ const CompetitionManagement = () => {
                       value={offlineFormData.name}
                       onChange={(e) => setOfflineFormData(p => ({ ...p, name: e.target.value.toUpperCase() }))}
                       placeholder="e.g. AMAN VERMA"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FaUser color="#2563EB" size={14} />
+                          </InputAdornment>
+                        )
+                      }}
                     />
                   </Grid>
+
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
@@ -1277,9 +1543,17 @@ const CompetitionManagement = () => {
                       InputLabelProps={{ shrink: true }}
                       value={offlineFormData.dateOfBirth}
                       onChange={(e) => setOfflineFormData(p => ({ ...p, dateOfBirth: e.target.value }))}
-                      helperText={offlineFormData.dateOfBirth && calculateAge(offlineFormData.dateOfBirth) !== null ? `Calculated Age: ${calculateAge(offlineFormData.dateOfBirth)} Years` : ''}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FaCalendarAlt color="#2563EB" size={14} />
+                          </InputAdornment>
+                        )
+                      }}
+                      helperText={offlineFormData.dateOfBirth && calculateAge(offlineFormData.dateOfBirth) !== null ? `🎂 Calculated Age: ${calculateAge(offlineFormData.dateOfBirth)} Years (Eligible ✓)` : 'Select Candidate DOB'}
                     />
                   </Grid>
+
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
@@ -1287,9 +1561,17 @@ const CompetitionManagement = () => {
                       required
                       value={offlineFormData.fatherName}
                       onChange={(e) => setOfflineFormData(p => ({ ...p, fatherName: e.target.value.toUpperCase() }))}
-                      placeholder="Father's Name"
+                      placeholder="e.g. RAMESH VERMA"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FaUser color="#64748B" size={14} />
+                          </InputAdornment>
+                        )
+                      }}
                     />
                   </Grid>
+
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
@@ -1297,19 +1579,36 @@ const CompetitionManagement = () => {
                       required
                       value={offlineFormData.motherName}
                       onChange={(e) => setOfflineFormData(p => ({ ...p, motherName: e.target.value.toUpperCase() }))}
-                      placeholder="Mother's Name"
+                      placeholder="e.g. SUNITA DEVI"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FaUser color="#64748B" size={14} />
+                          </InputAdornment>
+                        )
+                      }}
                     />
                   </Grid>
+
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       label="Aadhaar Card Number (12 digits)"
                       value={offlineFormData.aadhaar}
                       onChange={(e) => setOfflineFormData(p => ({ ...p, aadhaar: e.target.value.replace(/\D/g, '').slice(0, 12) }))}
-                      placeholder="12 digit Aadhaar Number"
+                      placeholder="12-digit UID"
                       inputProps={{ maxLength: 12 }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FaIdCard color="#2563EB" size={14} />
+                          </InputAdornment>
+                        )
+                      }}
+                      helperText={offlineFormData.aadhaar.length === 12 ? '✓ 12-digit Aadhaar Complete' : `${offlineFormData.aadhaar.length}/12 digits (Optional)`}
                     />
                   </Grid>
+
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
@@ -1317,23 +1616,38 @@ const CompetitionManagement = () => {
                       required
                       value={offlineFormData.phone}
                       onChange={(e) => setOfflineFormData(p => ({ ...p, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
-                      placeholder="10-digit Mobile Number"
+                      placeholder="10-digit Mobile"
                       inputProps={{ maxLength: 10 }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FaPhoneAlt color="#2563EB" size={14} />
+                          </InputAdornment>
+                        )
+                      }}
+                      helperText={offlineFormData.phone.length === 10 ? '✓ 10-digit Mobile Complete' : `${offlineFormData.phone.length}/10 digits (Required)`}
                     />
                   </Grid>
                 </Grid>
               </Paper>
 
               {/* Section 2: Academic & Examination Details */}
-              <Paper elevation={0} sx={{ p: 2.8, borderRadius: '20px', border: '1px solid #E2E8F0', background: '#FFFFFF', mb: 2.5 }}>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <Box sx={{ width: 8, height: 20, borderRadius: '4px', background: '#059669' }} />
-                  <Typography variant="subtitle1" fontWeight={800} color="#0F172A">
-                    2. Academic &amp; Examination Details (परीक्षा एवं शैक्षणिक विवरण)
-                  </Typography>
+              <Paper elevation={0} sx={{ p: 3, borderRadius: '22px', border: '1px solid #E2E8F0', background: '#FFFFFF', mb: 2.5, boxShadow: '0 4px 20px -4px rgba(15,23,42,0.05)' }}>
+                <Box display="flex" alignItems="center" gap={1.2} mb={2.5}>
+                  <Box sx={{ width: 34, height: 34, borderRadius: '10px', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#059669' }}>
+                    <FaGraduationCap size={16} />
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2 }}>
+                      2. Academic &amp; Examination Details (परीक्षा एवं शैक्षणिक विवरण)
+                    </Typography>
+                    <Typography variant="caption" color="#64748B">
+                      Institution name, standard, and competition paper subject
+                    </Typography>
+                  </Box>
                 </Box>
 
-                <Grid container spacing={2}>
+                <Grid container spacing={2.2}>
                   <Grid item xs={12} sm={7}>
                     <TextField
                       fullWidth
@@ -1341,9 +1655,17 @@ const CompetitionManagement = () => {
                       required
                       value={offlineFormData.school}
                       onChange={(e) => setOfflineFormData(p => ({ ...p, school: e.target.value.toUpperCase() }))}
-                      placeholder="School or College Name"
+                      placeholder="School / College Name"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FaGraduationCap color="#059669" size={14} />
+                          </InputAdornment>
+                        )
+                      }}
                     />
                   </Grid>
+
                   <Grid item xs={12} sm={5}>
                     <TextField
                       fullWidth
@@ -1352,22 +1674,95 @@ const CompetitionManagement = () => {
                       value={offlineFormData.classPassed}
                       onChange={(e) => setOfflineFormData(p => ({ ...p, classPassed: e.target.value }))}
                       placeholder="e.g. 10th / 12th / BA"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FaBook color="#059669" size={14} />
+                          </InputAdornment>
+                        )
+                      }}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth>
-                      <InputLabel>Examination Subject *</InputLabel>
-                      <Select
-                        value={offlineFormData.subject}
-                        label="Examination Subject *"
-                        onChange={(e) => setOfflineFormData(p => ({ ...p, subject: e.target.value }))}
-                      >
-                        <MenuItem value="GK">GK (General Knowledge)</MenuItem>
-                        <MenuItem value="Computer">Computer Literacy</MenuItem>
-                        <MenuItem value="Both">Both (GK &amp; Computer)</MenuItem>
-                      </Select>
-                    </FormControl>
+
+                  {/* Quick Class Selection Chips */}
+                  <Grid item xs={12}>
+                    <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                      <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700 }}>
+                        Quick Select Class:
+                      </Typography>
+                      {['8th', '9th', '10th', '11th', '12th', 'BA / UG', 'B.Sc / Other'].map((cls) => (
+                        <Chip
+                          key={cls}
+                          label={cls}
+                          size="small"
+                          clickable
+                          onClick={() => setOfflineFormData(p => ({ ...p, classPassed: cls }))}
+                          sx={{
+                            borderRadius: '8px',
+                            fontWeight: offlineFormData.classPassed === cls ? 800 : 600,
+                            backgroundColor: offlineFormData.classPassed === cls ? '#059669' : '#F1F5F9',
+                            color: offlineFormData.classPassed === cls ? '#FFFFFF' : '#475569',
+                            '&:hover': { backgroundColor: '#059669', color: '#FFFFFF' }
+                          }}
+                        />
+                      ))}
+                    </Box>
                   </Grid>
+
+                  {/* Interactive 3-Card Subject Selector */}
+                  <Grid item xs={12}>
+                    <Typography variant="caption" sx={{ color: '#475569', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', mb: 1 }}>
+                      Examination Subject (विषय चयन) *
+                    </Typography>
+                    <Grid container spacing={1.5}>
+                      {[
+                        { val: 'GK', label: 'GK (General Knowledge)', sub: 'सामान्य ज्ञान प्रतियोगिता', icon: <FaBook size={18} /> },
+                        { val: 'Computer', label: 'Computer Literacy', sub: 'कम्प्यूटर ज्ञान प्रतियोगिता', icon: <FaLaptopCode size={18} /> },
+                        { val: 'Both', label: 'Both (GK + Computer)', sub: 'दोनों विषय सम्मिलित', icon: <FaTrophy size={18} /> }
+                      ].map((item) => {
+                        const isSelected = offlineFormData.subject === item.val;
+                        return (
+                          <Grid item xs={12} sm={4} key={item.val}>
+                            <Paper
+                              elevation={0}
+                              onClick={() => setOfflineFormData(p => ({ ...p, subject: item.val }))}
+                              sx={{
+                                p: 1.8,
+                                borderRadius: '14px',
+                                border: isSelected ? '2px solid #059669' : '1px solid #E2E8F0',
+                                background: isSelected ? 'linear-gradient(135deg, #ECFDF5, #D1FAE5)' : '#F8FAFC',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1.5,
+                                '&:hover': { borderColor: '#059669', transform: 'translateY(-2px)' }
+                              }}
+                            >
+                              <Box sx={{ 
+                                width: 36, height: 36, borderRadius: '10px', 
+                                background: isSelected ? '#059669' : '#E2E8F0', 
+                                color: isSelected ? '#FFFFFF' : '#64748B',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                              }}>
+                                {item.icon}
+                              </Box>
+                              <Box sx={{ flexGrow: 1 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 800, color: isSelected ? '#065F46' : '#1E293B', fontSize: '0.85rem' }}>
+                                  {item.label}
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: isSelected ? '#047857' : '#64748B', fontSize: '0.7rem' }}>
+                                  {item.sub}
+                                </Typography>
+                              </Box>
+                              {isSelected && <FaCheckCircle color="#059669" size={16} />}
+                            </Paper>
+                          </Grid>
+                        );
+                      })}
+                    </Grid>
+                  </Grid>
+
                   <Grid item xs={12} sm={6}>
                     <FormControl fullWidth>
                       <InputLabel>Session / Exam Year</InputLabel>
@@ -1386,15 +1781,22 @@ const CompetitionManagement = () => {
               </Paper>
 
               {/* Section 3: Address & Alternate Contact */}
-              <Paper elevation={0} sx={{ p: 2.8, borderRadius: '20px', border: '1px solid #E2E8F0', background: '#FFFFFF' }}>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <Box sx={{ width: 8, height: 20, borderRadius: '4px', background: '#D97706' }} />
-                  <Typography variant="subtitle1" fontWeight={800} color="#0F172A">
-                    3. Contact &amp; Residential Address (सम्पर्क एवं स्थायी पता)
-                  </Typography>
+              <Paper elevation={0} sx={{ p: 3, borderRadius: '22px', border: '1px solid #E2E8F0', background: '#FFFFFF', boxShadow: '0 4px 20px -4px rgba(15,23,42,0.05)' }}>
+                <Box display="flex" alignItems="center" gap={1.2} mb={2.5}>
+                  <Box sx={{ width: 34, height: 34, borderRadius: '10px', background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D97706' }}>
+                    <FaMapMarkerAlt size={16} />
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2 }}>
+                      3. Contact &amp; Residential Address (सम्पर्क एवं स्थायी पता)
+                    </Typography>
+                    <Typography variant="caption" color="#64748B">
+                      Emergency contact and residential postal address
+                    </Typography>
+                  </Box>
                 </Box>
 
-                <Grid container spacing={2}>
+                <Grid container spacing={2.2}>
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
@@ -1403,26 +1805,47 @@ const CompetitionManagement = () => {
                       onChange={(e) => setOfflineFormData(p => ({ ...p, parentPhone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
                       placeholder="Parent's Mobile"
                       inputProps={{ maxLength: 10 }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FaPhoneAlt color="#D97706" size={14} />
+                          </InputAdornment>
+                        )
+                      }}
                     />
                   </Grid>
+
                   <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Exam Center"
-                      disabled
-                      value="S K Modern Intermediate College Semari Janghai"
-                    />
+                    <Paper elevation={0} sx={{ p: 1.8, borderRadius: '12px', background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+                      <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, display: 'block' }}>
+                        Official Examination Center
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 800, color: '#0F172A', mt: 0.2 }}>
+                        🏢 S K Modern Intermediate College Semari Janghai
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#059669', fontWeight: 700, display: 'block', mt: 0.2 }}>
+                        ✓ Centre Code: SKMIC-222201 (Confirmed Venue)
+                      </Typography>
+                    </Paper>
                   </Grid>
+
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
                       multiline
-                      rows={2}
+                      rows={2.5}
                       label="Complete Residential Address *"
                       required
                       value={offlineFormData.address}
                       onChange={(e) => setOfflineFormData(p => ({ ...p, address: e.target.value }))}
                       placeholder="Village/Mohalla, Post Office, Tehsil, District, PIN Code"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start" sx={{ alignSelf: 'flex-start', mt: 1.5 }}>
+                            <FaMapMarkerAlt color="#D97706" size={14} />
+                          </InputAdornment>
+                        )
+                      }}
                     />
                   </Grid>
                 </Grid>
@@ -1449,12 +1872,12 @@ const CompetitionManagement = () => {
               borderRadius: '12px', 
               textTransform: 'none', 
               fontWeight: 800, 
-              fontSize: '0.95rem',
+              fontSize: '0.98rem',
               background: 'linear-gradient(135deg, #059669, #047857)',
-              py: 1.2,
-              px: 4,
+              py: 1.3,
+              px: 4.5,
               boxShadow: '0 6px 20px rgba(5,150,105,0.35)',
-              '&:hover': { background: 'linear-gradient(135deg, #047857, #065F46)' }
+              '&:hover': { background: 'linear-gradient(135deg, #047857, #065F46)', transform: 'translateY(-1px)' }
             }}
           >
             {submittingOffline ? <CircularProgress size={22} color="inherit" /> : 'Confirm & Register Candidate (Mark Paid)'}
@@ -1482,22 +1905,52 @@ const CompetitionManagement = () => {
           </Typography>
 
           {createdOfflineCandidate && (
-            <Paper elevation={0} sx={{ p: 2.5, mb: 3, background: '#F8FAFC', borderRadius: '16px', border: '1px solid #E2E8F0', textAlign: 'left' }}>
-              <Box display="flex" justifyContent="space-between" mb={1}>
-                <Typography variant="body2" color="#64748B">Allocated Roll Number</Typography>
-                <Typography variant="h6" fontWeight={800} color="#2563EB">{createdOfflineCandidate.rollNumber}</Typography>
+            <Paper elevation={0} sx={{ p: 2.5, mb: 3, background: '#F8FAFC', borderRadius: '18px', border: '1px solid #E2E8F0', textAlign: 'left' }}>
+              <Box display="flex" gap={2} alignItems="center" mb={2}>
+                <Box sx={{
+                  width: 60,
+                  height: 72,
+                  borderRadius: '10px',
+                  overflow: 'hidden',
+                  border: createdOfflineCandidate.image ? '2px solid #059669' : '1px dashed #CBD5E1',
+                  background: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  {createdOfflineCandidate.image ? (
+                    <Box component="img" src={createdOfflineCandidate.image} alt={createdOfflineCandidate.name} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <FaUser size={24} color="#CBD5E1" />
+                  )}
+                </Box>
+                <Box sx={{ flexGrow: 1 }}>
+                  <Typography variant="caption" color="#64748B" sx={{ textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.5px' }}>
+                    Allocated Roll Number
+                  </Typography>
+                  <Typography variant="h5" fontWeight={900} color="#2563EB" sx={{ lineHeight: 1.1 }}>
+                    {createdOfflineCandidate.rollNumber}
+                  </Typography>
+                  <Typography variant="body2" fontWeight={800} color="#0F172A" sx={{ mt: 0.3 }}>
+                    {createdOfflineCandidate.name}
+                  </Typography>
+                </Box>
               </Box>
-              <Box display="flex" justifyContent="space-between" mb={1}>
-                <Typography variant="body2" color="#64748B">Candidate Name</Typography>
-                <Typography variant="body2" fontWeight={700} color="#0F172A">{createdOfflineCandidate.name}</Typography>
+
+              <Box display="flex" justifyContent="space-between" mb={1} sx={{ fontSize: '0.82rem' }}>
+                <Typography variant="body2" color="#64748B">Subject Paper</Typography>
+                <Typography variant="body2" fontWeight={700} color="#0F172A">{createdOfflineCandidate.subject}</Typography>
               </Box>
-              <Box display="flex" justifyContent="space-between" mb={1}>
-                <Typography variant="body2" color="#64748B">Subject</Typography>
-                <Typography variant="body2" fontWeight={600} color="#0F172A">{createdOfflineCandidate.subject}</Typography>
+              <Box display="flex" justifyContent="space-between" mb={1} sx={{ fontSize: '0.82rem' }}>
+                <Typography variant="body2" color="#64748B">Fee Paid</Typography>
+                <Typography variant="body2" fontWeight={700} color="#059669">Rs. 150 (Desk Cash)</Typography>
               </Box>
-              <Box display="flex" justifyContent="space-between">
-                <Typography variant="body2" color="#64748B">Payment Status</Typography>
-                <Chip label="PAID (OFFLINE CASH)" size="small" sx={{ background: '#DCFCE7', color: '#166534', fontWeight: 800, fontSize: '0.7rem' }} />
+              <Box display="flex" justifyContent="space-between" sx={{ fontSize: '0.82rem' }}>
+                <Typography variant="body2" color="#64748B">Candidate Photo</Typography>
+                <Typography variant="body2" fontWeight={700} color={createdOfflineCandidate.image ? '#059669' : '#D97706'}>
+                  {createdOfflineCandidate.image ? '✓ Photo Attached' : '⚪ Affix on Printed Card'}
+                </Typography>
               </Box>
             </Paper>
           )}
@@ -1510,8 +1963,9 @@ const CompetitionManagement = () => {
               startIcon={<FaPrint />}
               onClick={() => createdOfflineCandidate && printAdmitCard(createdOfflineCandidate)}
               sx={{
-                borderRadius: '12px', py: 1.4, fontWeight: 700, textTransform: 'none',
-                background: 'linear-gradient(135deg, #2563EB, #1D4ED8)'
+                borderRadius: '12px', py: 1.4, fontWeight: 800, textTransform: 'none',
+                background: 'linear-gradient(135deg, #2563EB, #1D4ED8)',
+                boxShadow: '0 4px 14px rgba(37,99,235,0.3)'
               }}
             >
               Print E-Admit Card (Hall Ticket)
@@ -1524,8 +1978,9 @@ const CompetitionManagement = () => {
               startIcon={<FaReceipt />}
               onClick={() => createdOfflineCandidate && printApplicationForm(createdOfflineCandidate)}
               sx={{
-                borderRadius: '12px', py: 1.4, fontWeight: 700, textTransform: 'none',
-                background: 'linear-gradient(135deg, #059669, #047857)'
+                borderRadius: '12px', py: 1.4, fontWeight: 800, textTransform: 'none',
+                background: 'linear-gradient(135deg, #059669, #047857)',
+                boxShadow: '0 4px 14px rgba(5,150,105,0.3)'
               }}
             >
               Print Application Form &amp; Fee Receipt
@@ -1547,6 +2002,141 @@ const CompetitionManagement = () => {
             Close Window
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Live Webcam Camera Capture Modal */}
+      <Dialog 
+        open={webcamOpen} 
+        onClose={stopWebcam}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ 
+          sx: { 
+            borderRadius: '24px', 
+            overflow: 'hidden', 
+            background: '#0F172A', 
+            color: '#FFFFFF',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
+          } 
+        }}
+      >
+        <DialogTitle sx={{ p: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+          <Box display="flex" alignItems="center" gap={1.2}>
+            <FaCamera color="#10B981" />
+            <Typography variant="subtitle1" fontWeight={800}>Live Webcam Photo</Typography>
+          </Box>
+          <IconButton onClick={stopWebcam} sx={{ color: '#94A3B8', '&:hover': { color: '#FFFFFF' } }}>
+            <FaTimes size={16} />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ p: 3, textAlign: 'center' }}>
+          <Box sx={{
+            width: 240,
+            height: 300,
+            mx: 'auto',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            border: '3px solid #10B981',
+            background: '#000000',
+            position: 'relative',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.6)'
+          }}>
+            <video 
+              ref={videoRef} 
+              autoPlay 
+              playsInline 
+              muted 
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            />
+            {/* Passport Oval/Box Guide Overlay */}
+            <Box sx={{
+              position: 'absolute',
+              top: '12%',
+              left: '12%',
+              right: '12%',
+              bottom: '12%',
+              border: '2px dashed rgba(255,255,255,0.7)',
+              borderRadius: '16px',
+              pointerEvents: 'none',
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'center',
+              pb: 1
+            }}>
+              <Typography variant="caption" sx={{ color: '#FFFFFF', background: 'rgba(0,0,0,0.6)', px: 1, py: 0.3, borderRadius: '6px', fontSize: '0.68rem' }}>
+                Center Face Here
+              </Typography>
+            </Box>
+          </Box>
+          <Typography variant="caption" sx={{ color: '#94A3B8', display: 'block', mt: 2 }}>
+            Align candidate's face in the center box and click Capture.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5, borderTop: '1px solid rgba(255,255,255,0.1)', justifyContent: 'space-between' }}>
+          <Button onClick={stopWebcam} sx={{ color: '#94A3B8', textTransform: 'none' }}>
+            Cancel
+          </Button>
+          <Button 
+            variant="contained"
+            onClick={captureWebcamPhoto}
+            startIcon={<FaCamera />}
+            sx={{
+              borderRadius: '12px',
+              px: 3,
+              py: 1,
+              fontWeight: 800,
+              textTransform: 'none',
+              background: 'linear-gradient(135deg, #059669, #047857)',
+              boxShadow: '0 4px 14px rgba(5,150,105,0.4)',
+              '&:hover': { background: 'linear-gradient(135deg, #047857, #065F46)' }
+            }}
+          >
+            Capture Photo
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Enlarged Candidate Photo Lightbox */}
+      <Dialog 
+        open={!!imageLightBox} 
+        onClose={() => setImageLightBox(null)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ 
+          sx: { 
+            borderRadius: '20px', 
+            overflow: 'hidden', 
+            p: 1.5, 
+            background: '#0F172A', 
+            textAlign: 'center',
+            boxShadow: '0 25px 60px -15px rgba(0,0,0,0.6)'
+          } 
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center" px={1} pb={1}>
+          <Typography variant="subtitle2" sx={{ color: '#E2E8F0', fontWeight: 700 }}>
+            Candidate Photograph
+          </Typography>
+          <IconButton onClick={() => setImageLightBox(null)} sx={{ color: '#FFFFFF' }}>
+            <FaTimes size={16} />
+          </IconButton>
+        </Box>
+        <Box sx={{ p: 1, display: 'flex', justifyContent: 'center' }}>
+          {imageLightBox && (
+            <Box 
+              component="img" 
+              src={imageLightBox} 
+              alt="Enlarged Candidate Photo" 
+              sx={{ 
+                maxWidth: '100%', 
+                maxHeight: '65vh', 
+                borderRadius: '14px', 
+                objectFit: 'contain',
+                border: '2px solid #334155' 
+              }} 
+            />
+          )}
+        </Box>
       </Dialog>
     </Box>
   );
