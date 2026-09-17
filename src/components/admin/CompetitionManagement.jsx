@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Container, Typography, Paper, Table, TableBody, TableCell, 
-         TableContainer, TableHead, TableRow, Button, Box, Chip, Grid, Card, CardContent, TextField, InputAdornment, FormControl, InputLabel, Select, MenuItem, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Alert, CircularProgress, Divider } from '@mui/material';
+         TableContainer, TableHead, TableRow, Button, Box, Chip, Grid, Card, CardContent, TextField, InputAdornment, FormControl, InputLabel, Select, MenuItem, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Alert, CircularProgress, Divider, IconButton } from '@mui/material';
 import { motion } from 'framer-motion';
-import { FaTrophy, FaSearch, FaPrint, FaEye, FaTrash, FaDownload, FaFileAlt, FaReceipt, FaUserPlus, FaCheckCircle } from 'react-icons/fa';
+import { FaTrophy, FaSearch, FaPrint, FaEye, FaTrash, FaDownload, FaFileAlt, FaReceipt, FaUserPlus, FaCheckCircle, FaTimes, FaCamera, FaCloudUploadAlt } from 'react-icons/fa';
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
 import { openAdmitCardPrintWindow, openApplicationFormPrintWindow, formatAdmitCardDob } from '../../utils/admitCardGenerator';
 import GovernmentAdmitCardModal from './GovernmentAdmitCardModal';
@@ -30,6 +30,9 @@ const CompetitionManagement = () => {
   const [createdOfflineCandidate, setCreatedOfflineCandidate] = useState(null);
   const [submittingOffline, setSubmittingOffline] = useState(false);
   const [offlineError, setOfflineError] = useState('');
+  const [offlineImagePreview, setOfflineImagePreview] = useState(null);
+  const [uploadingOfflineImage, setUploadingOfflineImage] = useState(false);
+  const offlineFileInputRef = useRef(null);
   const [offlineFormData, setOfflineFormData] = useState({
     name: '',
     fatherName: '',
@@ -445,7 +448,59 @@ const CompetitionManagement = () => {
       image: null,
       session: activeSession || CURRENT_SESSION
     });
+    setOfflineImagePreview(null);
     setOfflineError('');
+    if (offlineFileInputRef.current) offlineFileInputRef.current.value = '';
+  };
+
+  const handleOfflineImageChange = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setOfflineError('Image size must be less than 5MB');
+      return;
+    }
+    setUploadingOfflineImage(true);
+    setOfflineError('');
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000');
+      const mf = new FormData();
+      mf.append('image', file);
+      const mr = await fetch(`${API_BASE_URL}/api/upload-image-mongo`, { method: 'POST', body: mf });
+      if (mr.ok) {
+        const mj = await mr.json();
+        if (mj.secure_url) {
+          setOfflineFormData(p => ({ ...p, image: mj.secure_url }));
+          setOfflineImagePreview(mj.secure_url);
+          return;
+        }
+      }
+      setOfflineError('Photo upload failed. You can continue or retry.');
+    } catch (err) {
+      console.error('Image upload error:', err);
+      setOfflineError('Photo upload failed. You can continue or retry.');
+    } finally {
+      setUploadingOfflineImage(false);
+    }
+  };
+
+  const handleRemoveOfflineImage = () => {
+    setOfflineFormData(p => ({ ...p, image: null }));
+    setOfflineImagePreview(null);
+    if (offlineFileInputRef.current) {
+      offlineFileInputRef.current.value = '';
+    }
+  };
+
+  const calculateAge = (dob) => {
+    if (!dob) return null;
+    const d = new Date(dob);
+    if (isNaN(d.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - d.getFullYear();
+    const m = today.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < d.getDate())) age--;
+    return age;
   };
 
   const handleOfflineSubmit = async (e) => {
@@ -1008,192 +1063,401 @@ const CompetitionManagement = () => {
         initialDocType={previewDocType}
       />
 
-      {/* Offline Candidate Registration Modal */}
+      {/* Offline Candidate Registration Modal (Beautiful & Enhanced Design with Photo Upload) */}
       <Dialog 
         open={offlineModalOpen} 
         onClose={() => !submittingOffline && setOfflineModalOpen(false)} 
-        maxWidth="md" 
+        maxWidth="lg" 
         fullWidth
-        PaperProps={{ sx: { borderRadius: '24px', p: 1.5 } }}
+        PaperProps={{ 
+          sx: { 
+            borderRadius: '24px', 
+            overflow: 'hidden',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' 
+          } 
+        }}
       >
-        <DialogTitle sx={{ fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: 1.5, pb: 0.5 }}>
-          <Box sx={{ p: 1, borderRadius: 2, background: '#DCFCE7', color: '#166534', display: 'flex' }}>
-            <FaUserPlus size={22} />
-          </Box>
-          <Box>
-            <Typography variant="h6" fontWeight={800} color="#0F172A">
-              Offline Candidate Registration (ऑफ़लाइन छात्र फॉर्म)
-            </Typography>
-            <Typography variant="caption" color="#64748B">
-              Direct offline manual registration: Automatically marked as Paid. Sequential Roll No generated. Rs. 0 added to online collection.
-            </Typography>
+        {/* Header with Emerald Gradient */}
+        <DialogTitle sx={{ 
+          p: 0, 
+          position: 'relative', 
+          overflow: 'hidden',
+          background: 'linear-gradient(135deg, #064E3B 0%, #047857 50%, #059669 100%)', 
+          color: '#FFFFFF' 
+        }}>
+          <Box sx={{ position: 'absolute', right: -30, top: -30, width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
+          <Box sx={{ p: { xs: 2, sm: 3 }, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box display="flex" alignItems="center" gap={2}>
+              <Box sx={{ 
+                width: 52, height: 52, borderRadius: '16px', 
+                background: 'rgba(255,255,255,0.15)', 
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255,255,255,0.25)', 
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
+              }}>
+                <FaUserPlus size={24} color="#A7F3D0" />
+              </Box>
+              <Box>
+                <Box display="flex" alignItems="center" gap={1.5} flexWrap="wrap">
+                  <Typography variant="h5" fontWeight={800} sx={{ letterSpacing: '0.5px', fontFamily: '"Saira Condensed", sans-serif' }}>
+                    Offline Candidate Registration
+                  </Typography>
+                  <Chip 
+                    label="ऑफ़लाइन छात्र फॉर्म" 
+                    size="small" 
+                    sx={{ background: 'rgba(255,255,255,0.2)', color: '#FFFFFF', fontWeight: 700, fontSize: '0.72rem' }} 
+                  />
+                </Box>
+                <Typography variant="body2" sx={{ color: '#D1FAE5', mt: 0.3, fontSize: '0.82rem' }}>
+                  Direct offline manual entry &bull; Sequential Roll Number generated &bull; Zero wallet addition &bull; Marked as Paid
+                </Typography>
+              </Box>
+            </Box>
+            <IconButton onClick={() => !submittingOffline && setOfflineModalOpen(false)} sx={{ color: '#FFFFFF', bgcolor: 'rgba(255,255,255,0.1)', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' } }}>
+              <FaTimes size={18} />
+            </IconButton>
           </Box>
         </DialogTitle>
-        <Divider sx={{ my: 1.5 }} />
 
-        <DialogContent sx={{ pt: 1 }}>
+        <DialogContent sx={{ p: { xs: 2, sm: 3.5 }, backgroundColor: '#F8FAFC' }}>
           {offlineError && (
-            <Alert severity="error" sx={{ mb: 2, borderRadius: '12px' }}>
+            <Alert severity="error" sx={{ mb: 3, borderRadius: '14px', border: '1px solid #FECACA' }}>
               {offlineError}
             </Alert>
           )}
 
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Candidate Full Name *"
-                required
-                value={offlineFormData.name}
-                onChange={(e) => setOfflineFormData(p => ({ ...p, name: e.target.value.toUpperCase() }))}
-                placeholder="e.g. RAHUL KUMAR"
-              />
+          <Grid container spacing={3}>
+            {/* Left Column: Passport Photo Upload & Admission Highlights */}
+            <Grid item xs={12} md={4}>
+              <Paper elevation={0} sx={{ p: 3, borderRadius: '20px', border: '1px solid #E2E8F0', background: '#FFFFFF', textAlign: 'center', mb: 3 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 2 }}>
+                  <FaCamera color="#059669" /> Candidate Photograph
+                </Typography>
+
+                {/* Passport Photo Box */}
+                <Box sx={{
+                  width: 140,
+                  height: 175,
+                  mx: 'auto',
+                  mb: 2,
+                  borderRadius: '16px',
+                  border: offlineImagePreview ? '3px solid #059669' : '2px dashed #CBD5E1',
+                  background: '#F1F5F9',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  boxShadow: offlineImagePreview ? '0 10px 25px -5px rgba(5,150,105,0.25)' : 'none',
+                  transition: 'all 0.3s ease'
+                }}>
+                  {uploadingOfflineImage ? (
+                    <Box textAlign="center">
+                      <CircularProgress size={30} sx={{ color: '#059669', mb: 1 }} />
+                      <Typography variant="caption" sx={{ display: 'block', color: '#64748B', fontWeight: 600 }}>Uploading...</Typography>
+                    </Box>
+                  ) : offlineImagePreview ? (
+                    <Box component="img" src={offlineImagePreview} alt="Candidate Preview" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <Box textAlign="center" p={1.5}>
+                      <FaCloudUploadAlt size={42} color="#94A3B8" />
+                      <Typography variant="caption" sx={{ display: 'block', color: '#64748B', fontWeight: 700, mt: 0.5, fontSize: '0.75rem' }}>
+                        No Photo
+                      </Typography>
+                      <Typography variant="caption" sx={{ display: 'block', color: '#94A3B8', fontSize: '0.65rem' }}>
+                        Passport Size
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Hidden File Input */}
+                <input 
+                  type="file" 
+                  ref={offlineFileInputRef} 
+                  accept="image/*" 
+                  onChange={handleOfflineImageChange} 
+                  style={{ display: 'none' }} 
+                />
+
+                {/* Upload / Change Action Buttons */}
+                <Box display="flex" gap={1} justifyContent="center" flexWrap="wrap">
+                  <Button
+                    variant="contained"
+                    size="small"
+                    disabled={uploadingOfflineImage}
+                    onClick={() => offlineFileInputRef.current && offlineFileInputRef.current.click()}
+                    startIcon={<FaCamera />}
+                    sx={{
+                      borderRadius: '10px',
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      fontSize: '0.8rem',
+                      background: 'linear-gradient(135deg, #059669, #047857)',
+                      boxShadow: '0 4px 12px rgba(5,150,105,0.2)'
+                    }}
+                  >
+                    {offlineImagePreview ? 'Change Photo' : 'Upload Photo'}
+                  </Button>
+
+                  {offlineImagePreview && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      color="error"
+                      onClick={handleRemoveOfflineImage}
+                      startIcon={<FaTrash />}
+                      sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700, fontSize: '0.8rem' }}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </Box>
+
+                <Typography variant="caption" sx={{ display: 'block', color: '#64748B', mt: 1.5, fontSize: '0.7rem' }}>
+                  Photo appears on E-Admit Card and Fee Receipt (Max: 5MB)
+                </Typography>
+              </Paper>
+
+              {/* Admission Verification Pill */}
+              <Paper elevation={0} sx={{ p: 2.5, borderRadius: '18px', border: '1px solid #BFDBFE', background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)' }}>
+                <Typography variant="caption" sx={{ color: '#1E40AF', fontWeight: 800, textTransform: 'uppercase', display: 'block', mb: 1, letterSpacing: '0.5px' }}>
+                  Registration Highlights
+                </Typography>
+                <Box display="flex" flexDirection="column" gap={0.8} sx={{ fontSize: '0.78rem', color: '#1E3A8A' }}>
+                  <Box display="flex" justifyContent="space-between">
+                    <span>Payment Status:</span>
+                    <strong style={{ color: '#059669' }}>✓ AUTO PAID</strong>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <span>Fee Received:</span>
+                    <strong>Rs. 150 (Desk Cash)</strong>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <span>Wallet Addition:</span>
+                    <strong style={{ color: '#059669' }}>Rs. 0 (Untouched)</strong>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between">
+                    <span>Exam Date:</span>
+                    <strong>18 Oct 2026</strong>
+                  </Box>
+                </Box>
+              </Paper>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Candidate Mobile Number (10 digits) *"
-                required
-                value={offlineFormData.phone}
-                onChange={(e) => setOfflineFormData(p => ({ ...p, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
-                placeholder="10 digit number"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Father's Name *"
-                required
-                value={offlineFormData.fatherName}
-                onChange={(e) => setOfflineFormData(p => ({ ...p, fatherName: e.target.value.toUpperCase() }))}
-                placeholder="Father's Name"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Mother's Name *"
-                required
-                value={offlineFormData.motherName}
-                onChange={(e) => setOfflineFormData(p => ({ ...p, motherName: e.target.value.toUpperCase() }))}
-                placeholder="Mother's Name"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                type="date"
-                label="Date of Birth *"
-                required
-                InputLabelProps={{ shrink: true }}
-                value={offlineFormData.dateOfBirth}
-                onChange={(e) => setOfflineFormData(p => ({ ...p, dateOfBirth: e.target.value }))}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Class Passed / Studying *"
-                required
-                value={offlineFormData.classPassed}
-                onChange={(e) => setOfflineFormData(p => ({ ...p, classPassed: e.target.value }))}
-                placeholder="e.g. 10th / 12th / Graduate"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Subject *</InputLabel>
-                <Select
-                  value={offlineFormData.subject}
-                  label="Subject *"
-                  onChange={(e) => setOfflineFormData(p => ({ ...p, subject: e.target.value }))}
-                >
-                  <MenuItem value="GK">GK (General Knowledge)</MenuItem>
-                  <MenuItem value="Computer">Computer Literacy</MenuItem>
-                  <MenuItem value="Both">Both (GK & Computer)</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Aadhaar Number (Optional 12 digits)"
-                value={offlineFormData.aadhaar}
-                onChange={(e) => setOfflineFormData(p => ({ ...p, aadhaar: e.target.value.replace(/\D/g, '').slice(0, 12) }))}
-                placeholder="12 digit Aadhaar"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Parent Mobile Number (Optional)"
-                value={offlineFormData.parentPhone}
-                onChange={(e) => setOfflineFormData(p => ({ ...p, parentPhone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
-                placeholder="Parent's contact"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Session / Exam Year</InputLabel>
-                <Select
-                  value={offlineFormData.session}
-                  label="Session / Exam Year"
-                  onChange={(e) => setOfflineFormData(p => ({ ...p, session: e.target.value }))}
-                >
-                  {availableSessions.map(s => (
-                    <MenuItem key={s} value={s}>{s}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="School / College / Institution Name *"
-                required
-                value={offlineFormData.school}
-                onChange={(e) => setOfflineFormData(p => ({ ...p, school: e.target.value.toUpperCase() }))}
-                placeholder="Enter candidate's school or college name"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                multiline
-                rows={2}
-                label="Complete Residential Address *"
-                required
-                value={offlineFormData.address}
-                onChange={(e) => setOfflineFormData(p => ({ ...p, address: e.target.value }))}
-                placeholder="Village/Mohalla, Post, District, State, PIN"
-              />
+
+            {/* Right Column: Structured Form Sections */}
+            <Grid item xs={12} md={8}>
+              {/* Section 1: Candidate Personal Details */}
+              <Paper elevation={0} sx={{ p: 2.8, borderRadius: '20px', border: '1px solid #E2E8F0', background: '#FFFFFF', mb: 2.5 }}>
+                <Box display="flex" alignItems="center" gap={1} mb={2}>
+                  <Box sx={{ width: 8, height: 20, borderRadius: '4px', background: '#2563EB' }} />
+                  <Typography variant="subtitle1" fontWeight={800} color="#0F172A">
+                    1. Candidate Personal Details (व्यक्तिगत विवरण)
+                  </Typography>
+                </Box>
+
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Candidate Full Name *"
+                      required
+                      value={offlineFormData.name}
+                      onChange={(e) => setOfflineFormData(p => ({ ...p, name: e.target.value.toUpperCase() }))}
+                      placeholder="e.g. AMAN VERMA"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      label="Date of Birth *"
+                      required
+                      InputLabelProps={{ shrink: true }}
+                      value={offlineFormData.dateOfBirth}
+                      onChange={(e) => setOfflineFormData(p => ({ ...p, dateOfBirth: e.target.value }))}
+                      helperText={offlineFormData.dateOfBirth && calculateAge(offlineFormData.dateOfBirth) !== null ? `Calculated Age: ${calculateAge(offlineFormData.dateOfBirth)} Years` : ''}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Father's Full Name *"
+                      required
+                      value={offlineFormData.fatherName}
+                      onChange={(e) => setOfflineFormData(p => ({ ...p, fatherName: e.target.value.toUpperCase() }))}
+                      placeholder="Father's Name"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Mother's Full Name *"
+                      required
+                      value={offlineFormData.motherName}
+                      onChange={(e) => setOfflineFormData(p => ({ ...p, motherName: e.target.value.toUpperCase() }))}
+                      placeholder="Mother's Name"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Aadhaar Card Number (12 digits)"
+                      value={offlineFormData.aadhaar}
+                      onChange={(e) => setOfflineFormData(p => ({ ...p, aadhaar: e.target.value.replace(/\D/g, '').slice(0, 12) }))}
+                      placeholder="12 digit Aadhaar Number"
+                      inputProps={{ maxLength: 12 }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Candidate Mobile Number *"
+                      required
+                      value={offlineFormData.phone}
+                      onChange={(e) => setOfflineFormData(p => ({ ...p, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
+                      placeholder="10-digit Mobile Number"
+                      inputProps={{ maxLength: 10 }}
+                    />
+                  </Grid>
+                </Grid>
+              </Paper>
+
+              {/* Section 2: Academic & Examination Details */}
+              <Paper elevation={0} sx={{ p: 2.8, borderRadius: '20px', border: '1px solid #E2E8F0', background: '#FFFFFF', mb: 2.5 }}>
+                <Box display="flex" alignItems="center" gap={1} mb={2}>
+                  <Box sx={{ width: 8, height: 20, borderRadius: '4px', background: '#059669' }} />
+                  <Typography variant="subtitle1" fontWeight={800} color="#0F172A">
+                    2. Academic &amp; Examination Details (परीक्षा एवं शैक्षणिक विवरण)
+                  </Typography>
+                </Box>
+
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={7}>
+                    <TextField
+                      fullWidth
+                      label="School / College / Institution *"
+                      required
+                      value={offlineFormData.school}
+                      onChange={(e) => setOfflineFormData(p => ({ ...p, school: e.target.value.toUpperCase() }))}
+                      placeholder="School or College Name"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={5}>
+                    <TextField
+                      fullWidth
+                      label="Class / Standard *"
+                      required
+                      value={offlineFormData.classPassed}
+                      onChange={(e) => setOfflineFormData(p => ({ ...p, classPassed: e.target.value }))}
+                      placeholder="e.g. 10th / 12th / BA"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Examination Subject *</InputLabel>
+                      <Select
+                        value={offlineFormData.subject}
+                        label="Examination Subject *"
+                        onChange={(e) => setOfflineFormData(p => ({ ...p, subject: e.target.value }))}
+                      >
+                        <MenuItem value="GK">GK (General Knowledge)</MenuItem>
+                        <MenuItem value="Computer">Computer Literacy</MenuItem>
+                        <MenuItem value="Both">Both (GK &amp; Computer)</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Session / Exam Year</InputLabel>
+                      <Select
+                        value={offlineFormData.session}
+                        label="Session / Exam Year"
+                        onChange={(e) => setOfflineFormData(p => ({ ...p, session: e.target.value }))}
+                      >
+                        {availableSessions.map(s => (
+                          <MenuItem key={s} value={s}>{s}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                </Grid>
+              </Paper>
+
+              {/* Section 3: Address & Alternate Contact */}
+              <Paper elevation={0} sx={{ p: 2.8, borderRadius: '20px', border: '1px solid #E2E8F0', background: '#FFFFFF' }}>
+                <Box display="flex" alignItems="center" gap={1} mb={2}>
+                  <Box sx={{ width: 8, height: 20, borderRadius: '4px', background: '#D97706' }} />
+                  <Typography variant="subtitle1" fontWeight={800} color="#0F172A">
+                    3. Contact &amp; Residential Address (सम्पर्क एवं स्थायी पता)
+                  </Typography>
+                </Box>
+
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Parent / Guardian Mobile (Optional)"
+                      value={offlineFormData.parentPhone}
+                      onChange={(e) => setOfflineFormData(p => ({ ...p, parentPhone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
+                      placeholder="Parent's Mobile"
+                      inputProps={{ maxLength: 10 }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Exam Center"
+                      disabled
+                      value="S K Modern Intermediate College Semari Janghai"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={2}
+                      label="Complete Residential Address *"
+                      required
+                      value={offlineFormData.address}
+                      onChange={(e) => setOfflineFormData(p => ({ ...p, address: e.target.value }))}
+                      placeholder="Village/Mohalla, Post Office, Tehsil, District, PIN Code"
+                    />
+                  </Grid>
+                </Grid>
+              </Paper>
             </Grid>
           </Grid>
         </DialogContent>
 
-        <DialogActions sx={{ px: 3, pb: 2, pt: 1, gap: 1.5 }}>
+        <DialogActions sx={{ px: 4, py: 2.5, bgcolor: '#FFFFFF', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between' }}>
           <Button 
             onClick={() => setOfflineModalOpen(false)} 
             disabled={submittingOffline}
             variant="outlined" 
-            sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 600 }}
+            sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 600, px: 3, color: '#64748B', borderColor: '#CBD5E1' }}
           >
             Cancel
           </Button>
           <Button 
             onClick={handleOfflineSubmit} 
-            disabled={submittingOffline}
+            disabled={submittingOffline || uploadingOfflineImage}
             variant="contained" 
+            startIcon={submittingOffline ? null : <FaCheckCircle />}
             sx={{ 
-              borderRadius: '10px', 
+              borderRadius: '12px', 
               textTransform: 'none', 
               fontWeight: 800, 
+              fontSize: '0.95rem',
               background: 'linear-gradient(135deg, #059669, #047857)',
-              px: 3.5,
-              boxShadow: '0 4px 14px rgba(5,150,105,0.3)' 
+              py: 1.2,
+              px: 4,
+              boxShadow: '0 6px 20px rgba(5,150,105,0.35)',
+              '&:hover': { background: 'linear-gradient(135deg, #047857, #065F46)' }
             }}
           >
-            {submittingOffline ? <CircularProgress size={20} color="inherit" /> : 'Confirm & Register (Mark Paid)'}
+            {submittingOffline ? <CircularProgress size={22} color="inherit" /> : 'Confirm & Register Candidate (Mark Paid)'}
           </Button>
         </DialogActions>
       </Dialog>
