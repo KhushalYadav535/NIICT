@@ -1230,636 +1230,653 @@ const CompetitionManagement = () => {
       />
 
       {/* Offline Candidate Registration Modal (Beautiful & Enhanced Design with Photo Upload) */}
+      {/* Offline Candidate Registration Modal (Full Screen with Pure English UI) */}
       <Dialog 
+        fullScreen
         open={offlineModalOpen} 
         onClose={() => !submittingOffline && setOfflineModalOpen(false)} 
-        maxWidth="lg" 
-        fullWidth
         PaperProps={{ 
           sx: { 
-            borderRadius: '24px', 
-            overflow: 'hidden',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' 
+            background: '#F8FAFC',
+            display: 'flex',
+            flexDirection: 'column'
           } 
         }}
       >
-        {/* Header with Emerald Gradient */}
+        {/* Full-Width Header with Emerald Gradient */}
         <DialogTitle sx={{ 
           p: 0, 
           position: 'relative', 
           overflow: 'hidden',
           background: 'linear-gradient(135deg, #064E3B 0%, #047857 50%, #059669 100%)', 
-          color: '#FFFFFF' 
+          color: '#FFFFFF',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+          zIndex: 10
         }}>
           <Box sx={{ position: 'absolute', right: -30, top: -30, width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
-          <Box sx={{ p: { xs: 2, sm: 3 }, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ px: { xs: 2, sm: 4 }, py: 2.2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Box display="flex" alignItems="center" gap={2}>
               <Box sx={{ 
-                width: 52, height: 52, borderRadius: '16px', 
-                background: 'rgba(255,255,255,0.15)', 
+                width: 48, height: 48, borderRadius: '14px', 
+                background: 'rgba(255,255,255,0.18)', 
                 backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(255,255,255,0.25)', 
+                border: '1px solid rgba(255,255,255,0.3)', 
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
               }}>
-                <FaUserPlus size={24} color="#A7F3D0" />
+                <FaUserPlus size={22} color="#A7F3D0" />
               </Box>
               <Box>
                 <Box display="flex" alignItems="center" gap={1.5} flexWrap="wrap">
-                  <Typography variant="h5" fontWeight={800} sx={{ letterSpacing: '0.5px', fontFamily: '"Saira Condensed", sans-serif' }}>
+                  <Typography variant="h5" fontWeight={800} sx={{ letterSpacing: '0.5px', fontFamily: '"Saira Condensed", sans-serif', color: '#FFFFFF' }}>
                     Offline Candidate Registration
                   </Typography>
                   <Chip 
-                    label="ऑफ़लाइन छात्र फॉर्म" 
+                    label="AUTHORIZED OFFLINE DESK" 
                     size="small" 
-                    sx={{ background: 'rgba(255,255,255,0.2)', color: '#FFFFFF', fontWeight: 700, fontSize: '0.72rem' }} 
+                    sx={{ background: 'rgba(255,255,255,0.2)', color: '#FFFFFF', fontWeight: 800, fontSize: '0.72rem', letterSpacing: '0.5px' }} 
                   />
                 </Box>
-                <Typography variant="body2" sx={{ color: '#D1FAE5', mt: 0.3, fontSize: '0.82rem' }}>
-                  Direct offline manual entry &bull; Sequential Roll Number generated &bull; Zero wallet addition &bull; Marked as Paid
+                <Typography variant="body2" sx={{ color: '#D1FAE5', mt: 0.2, fontSize: '0.82rem' }}>
+                  Direct manual admission &bull; Sequential Roll Number generated &bull; Zero wallet addition &bull; Auto marked as Paid
                 </Typography>
               </Box>
             </Box>
-            <IconButton onClick={() => !submittingOffline && setOfflineModalOpen(false)} sx={{ color: '#FFFFFF', bgcolor: 'rgba(255,255,255,0.1)', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' } }}>
+            <IconButton 
+              onClick={() => !submittingOffline && setOfflineModalOpen(false)} 
+              sx={{ 
+                color: '#FFFFFF', 
+                bgcolor: 'rgba(255,255,255,0.12)', 
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.25)' },
+                width: 42,
+                height: 42
+              }}
+            >
               <FaTimes size={18} />
             </IconButton>
           </Box>
         </DialogTitle>
 
-        <DialogContent sx={{ p: { xs: 2, sm: 3.5 }, backgroundColor: '#F8FAFC' }}>
-          {offlineError && (
-            <Alert severity="error" sx={{ mb: 3, borderRadius: '14px', border: '1px solid #FECACA' }}>
-              {offlineError}
-            </Alert>
-          )}
+        <DialogContent sx={{ p: { xs: 2, sm: 3, md: 4 }, backgroundColor: '#F8FAFC', flexGrow: 1, overflowY: 'auto' }}>
+          <Container maxWidth="xl" sx={{ p: 0 }}>
+            {offlineError && (
+              <Alert severity="error" sx={{ mb: 3, borderRadius: '14px', border: '1px solid #FECACA' }}>
+                {offlineError}
+              </Alert>
+            )}
 
-          <Grid container spacing={3}>
-            {/* Left Column: Passport Photo Studio & Admission Highlights */}
-            <Grid item xs={12} md={4}>
-              {/* Photo Studio Card */}
-              <Paper 
-                elevation={0} 
-                sx={{ 
-                  p: 3, 
-                  borderRadius: '22px', 
-                  border: isDraggingPhoto ? '2px dashed #059669' : '1px solid #E2E8F0', 
-                  background: isDraggingPhoto ? '#ECFDF5' : '#FFFFFF', 
-                  textAlign: 'center', 
-                  mb: 2.5,
-                  boxShadow: '0 4px 20px -4px rgba(15,23,42,0.05)',
-                  transition: 'all 0.2s ease'
-                }}
-                onDragOver={(e) => { e.preventDefault(); setIsDraggingPhoto(true); }}
-                onDragLeave={() => setIsDraggingPhoto(false)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setIsDraggingPhoto(false);
-                  const file = e.dataTransfer.files && e.dataTransfer.files[0];
-                  if (file) uploadImageBlob(file);
-                }}
-              >
-                <Box display="flex" alignItems="center" justifyContent="space-between" mb={1.5}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                    <FaCamera color="#059669" /> Candidate Photo
-                  </Typography>
-                  {offlineImagePreview ? (
-                    <Chip 
-                      icon={<FaCheck size={10} />} 
-                      label="Photo Attached" 
-                      size="small" 
-                      sx={{ bgcolor: '#DCFCE7', color: '#15803D', fontWeight: 800, fontSize: '0.68rem', height: 22 }} 
-                    />
-                  ) : (
-                    <Chip 
-                      icon={<FaInfoCircle size={10} />} 
-                      label="Optional (ऐच्छिक)" 
-                      size="small" 
-                      sx={{ bgcolor: '#F1F5F9', color: '#64748B', fontWeight: 700, fontSize: '0.68rem', height: 22 }} 
-                    />
-                  )}
-                </Box>
+            <Grid container spacing={3.5}>
+              {/* Left Column: Passport Photo Studio & Highlights */}
+              <Grid item xs={12} md={4} lg={3.5}>
+                {/* Photo Studio Card */}
+                <Paper 
+                  elevation={0} 
+                  sx={{ 
+                    p: 3, 
+                    borderRadius: '22px', 
+                    border: isDraggingPhoto ? '2px dashed #059669' : '1px solid #E2E8F0', 
+                    background: isDraggingPhoto ? '#ECFDF5' : '#FFFFFF', 
+                    textAlign: 'center', 
+                    mb: 3,
+                    boxShadow: '0 4px 20px -4px rgba(15,23,42,0.06)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onDragOver={(e) => { e.preventDefault(); setIsDraggingPhoto(true); }}
+                  onDragLeave={() => setIsDraggingPhoto(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDraggingPhoto(false);
+                    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+                    if (file) uploadImageBlob(file);
+                  }}
+                >
+                  <Box display="flex" alignItems="center" justifyContent="space-between" mb={1.8}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                      <FaCamera color="#059669" /> Candidate Photo
+                    </Typography>
+                    {offlineImagePreview ? (
+                      <Chip 
+                        icon={<FaCheck size={10} />} 
+                        label="Attached" 
+                        size="small" 
+                        sx={{ bgcolor: '#DCFCE7', color: '#15803D', fontWeight: 800, fontSize: '0.68rem', height: 22 }} 
+                      />
+                    ) : (
+                      <Chip 
+                        icon={<FaInfoCircle size={10} />} 
+                        label="Optional" 
+                        size="small" 
+                        sx={{ bgcolor: '#F1F5F9', color: '#64748B', fontWeight: 700, fontSize: '0.68rem', height: 22 }} 
+                      />
+                    )}
+                  </Box>
 
-                {/* Passport Photo Box (Standard 35mm x 45mm ratio) */}
-                <Box sx={{
-                  width: 140,
-                  height: 175,
-                  mx: 'auto',
-                  mb: 2,
-                  borderRadius: '16px',
-                  border: offlineImagePreview ? '3px solid #059669' : '2px dashed #CBD5E1',
-                  background: '#F8FAFC',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  position: 'relative',
-                  boxShadow: offlineImagePreview ? '0 10px 25px -5px rgba(5,150,105,0.3)' : 'none',
-                  transition: 'all 0.3s ease'
-                }}>
-                  {uploadingOfflineImage ? (
-                    <Box textAlign="center" p={2}>
-                      <CircularProgress size={32} sx={{ color: '#059669', mb: 1 }} />
-                      <Typography variant="caption" sx={{ display: 'block', color: '#64748B', fontWeight: 700 }}>
-                        Uploading...
-                      </Typography>
-                    </Box>
-                  ) : offlineImagePreview ? (
-                    <Box 
-                      component="img" 
-                      src={offlineImagePreview} 
-                      alt="Candidate Preview" 
-                      sx={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
-                      onClick={() => setImageLightBox(offlineImagePreview)}
-                    />
-                  ) : (
-                    <Box textAlign="center" p={1.5}>
-                      <FaUser size={46} color="#CBD5E1" />
-                      <Typography variant="caption" sx={{ display: 'block', color: '#64748B', fontWeight: 800, mt: 0.8, fontSize: '0.78rem' }}>
-                        No Photo
-                      </Typography>
-                      <Typography variant="caption" sx={{ display: 'block', color: '#94A3B8', fontSize: '0.68rem', mt: 0.2 }}>
-                        Optional • 35×45mm
-                      </Typography>
-                    </Box>
-                  )}
-                </Box>
+                  {/* Passport Photo Box */}
+                  <Box sx={{
+                    width: 145,
+                    height: 180,
+                    mx: 'auto',
+                    mb: 2,
+                    borderRadius: '16px',
+                    border: offlineImagePreview ? '3px solid #059669' : '2px dashed #CBD5E1',
+                    background: '#F8FAFC',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    boxShadow: offlineImagePreview ? '0 10px 25px -5px rgba(5,150,105,0.3)' : 'none',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    {uploadingOfflineImage ? (
+                      <Box textAlign="center" p={2}>
+                        <CircularProgress size={32} sx={{ color: '#059669', mb: 1 }} />
+                        <Typography variant="caption" sx={{ display: 'block', color: '#64748B', fontWeight: 700 }}>
+                          Uploading...
+                        </Typography>
+                      </Box>
+                    ) : offlineImagePreview ? (
+                      <Box 
+                        component="img" 
+                        src={offlineImagePreview} 
+                        alt="Candidate Preview" 
+                        sx={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
+                        onClick={() => setImageLightBox(offlineImagePreview)}
+                      />
+                    ) : (
+                      <Box textAlign="center" p={1.5}>
+                        <FaUser size={46} color="#CBD5E1" />
+                        <Typography variant="caption" sx={{ display: 'block', color: '#64748B', fontWeight: 800, mt: 0.8, fontSize: '0.78rem' }}>
+                          No Photo
+                        </Typography>
+                        <Typography variant="caption" sx={{ display: 'block', color: '#94A3B8', fontSize: '0.68rem', mt: 0.2 }}>
+                          Optional • 35×45mm
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
 
-                {/* Hidden File Input */}
-                <input 
-                  type="file" 
-                  ref={offlineFileInputRef} 
-                  accept="image/*" 
-                  onChange={handleOfflineImageChange} 
-                  style={{ display: 'none' }} 
-                />
+                  {/* Hidden File Input */}
+                  <input 
+                    type="file" 
+                    ref={offlineFileInputRef} 
+                    accept="image/*" 
+                    onChange={handleOfflineImageChange} 
+                    style={{ display: 'none' }} 
+                  />
 
-                {/* Action Buttons: Upload + Webcam + Remove */}
-                <Box display="flex" gap={1} justifyContent="center" flexWrap="wrap">
-                  <Button
-                    variant="contained"
-                    size="small"
-                    disabled={uploadingOfflineImage}
-                    onClick={() => offlineFileInputRef.current && offlineFileInputRef.current.click()}
-                    startIcon={<FaCloudUploadAlt />}
-                    sx={{
-                      borderRadius: '10px',
-                      textTransform: 'none',
-                      fontWeight: 700,
-                      fontSize: '0.78rem',
-                      background: 'linear-gradient(135deg, #059669, #047857)',
-                      boxShadow: '0 4px 12px rgba(5,150,105,0.2)'
-                    }}
-                  >
-                    {offlineImagePreview ? 'Change File' : 'Browse File'}
-                  </Button>
+                  {/* Action Buttons: Upload + Webcam + Remove */}
+                  <Box display="flex" gap={1} justifyContent="center" flexWrap="wrap">
+                    <Button
+                      variant="contained"
+                      size="small"
+                      disabled={uploadingOfflineImage}
+                      onClick={() => offlineFileInputRef.current && offlineFileInputRef.current.click()}
+                      startIcon={<FaCloudUploadAlt />}
+                      sx={{
+                        borderRadius: '10px',
+                        textTransform: 'none',
+                        fontWeight: 700,
+                        fontSize: '0.78rem',
+                        background: 'linear-gradient(135deg, #059669, #047857)',
+                        boxShadow: '0 4px 12px rgba(5,150,105,0.2)'
+                      }}
+                    >
+                      {offlineImagePreview ? 'Change File' : 'Browse File'}
+                    </Button>
 
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    disabled={uploadingOfflineImage}
-                    onClick={startWebcam}
-                    startIcon={<FaCamera />}
-                    sx={{
-                      borderRadius: '10px',
-                      textTransform: 'none',
-                      fontWeight: 700,
-                      fontSize: '0.78rem',
-                      borderColor: '#059669',
-                      color: '#059669',
-                      '&:hover': { borderColor: '#047857', backgroundColor: '#ECFDF5' }
-                    }}
-                  >
-                    Camera
-                  </Button>
-
-                  {offlineImagePreview && (
                     <Button
                       variant="outlined"
                       size="small"
-                      color="error"
-                      onClick={handleRemoveOfflineImage}
-                      startIcon={<FaTrash />}
-                      sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700, fontSize: '0.78rem' }}
+                      disabled={uploadingOfflineImage}
+                      onClick={startWebcam}
+                      startIcon={<FaCamera />}
+                      sx={{
+                        borderRadius: '10px',
+                        textTransform: 'none',
+                        fontWeight: 700,
+                        fontSize: '0.78rem',
+                        borderColor: '#059669',
+                        color: '#059669',
+                        '&:hover': { borderColor: '#047857', backgroundColor: '#ECFDF5' }
+                      }}
                     >
-                      Clear
+                      Camera
                     </Button>
-                  )}
-                </Box>
 
-                {/* Photo Guidance Callout */}
-                <Paper elevation={0} sx={{ mt: 2.2, p: 1.8, borderRadius: '14px', background: '#FFFBEB', border: '1px solid #FDE68A', textAlign: 'left' }}>
-                  <Box display="flex" alignItems="center" gap={0.8} mb={0.4}>
-                    <FaRegLightbulb color="#D97706" size={14} />
-                    <Typography variant="caption" sx={{ fontWeight: 800, color: '#92400E', fontSize: '0.75rem' }}>
-                      फ़ोटो नहीं है? (No Photo Available?)
-                    </Typography>
+                    {offlineImagePreview && (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        color="error"
+                        onClick={handleRemoveOfflineImage}
+                        startIcon={<FaTrash />}
+                        sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700, fontSize: '0.78rem' }}
+                      >
+                        Clear
+                      </Button>
+                    )}
                   </Box>
-                  <Typography variant="caption" sx={{ color: '#78350F', display: 'block', lineHeight: 1.35, fontSize: '0.71rem' }}>
-                    चिंता न करें! आप बिना फ़ोटो के भी फ़ॉर्म तुरंत भर सकते हैं। छात्र एडमिट कार्ड पर अपनी भौतिक फ़ोटो चिपका सकता है।
-                  </Typography>
-                  <Divider sx={{ my: 0.8, borderColor: '#FDE68A' }} />
-                  <Box display="flex" alignItems="center" gap={0.8}>
-                    <FaPaste color="#B45309" size={12} />
-                    <Typography variant="caption" sx={{ color: '#92400E', fontWeight: 700, fontSize: '0.68rem' }}>
-                      WhatsApp या स्क्रीनशॉट से कॉपी की गई फ़ोटो सीधे Ctrl+V करके पेस्ट करें!
+
+                  {/* English Photo Guidance Callout */}
+                  <Paper elevation={0} sx={{ mt: 2.2, p: 2, borderRadius: '14px', background: '#FFFBEB', border: '1px solid #FDE68A', textAlign: 'left' }}>
+                    <Box display="flex" alignItems="center" gap={0.8} mb={0.5}>
+                      <FaRegLightbulb color="#D97706" size={14} />
+                      <Typography variant="caption" sx={{ fontWeight: 800, color: '#92400E', fontSize: '0.75rem' }}>
+                        No Photo Available?
+                      </Typography>
+                    </Box>
+                    <Typography variant="caption" sx={{ color: '#78350F', display: 'block', lineHeight: 1.4, fontSize: '0.72rem' }}>
+                      No problem! You can register the candidate without a photo. An official box will automatically be printed on the E-Admit Card for physical photo affixing.
                     </Typography>
+                    <Divider sx={{ my: 1, borderColor: '#FDE68A' }} />
+                    <Box display="flex" alignItems="center" gap={0.8}>
+                      <FaPaste color="#B45309" size={12} />
+                      <Typography variant="caption" sx={{ color: '#92400E', fontWeight: 700, fontSize: '0.7rem' }}>
+                        Tip: You can paste any copied image directly using Ctrl+V!
+                      </Typography>
+                    </Box>
+                  </Paper>
+                </Paper>
+
+                {/* Admission Verification Summary Card */}
+                <Paper elevation={0} sx={{ p: 2.8, borderRadius: '22px', border: '1px solid #BFDBFE', background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)', boxShadow: '0 4px 20px -4px rgba(37,99,235,0.08)' }}>
+                  <Typography variant="caption" sx={{ color: '#1E40AF', fontWeight: 800, textTransform: 'uppercase', display: 'block', mb: 1.5, letterSpacing: '0.6px' }}>
+                    Registration Summary
+                  </Typography>
+                  <Box display="flex" flexDirection="column" gap={1.1} sx={{ fontSize: '0.8rem', color: '#1E3A8A' }}>
+                    <Box display="flex" justifyContent="space-between">
+                      <span>Payment Status:</span>
+                      <strong style={{ color: '#059669' }}>✓ AUTO MARKED PAID</strong>
+                    </Box>
+                    <Box display="flex" justifyContent="space-between">
+                      <span>Fee Collected:</span>
+                      <strong>Rs. 150 (Desk Cash)</strong>
+                    </Box>
+                    <Box display="flex" justifyContent="space-between">
+                      <span>Wallet Impact:</span>
+                      <strong style={{ color: '#059669' }}>Rs. 0 (Untouched)</strong>
+                    </Box>
+                    <Box display="flex" justifyContent="space-between">
+                      <span>Exam Date:</span>
+                      <strong>18 Oct 2026 (Sunday)</strong>
+                    </Box>
+                    <Box display="flex" justifyContent="space-between">
+                      <span>Reporting Time:</span>
+                      <strong>08:00 AM</strong>
+                    </Box>
+                    <Box display="flex" justifyContent="space-between">
+                      <span>Centre Venue:</span>
+                      <strong>SKMIC Semari Janghai</strong>
+                    </Box>
                   </Box>
                 </Paper>
-              </Paper>
+              </Grid>
 
-              {/* Admission Verification Pill */}
-              <Paper elevation={0} sx={{ p: 2.5, borderRadius: '20px', border: '1px solid #BFDBFE', background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)' }}>
-                <Typography variant="caption" sx={{ color: '#1E40AF', fontWeight: 800, textTransform: 'uppercase', display: 'block', mb: 1.2, letterSpacing: '0.5px' }}>
-                  Registration Highlights
-                </Typography>
-                <Box display="flex" flexDirection="column" gap={0.8} sx={{ fontSize: '0.78rem', color: '#1E3A8A' }}>
-                  <Box display="flex" justifyContent="space-between">
-                    <span>Payment Status:</span>
-                    <strong style={{ color: '#059669' }}>✓ AUTO MARKED PAID</strong>
-                  </Box>
-                  <Box display="flex" justifyContent="space-between">
-                    <span>Fee Received:</span>
-                    <strong>Rs. 150 (Desk Cash)</strong>
-                  </Box>
-                  <Box display="flex" justifyContent="space-between">
-                    <span>Wallet Addition:</span>
-                    <strong style={{ color: '#059669' }}>Rs. 0 (Untouched)</strong>
-                  </Box>
-                  <Box display="flex" justifyContent="space-between">
-                    <span>Exam Date:</span>
-                    <strong>18 Oct 2026</strong>
-                  </Box>
-                  <Box display="flex" justifyContent="space-between">
-                    <span>Centre Venue:</span>
-                    <strong>SKMIC Semari</strong>
-                  </Box>
-                </Box>
-              </Paper>
-            </Grid>
-
-            {/* Right Column: Structured Form Sections */}
-            <Grid item xs={12} md={8}>
-              {/* Section 1: Candidate Personal Details */}
-              <Paper elevation={0} sx={{ p: 3, borderRadius: '22px', border: '1px solid #E2E8F0', background: '#FFFFFF', mb: 2.5, boxShadow: '0 4px 20px -4px rgba(15,23,42,0.05)' }}>
-                <Box display="flex" alignItems="center" gap={1.2} mb={2.5}>
-                  <Box sx={{ width: 34, height: 34, borderRadius: '10px', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563EB' }}>
-                    <FaUser size={16} />
-                  </Box>
-                  <Box>
-                    <Typography variant="subtitle1" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2 }}>
-                      1. Candidate Personal Details (व्यक्तिगत विवरण)
-                    </Typography>
-                    <Typography variant="caption" color="#64748B">
-                      Candidate's official credentials as per school or Aadhaar record
-                    </Typography>
-                  </Box>
-                </Box>
-
-                <Grid container spacing={2.2}>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Candidate Full Name *"
-                      required
-                      value={offlineFormData.name}
-                      onChange={(e) => setOfflineFormData(p => ({ ...p, name: e.target.value.toUpperCase() }))}
-                      placeholder="e.g. AMAN VERMA"
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <FaUser color="#2563EB" size={14} />
-                          </InputAdornment>
-                        )
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="Date of Birth *"
-                      required
-                      InputLabelProps={{ shrink: true }}
-                      value={offlineFormData.dateOfBirth}
-                      onChange={(e) => setOfflineFormData(p => ({ ...p, dateOfBirth: e.target.value }))}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <FaCalendarAlt color="#2563EB" size={14} />
-                          </InputAdornment>
-                        )
-                      }}
-                      helperText={offlineFormData.dateOfBirth && calculateAge(offlineFormData.dateOfBirth) !== null ? `🎂 Calculated Age: ${calculateAge(offlineFormData.dateOfBirth)} Years (Eligible ✓)` : 'Select Candidate DOB'}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Father's Full Name *"
-                      required
-                      value={offlineFormData.fatherName}
-                      onChange={(e) => setOfflineFormData(p => ({ ...p, fatherName: e.target.value.toUpperCase() }))}
-                      placeholder="e.g. RAMESH VERMA"
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <FaUser color="#64748B" size={14} />
-                          </InputAdornment>
-                        )
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Mother's Full Name *"
-                      required
-                      value={offlineFormData.motherName}
-                      onChange={(e) => setOfflineFormData(p => ({ ...p, motherName: e.target.value.toUpperCase() }))}
-                      placeholder="e.g. SUNITA DEVI"
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <FaUser color="#64748B" size={14} />
-                          </InputAdornment>
-                        )
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Aadhaar Card Number (12 digits)"
-                      value={offlineFormData.aadhaar}
-                      onChange={(e) => setOfflineFormData(p => ({ ...p, aadhaar: e.target.value.replace(/\D/g, '').slice(0, 12) }))}
-                      placeholder="12-digit UID"
-                      inputProps={{ maxLength: 12 }}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <FaIdCard color="#2563EB" size={14} />
-                          </InputAdornment>
-                        )
-                      }}
-                      helperText={offlineFormData.aadhaar.length === 12 ? '✓ 12-digit Aadhaar Complete' : `${offlineFormData.aadhaar.length}/12 digits (Optional)`}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Candidate Mobile Number *"
-                      required
-                      value={offlineFormData.phone}
-                      onChange={(e) => setOfflineFormData(p => ({ ...p, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
-                      placeholder="10-digit Mobile"
-                      inputProps={{ maxLength: 10 }}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <FaPhoneAlt color="#2563EB" size={14} />
-                          </InputAdornment>
-                        )
-                      }}
-                      helperText={offlineFormData.phone.length === 10 ? '✓ 10-digit Mobile Complete' : `${offlineFormData.phone.length}/10 digits (Required)`}
-                    />
-                  </Grid>
-                </Grid>
-              </Paper>
-
-              {/* Section 2: Academic & Examination Details */}
-              <Paper elevation={0} sx={{ p: 3, borderRadius: '22px', border: '1px solid #E2E8F0', background: '#FFFFFF', mb: 2.5, boxShadow: '0 4px 20px -4px rgba(15,23,42,0.05)' }}>
-                <Box display="flex" alignItems="center" gap={1.2} mb={2.5}>
-                  <Box sx={{ width: 34, height: 34, borderRadius: '10px', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#059669' }}>
-                    <FaGraduationCap size={16} />
-                  </Box>
-                  <Box>
-                    <Typography variant="subtitle1" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2 }}>
-                      2. Academic &amp; Examination Details (परीक्षा एवं शैक्षणिक विवरण)
-                    </Typography>
-                    <Typography variant="caption" color="#64748B">
-                      Institution name, standard, and competition paper subject
-                    </Typography>
-                  </Box>
-                </Box>
-
-                <Grid container spacing={2.2}>
-                  <Grid item xs={12} sm={7}>
-                    <TextField
-                      fullWidth
-                      label="School / College / Institution *"
-                      required
-                      value={offlineFormData.school}
-                      onChange={(e) => setOfflineFormData(p => ({ ...p, school: e.target.value.toUpperCase() }))}
-                      placeholder="School / College Name"
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <FaGraduationCap color="#059669" size={14} />
-                          </InputAdornment>
-                        )
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={5}>
-                    <TextField
-                      fullWidth
-                      label="Class / Standard *"
-                      required
-                      value={offlineFormData.classPassed}
-                      onChange={(e) => setOfflineFormData(p => ({ ...p, classPassed: e.target.value }))}
-                      placeholder="e.g. 10th / 12th / BA"
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <FaBook color="#059669" size={14} />
-                          </InputAdornment>
-                        )
-                      }}
-                    />
-                  </Grid>
-
-                  {/* Quick Class Selection Chips */}
-                  <Grid item xs={12}>
-                    <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
-                      <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700 }}>
-                        Quick Select Class:
-                      </Typography>
-                      {['8th', '9th', '10th', '11th', '12th', 'BA / UG', 'B.Sc / Other'].map((cls) => (
-                        <Chip
-                          key={cls}
-                          label={cls}
-                          size="small"
-                          clickable
-                          onClick={() => setOfflineFormData(p => ({ ...p, classPassed: cls }))}
-                          sx={{
-                            borderRadius: '8px',
-                            fontWeight: offlineFormData.classPassed === cls ? 800 : 600,
-                            backgroundColor: offlineFormData.classPassed === cls ? '#059669' : '#F1F5F9',
-                            color: offlineFormData.classPassed === cls ? '#FFFFFF' : '#475569',
-                            '&:hover': { backgroundColor: '#059669', color: '#FFFFFF' }
-                          }}
-                        />
-                      ))}
+              {/* Right Column: Structured Form Sections */}
+              <Grid item xs={12} md={8} lg={8.5}>
+                {/* Section 1: Candidate Personal Details */}
+                <Paper elevation={0} sx={{ p: 3.2, borderRadius: '22px', border: '1px solid #E2E8F0', background: '#FFFFFF', mb: 3, boxShadow: '0 4px 20px -4px rgba(15,23,42,0.06)' }}>
+                  <Box display="flex" alignItems="center" gap={1.2} mb={2.5}>
+                    <Box sx={{ width: 36, height: 36, borderRadius: '10px', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563EB' }}>
+                      <FaUser size={16} />
                     </Box>
-                  </Grid>
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2 }}>
+                        1. Candidate Personal Information
+                      </Typography>
+                      <Typography variant="caption" color="#64748B">
+                        Official student credentials as per school or Aadhaar records
+                      </Typography>
+                    </Box>
+                  </Box>
 
-                  {/* Interactive 3-Card Subject Selector */}
-                  <Grid item xs={12}>
-                    <Typography variant="caption" sx={{ color: '#475569', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', mb: 1 }}>
-                      Examination Subject (विषय चयन) *
-                    </Typography>
-                    <Grid container spacing={1.5}>
-                      {[
-                        { val: 'GK', label: 'GK (General Knowledge)', sub: 'सामान्य ज्ञान प्रतियोगिता', icon: <FaBook size={18} /> },
-                        { val: 'Computer', label: 'Computer Literacy', sub: 'कम्प्यूटर ज्ञान प्रतियोगिता', icon: <FaLaptopCode size={18} /> },
-                        { val: 'Both', label: 'Both (GK + Computer)', sub: 'दोनों विषय सम्मिलित', icon: <FaTrophy size={18} /> }
-                      ].map((item) => {
-                        const isSelected = offlineFormData.subject === item.val;
-                        return (
-                          <Grid item xs={12} sm={4} key={item.val}>
-                            <Paper
-                              elevation={0}
-                              onClick={() => setOfflineFormData(p => ({ ...p, subject: item.val }))}
-                              sx={{
-                                p: 1.8,
-                                borderRadius: '14px',
-                                border: isSelected ? '2px solid #059669' : '1px solid #E2E8F0',
-                                background: isSelected ? 'linear-gradient(135deg, #ECFDF5, #D1FAE5)' : '#F8FAFC',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1.5,
-                                '&:hover': { borderColor: '#059669', transform: 'translateY(-2px)' }
-                              }}
-                            >
-                              <Box sx={{ 
-                                width: 36, height: 36, borderRadius: '10px', 
-                                background: isSelected ? '#059669' : '#E2E8F0', 
-                                color: isSelected ? '#FFFFFF' : '#64748B',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center' 
-                              }}>
-                                {item.icon}
-                              </Box>
-                              <Box sx={{ flexGrow: 1 }}>
-                                <Typography variant="body2" sx={{ fontWeight: 800, color: isSelected ? '#065F46' : '#1E293B', fontSize: '0.85rem' }}>
-                                  {item.label}
-                                </Typography>
-                                <Typography variant="caption" sx={{ color: isSelected ? '#047857' : '#64748B', fontSize: '0.7rem' }}>
-                                  {item.sub}
-                                </Typography>
-                              </Box>
-                              {isSelected && <FaCheckCircle color="#059669" size={16} />}
-                            </Paper>
-                          </Grid>
-                        );
-                      })}
+                  <Grid container spacing={2.2}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Candidate Full Name *"
+                        required
+                        value={offlineFormData.name}
+                        onChange={(e) => setOfflineFormData(p => ({ ...p, name: e.target.value.toUpperCase() }))}
+                        placeholder="e.g. AMAN VERMA"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FaUser color="#2563EB" size={14} />
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        type="date"
+                        label="Date of Birth *"
+                        required
+                        InputLabelProps={{ shrink: true }}
+                        value={offlineFormData.dateOfBirth}
+                        onChange={(e) => setOfflineFormData(p => ({ ...p, dateOfBirth: e.target.value }))}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FaCalendarAlt color="#2563EB" size={14} />
+                            </InputAdornment>
+                          )
+                        }}
+                        helperText={offlineFormData.dateOfBirth && calculateAge(offlineFormData.dateOfBirth) !== null ? `🎂 Calculated Age: ${calculateAge(offlineFormData.dateOfBirth)} Years (Eligible ✓)` : 'Select Candidate DOB'}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Father's Full Name *"
+                        required
+                        value={offlineFormData.fatherName}
+                        onChange={(e) => setOfflineFormData(p => ({ ...p, fatherName: e.target.value.toUpperCase() }))}
+                        placeholder="e.g. RAMESH VERMA"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FaUser color="#64748B" size={14} />
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Mother's Full Name *"
+                        required
+                        value={offlineFormData.motherName}
+                        onChange={(e) => setOfflineFormData(p => ({ ...p, motherName: e.target.value.toUpperCase() }))}
+                        placeholder="e.g. SUNITA DEVI"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FaUser color="#64748B" size={14} />
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Aadhaar Card Number (12 digits)"
+                        value={offlineFormData.aadhaar}
+                        onChange={(e) => setOfflineFormData(p => ({ ...p, aadhaar: e.target.value.replace(/\D/g, '').slice(0, 12) }))}
+                        placeholder="12-digit UID"
+                        inputProps={{ maxLength: 12 }}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FaIdCard color="#2563EB" size={14} />
+                            </InputAdornment>
+                          )
+                        }}
+                        helperText={offlineFormData.aadhaar.length === 12 ? '✓ 12-digit Aadhaar Complete' : `${offlineFormData.aadhaar.length}/12 digits (Optional)`}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Candidate Mobile Number *"
+                        required
+                        value={offlineFormData.phone}
+                        onChange={(e) => setOfflineFormData(p => ({ ...p, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
+                        placeholder="10-digit Mobile Number"
+                        inputProps={{ maxLength: 10 }}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FaPhoneAlt color="#2563EB" size={14} />
+                            </InputAdornment>
+                          )
+                        }}
+                        helperText={offlineFormData.phone.length === 10 ? '✓ 10-digit Mobile Complete' : `${offlineFormData.phone.length}/10 digits (Required)`}
+                      />
                     </Grid>
                   </Grid>
+                </Paper>
 
-                  <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth>
-                      <InputLabel>Session / Exam Year</InputLabel>
-                      <Select
-                        value={offlineFormData.session}
-                        label="Session / Exam Year"
-                        onChange={(e) => setOfflineFormData(p => ({ ...p, session: e.target.value }))}
-                      >
-                        {availableSessions.map(s => (
-                          <MenuItem key={s} value={s}>{s}</MenuItem>
+                {/* Section 2: Academic & Examination Details */}
+                <Paper elevation={0} sx={{ p: 3.2, borderRadius: '22px', border: '1px solid #E2E8F0', background: '#FFFFFF', mb: 3, boxShadow: '0 4px 20px -4px rgba(15,23,42,0.06)' }}>
+                  <Box display="flex" alignItems="center" gap={1.2} mb={2.5}>
+                    <Box sx={{ width: 36, height: 36, borderRadius: '10px', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#059669' }}>
+                      <FaGraduationCap size={16} />
+                    </Box>
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2 }}>
+                        2. Academic &amp; Examination Details
+                      </Typography>
+                      <Typography variant="caption" color="#64748B">
+                        Institution name, standard, and competition subject paper
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Grid container spacing={2.2}>
+                    <Grid item xs={12} sm={7}>
+                      <TextField
+                        fullWidth
+                        label="School / College / Institution *"
+                        required
+                        value={offlineFormData.school}
+                        onChange={(e) => setOfflineFormData(p => ({ ...p, school: e.target.value.toUpperCase() }))}
+                        placeholder="School / College Name"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FaGraduationCap color="#059669" size={14} />
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={5}>
+                      <TextField
+                        fullWidth
+                        label="Class / Standard *"
+                        required
+                        value={offlineFormData.classPassed}
+                        onChange={(e) => setOfflineFormData(p => ({ ...p, classPassed: e.target.value }))}
+                        placeholder="e.g. 10th / 12th / BA"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FaBook color="#059669" size={14} />
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                    </Grid>
+
+                    {/* Quick Class Selection Chips */}
+                    <Grid item xs={12}>
+                      <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                        <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700 }}>
+                          Quick Select Class:
+                        </Typography>
+                        {['Class 8th', 'Class 9th', 'Class 10th', 'Class 11th', 'Class 12th', 'Graduation / BA', 'B.Sc / Other'].map((cls) => (
+                          <Chip
+                            key={cls}
+                            label={cls}
+                            size="small"
+                            clickable
+                            onClick={() => setOfflineFormData(p => ({ ...p, classPassed: cls }))}
+                            sx={{
+                              borderRadius: '8px',
+                              fontWeight: offlineFormData.classPassed === cls ? 800 : 600,
+                              backgroundColor: offlineFormData.classPassed === cls ? '#059669' : '#F1F5F9',
+                              color: offlineFormData.classPassed === cls ? '#FFFFFF' : '#475569',
+                              '&:hover': { backgroundColor: '#059669', color: '#FFFFFF' }
+                            }}
+                          />
                         ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                </Grid>
-              </Paper>
+                      </Box>
+                    </Grid>
 
-              {/* Section 3: Address & Alternate Contact */}
-              <Paper elevation={0} sx={{ p: 3, borderRadius: '22px', border: '1px solid #E2E8F0', background: '#FFFFFF', boxShadow: '0 4px 20px -4px rgba(15,23,42,0.05)' }}>
-                <Box display="flex" alignItems="center" gap={1.2} mb={2.5}>
-                  <Box sx={{ width: 34, height: 34, borderRadius: '10px', background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D97706' }}>
-                    <FaMapMarkerAlt size={16} />
+                    {/* Interactive 3-Card Subject Selector (English Only) */}
+                    <Grid item xs={12}>
+                      <Typography variant="caption" sx={{ color: '#475569', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', mb: 1 }}>
+                        Examination Subject *
+                      </Typography>
+                      <Grid container spacing={1.5}>
+                        {[
+                          { val: 'GK', label: 'GK (General Knowledge)', sub: 'General Knowledge Exam', icon: <FaBook size={18} /> },
+                          { val: 'Computer', label: 'Computer Literacy', sub: 'Computer Knowledge Exam', icon: <FaLaptopCode size={18} /> },
+                          { val: 'Both', label: 'Both (GK + Computer)', sub: 'Combined Comprehensive Paper', icon: <FaTrophy size={18} /> }
+                        ].map((item) => {
+                          const isSelected = offlineFormData.subject === item.val;
+                          return (
+                            <Grid item xs={12} sm={4} key={item.val}>
+                              <Paper
+                                elevation={0}
+                                onClick={() => setOfflineFormData(p => ({ ...p, subject: item.val }))}
+                                sx={{
+                                  p: 2,
+                                  borderRadius: '16px',
+                                  border: isSelected ? '2px solid #059669' : '1px solid #E2E8F0',
+                                  background: isSelected ? 'linear-gradient(135deg, #ECFDF5, #D1FAE5)' : '#F8FAFC',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 1.5,
+                                  '&:hover': { borderColor: '#059669', transform: 'translateY(-2px)' }
+                                }}
+                              >
+                                <Box sx={{ 
+                                  width: 38, height: 38, borderRadius: '10px', 
+                                  background: isSelected ? '#059669' : '#E2E8F0', 
+                                  color: isSelected ? '#FFFFFF' : '#64748B',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                                }}>
+                                  {item.icon}
+                                </Box>
+                                <Box sx={{ flexGrow: 1 }}>
+                                  <Typography variant="body2" sx={{ fontWeight: 800, color: isSelected ? '#065F46' : '#1E293B', fontSize: '0.85rem' }}>
+                                    {item.label}
+                                  </Typography>
+                                  <Typography variant="caption" sx={{ color: isSelected ? '#047857' : '#64748B', fontSize: '0.72rem' }}>
+                                    {item.sub}
+                                  </Typography>
+                                </Box>
+                                {isSelected && <FaCheckCircle color="#059669" size={18} />}
+                              </Paper>
+                            </Grid>
+                          );
+                        })}
+                      </Grid>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <FormControl fullWidth>
+                        <InputLabel>Session / Exam Year</InputLabel>
+                        <Select
+                          value={offlineFormData.session}
+                          label="Session / Exam Year"
+                          onChange={(e) => setOfflineFormData(p => ({ ...p, session: e.target.value }))}
+                        >
+                          {availableSessions.map(s => (
+                            <MenuItem key={s} value={s}>{s}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                  </Grid>
+                </Paper>
+
+                {/* Section 3: Address & Contact */}
+                <Paper elevation={0} sx={{ p: 3.2, borderRadius: '22px', border: '1px solid #E2E8F0', background: '#FFFFFF', boxShadow: '0 4px 20px -4px rgba(15,23,42,0.06)' }}>
+                  <Box display="flex" alignItems="center" gap={1.2} mb={2.5}>
+                    <Box sx={{ width: 36, height: 36, borderRadius: '10px', background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D97706' }}>
+                      <FaMapMarkerAlt size={16} />
+                    </Box>
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2 }}>
+                        3. Contact &amp; Examination Venue
+                      </Typography>
+                      <Typography variant="caption" color="#64748B">
+                        Emergency guardian contact and official examination venue
+                      </Typography>
+                    </Box>
                   </Box>
-                  <Box>
-                    <Typography variant="subtitle1" fontWeight={800} color="#0F172A" sx={{ lineHeight: 1.2 }}>
-                      3. Contact &amp; Residential Address (सम्पर्क एवं स्थायी पता)
-                    </Typography>
-                    <Typography variant="caption" color="#64748B">
-                      Emergency contact and residential postal address
-                    </Typography>
-                  </Box>
-                </Box>
 
-                <Grid container spacing={2.2}>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Parent / Guardian Mobile (Optional)"
-                      value={offlineFormData.parentPhone}
-                      onChange={(e) => setOfflineFormData(p => ({ ...p, parentPhone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
-                      placeholder="Parent's Mobile"
-                      inputProps={{ maxLength: 10 }}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <FaPhoneAlt color="#D97706" size={14} />
-                          </InputAdornment>
-                        )
-                      }}
-                    />
-                  </Grid>
+                  <Grid container spacing={2.2}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Parent / Guardian Mobile (Optional)"
+                        value={offlineFormData.parentPhone}
+                        onChange={(e) => setOfflineFormData(p => ({ ...p, parentPhone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
+                        placeholder="Parent's Mobile"
+                        inputProps={{ maxLength: 10 }}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FaPhoneAlt color="#D97706" size={14} />
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                    </Grid>
 
-                  <Grid item xs={12} sm={6}>
-                    <Paper elevation={0} sx={{ p: 1.8, borderRadius: '12px', background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
-                      <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, display: 'block' }}>
-                        Official Examination Center
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 800, color: '#0F172A', mt: 0.2 }}>
-                        🏢 S K Modern Intermediate College Semari Janghai
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: '#059669', fontWeight: 700, display: 'block', mt: 0.2 }}>
-                        ✓ Centre Code: SKMIC-222201 (Confirmed Venue)
-                      </Typography>
-                    </Paper>
-                  </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <Paper elevation={0} sx={{ p: 1.8, borderRadius: '12px', background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+                        <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, display: 'block' }}>
+                          Official Examination Center
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 800, color: '#0F172A', mt: 0.2 }}>
+                          🏢 S K Modern Intermediate College Semari Janghai
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#059669', fontWeight: 700, display: 'block', mt: 0.2 }}>
+                          ✓ Centre Code: SKMIC-222201 (Confirmed Venue)
+                        </Typography>
+                      </Paper>
+                    </Grid>
 
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={2.5}
-                      label="Complete Residential Address *"
-                      required
-                      value={offlineFormData.address}
-                      onChange={(e) => setOfflineFormData(p => ({ ...p, address: e.target.value }))}
-                      placeholder="Village/Mohalla, Post Office, Tehsil, District, PIN Code"
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start" sx={{ alignSelf: 'flex-start', mt: 1.5 }}>
-                            <FaMapMarkerAlt color="#D97706" size={14} />
-                          </InputAdornment>
-                        )
-                      }}
-                    />
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        multiline
+                        rows={2.5}
+                        label="Complete Residential Address *"
+                        required
+                        value={offlineFormData.address}
+                        onChange={(e) => setOfflineFormData(p => ({ ...p, address: e.target.value }))}
+                        placeholder="Village/Mohalla, Post Office, Tehsil, District, PIN Code"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start" sx={{ alignSelf: 'flex-start', mt: 1.5 }}>
+                              <FaMapMarkerAlt color="#D97706" size={14} />
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                    </Grid>
                   </Grid>
-                </Grid>
-              </Paper>
+                </Paper>
+              </Grid>
             </Grid>
-          </Grid>
+          </Container>
         </DialogContent>
 
-        <DialogActions sx={{ px: 4, py: 2.5, bgcolor: '#FFFFFF', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between' }}>
+        <DialogActions sx={{ px: { xs: 2, md: 5 }, py: 2.2, bgcolor: '#FFFFFF', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
           <Button 
             onClick={() => setOfflineModalOpen(false)} 
             disabled={submittingOffline}
             variant="outlined" 
-            sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 600, px: 3, color: '#64748B', borderColor: '#CBD5E1' }}
+            sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700, px: 3.5, py: 1.1, color: '#64748B', borderColor: '#CBD5E1' }}
           >
             Cancel
           </Button>
@@ -1872,10 +1889,10 @@ const CompetitionManagement = () => {
               borderRadius: '12px', 
               textTransform: 'none', 
               fontWeight: 800, 
-              fontSize: '0.98rem',
+              fontSize: '1rem',
               background: 'linear-gradient(135deg, #059669, #047857)',
               py: 1.3,
-              px: 4.5,
+              px: 5,
               boxShadow: '0 6px 20px rgba(5,150,105,0.35)',
               '&:hover': { background: 'linear-gradient(135deg, #047857, #065F46)', transform: 'translateY(-1px)' }
             }}
