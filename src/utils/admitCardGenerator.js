@@ -837,10 +837,14 @@ export const generateApplicationFormHtml = (application = {}) => {
   
   // Payment Details
   const isPaid = application.paymentStatus === 'paid' || application.paymentStatus === 'verified';
-  const paymentStatus = isPaid ? 'SUCCESS (PAID & VERIFIED)' : application.paymentStatus ? application.paymentStatus.toUpperCase() : 'PENDING';
-  const amountPaid = application.paymentAmount || 150;
-  const txnId = application.paymentTransactionId || 'N/A';
-  const orderId = application.paymentOrderId || `ORD_${rollNumber}`;
+  const isOffline = application.registrationType === 'offline' || application.paymentMode === 'offline_cash';
+  const paymentStatus = isOffline 
+    ? 'SUCCESS (PAID & VERIFIED - OFFLINE CASH)' 
+    : isPaid ? 'SUCCESS (PAID & VERIFIED)' : application.paymentStatus ? application.paymentStatus.toUpperCase() : 'PENDING';
+  const amountPaid = 150;
+  const txnId = application.paymentTransactionId || (isOffline ? `OFFLINE_CASH_${rollNumber}` : 'N/A');
+  const orderId = application.paymentOrderId || (isOffline ? `OFFLINE_DESK_${rollNumber}` : `ORD_${rollNumber}`);
+  const paymentGateway = isOffline ? 'NIICT Authorized Offline Registration Desk (Cash)' : 'Cashfree Payments India Pvt. Ltd.';
   const paymentDate = application.paidAt 
     ? new Date(application.paidAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
     : application.createdAt ? new Date(application.createdAt).toLocaleString('en-IN') : 'N/A';
@@ -1412,7 +1416,7 @@ export const generateApplicationFormHtml = (application = {}) => {
           </tr>
           <tr>
             <td class="pay-label">Payment Gateway:</td>
-            <td class="pay-val">Cashfree Payments India Pvt. Ltd.</td>
+            <td class="pay-val">${paymentGateway}</td>
             <td class="pay-label">Payment Date & Time:</td>
             <td class="pay-val">${paymentDate}</td>
           </tr>

@@ -330,35 +330,20 @@ const CompetitionForm = () => {
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const orderIdParam = params.get('order_id');
-    const appIdParam = params.get('app_id');
-    if (orderIdParam && appIdParam) {
-      verifyPayment(appIdParam, orderIdParam);
+    if (orderIdParam) {
+      verifyPayment(orderIdParam);
     }
   }, []);
 
-  /* ── Step 2: Save → Create Order → Open Cashfree ── */
+  /* ── Step 2: Create Order directly (Zero-Pending Flow) ── */
   const handleConfirmAndPay = async () => {
     setLoading(true); setError('');
-    let appId, orderId, enriched;
+    let orderId;
     try {
-      // Save application
-      const saveRes = await fetch(`${BACKEND_URL}/api/competition-applications`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, session: CURRENT_SESSION }),
-      });
-      const saved = await saveRes.json();
-      if (!saveRes.ok) throw new Error(saved.message || 'Failed to save application');
-      appId = saved._id;
-
-      // Enrich for admit card
-      const actualAge2 = calculateCandidateAge(saved.dateOfBirth || formData.dateOfBirth);
-      enriched = { ...saved, age: actualAge2, qrCode: `COMPETITION_${saved.rollNumber}_${saved.name.replace(/\s+/g, '_')}` };
-      setAdmitCardData(enriched);
-
-      // Create Cashfree order
+      // Create Cashfree order with form data (NO CompetitionApplication saved until payment succeeds!)
       const orderRes = await fetch(`${BACKEND_URL}/api/payment/create-order`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ applicationId: saved._id }),
+        body: JSON.stringify({ formData: { ...formData, session: CURRENT_SESSION } }),
       });
       const orderData = await orderRes.json();
       if (!orderRes.ok) {
@@ -380,12 +365,12 @@ const CompetitionForm = () => {
       cashfree.checkout({ paymentSessionId: orderData.paymentSessionId, redirectTarget: '_modal' })
         .then(async (result) => {
           if (result.error) {
-            setError(`Payment failed: ${result.error.message || 'Payment cancelled'}`);
+            setError(`Payment was not completed: ${result.error.message || 'Cancelled'}`);
             setLoading(false);
             return;
           }
           if (result.paymentDetails || result.redirect) {
-            await verifyPayment(appId, orderId, enriched);
+            await verifyPayment(orderId);
           }
         })
         .catch((cfErr) => {
@@ -401,28 +386,27 @@ const CompetitionForm = () => {
   };
 
   /* ── Verify Payment ── */
-  const verifyPayment = async (appId, orderId, enriched) => {
+  const verifyPayment = async (orderId) => {
     try {
       setStep(2);
       const vRes = await fetch(`${BACKEND_URL}/api/payment/verify`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ applicationId: appId, orderId }),
+        body: JSON.stringify({ orderId }),
       });
       const vData = await vRes.json();
       if (vRes.ok && vData.success) {
         const appInfo = vData.application || {};
-        const b = new Date(appInfo.dateOfBirth || Date.now());
-        const t = new Date();
-        const age = t.getFullYear() - b.getFullYear();
-        setAdmitCardData(prev => ({
-          ...(prev || enriched || appInfo),
+        const actualAge = calculateCandidateAge(appInfo.dateOfBirth || formData.dateOfBirth);
+        const enriched = {
           ...appInfo,
-          age,
+          age: actualAge,
+          qrCode: `COMPETITION_${appInfo.rollNumber}_${(appInfo.name || '').replace(/\s+/g, '_')}`,
           paymentTransactionId: vData.transactionId,
           paidAt: vData.paidAt,
           paymentStatus: 'paid',
           paymentAmount: 150
-        }));
+        };
+        setAdmitCardData(enriched);
         setStep(3);
       } else {
         setError('Payment verification failed: ' + (vData.message || 'Contact support with Order ID: ' + orderId));

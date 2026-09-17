@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Container, Typography, Paper, Table, TableBody, TableCell, 
-         TableContainer, TableHead, TableRow, Button, Box, Chip, Grid, Card, CardContent, TextField, InputAdornment, FormControl, InputLabel, Select, MenuItem, Tooltip } from '@mui/material';
+         TableContainer, TableHead, TableRow, Button, Box, Chip, Grid, Card, CardContent, TextField, InputAdornment, FormControl, InputLabel, Select, MenuItem, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Alert, CircularProgress, Divider } from '@mui/material';
 import { motion } from 'framer-motion';
-import { FaTrophy, FaSearch, FaPrint, FaEye, FaTrash, FaDownload, FaFileAlt, FaReceipt } from 'react-icons/fa';
+import { FaTrophy, FaSearch, FaPrint, FaEye, FaTrash, FaDownload, FaFileAlt, FaReceipt, FaUserPlus, FaCheckCircle } from 'react-icons/fa';
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
 import { openAdmitCardPrintWindow, openApplicationFormPrintWindow, formatAdmitCardDob } from '../../utils/admitCardGenerator';
 import GovernmentAdmitCardModal from './GovernmentAdmitCardModal';
@@ -23,6 +23,28 @@ const CompetitionManagement = () => {
   const [previewApplication, setPreviewApplication] = useState(null);
   const [previewDocType, setPreviewDocType] = useState('admit_card');
   const [libsLoaded, setLibsLoaded] = useState(false);
+
+  // Offline registration state
+  const [offlineModalOpen, setOfflineModalOpen] = useState(false);
+  const [offlineSuccessModalOpen, setOfflineSuccessModalOpen] = useState(false);
+  const [createdOfflineCandidate, setCreatedOfflineCandidate] = useState(null);
+  const [submittingOffline, setSubmittingOffline] = useState(false);
+  const [offlineError, setOfflineError] = useState('');
+  const [offlineFormData, setOfflineFormData] = useState({
+    name: '',
+    fatherName: '',
+    motherName: '',
+    phone: '',
+    parentPhone: '',
+    school: '',
+    address: '',
+    subject: 'GK',
+    aadhaar: '',
+    dateOfBirth: '',
+    classPassed: '',
+    image: null,
+    session: CURRENT_SESSION
+  });
   const attendanceContainerId = 'attendance-export-container';
   const html2canvasRef = useRef(null);
   const jsPDFRef = useRef(null);
@@ -374,6 +396,8 @@ const CompetitionManagement = () => {
   const filteredApplications = applications.filter(app => {
     // Payment filter
     if (paymentFilter !== 'all') {
+      if (paymentFilter === 'online_paid' && (app.registrationType === 'offline' || (app.paymentStatus !== 'paid' && app.paymentStatus !== 'verified'))) return false;
+      if (paymentFilter === 'offline_paid' && app.registrationType !== 'offline' && app.paymentMode !== 'offline_cash') return false;
       if (paymentFilter === 'paid' && app.paymentStatus !== 'paid' && app.paymentStatus !== 'verified') return false;
       if (paymentFilter === 'pending' && app.paymentStatus !== 'pending') return false;
       if (paymentFilter === 'failed' && app.paymentStatus !== 'failed') return false;
@@ -401,7 +425,73 @@ const CompetitionManagement = () => {
   const gkApplications = applications.filter(app => app.subject === 'GK').length;
   const computerApplications = applications.filter(app => app.subject === 'Computer').length;
   const bothApplications = applications.filter(app => app.subject === 'Both').length;
-  const paidApplications = applications.filter(app => app.paymentStatus === 'paid' || app.paymentStatus === 'verified').length;
+  // Online collection only (Offline registrations DO NOT add to wallet / online collection!)
+  const onlinePaidApplications = applications.filter(app => app.registrationType !== 'offline' && (app.paymentStatus === 'paid' || app.paymentStatus === 'verified')).length;
+  const offlineApplications = applications.filter(app => app.registrationType === 'offline' || app.paymentMode === 'offline_cash').length;
+
+  const resetOfflineForm = () => {
+    setOfflineFormData({
+      name: '',
+      fatherName: '',
+      motherName: '',
+      phone: '',
+      parentPhone: '',
+      school: '',
+      address: '',
+      subject: 'GK',
+      aadhaar: '',
+      dateOfBirth: '',
+      classPassed: '',
+      image: null,
+      session: activeSession || CURRENT_SESSION
+    });
+    setOfflineError('');
+  };
+
+  const handleOfflineSubmit = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setOfflineError('');
+
+    if (!offlineFormData.name || !offlineFormData.fatherName || !offlineFormData.motherName ||
+        !offlineFormData.phone || !offlineFormData.school || !offlineFormData.address ||
+        !offlineFormData.dateOfBirth || !offlineFormData.classPassed) {
+      setOfflineError('Please fill all required fields marked with *');
+      return;
+    }
+
+    if (offlineFormData.phone.length < 10) {
+      setOfflineError('Please enter a valid 10-digit mobile number');
+      return;
+    }
+
+    setSubmittingOffline(true);
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000');
+      const res = await fetch(`${API_BASE_URL}/api/competition-applications/offline`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...offlineFormData,
+          session: offlineFormData.session || activeSession || CURRENT_SESSION
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to register offline candidate');
+      }
+
+      setApplications(prev => [data, ...prev]);
+      setCreatedOfflineCandidate(data);
+      setOfflineModalOpen(false);
+      setOfflineSuccessModalOpen(true);
+      resetOfflineForm();
+    } catch (err) {
+      console.error('Offline registration error:', err);
+      setOfflineError(err.message || 'Registration failed');
+    } finally {
+      setSubmittingOffline(false);
+    }
+  };
 
   if (showDetails && selectedApplication) {
     return (
@@ -638,6 +728,25 @@ const CompetitionManagement = () => {
                 Competition <span style={{ color: '#2563EB' }}>Management</span>
               </Typography>
             </Box>
+            <Button
+              variant="contained"
+              onClick={() => { resetOfflineForm(); setOfflineModalOpen(true); }}
+              startIcon={<FaUserPlus />}
+              sx={{
+                background: 'linear-gradient(135deg, #059669, #047857)',
+                color: '#fff',
+                fontWeight: 800,
+                fontSize: '0.95rem',
+                py: 1.2,
+                px: 2.8,
+                borderRadius: '12px',
+                textTransform: 'none',
+                boxShadow: '0 4px 14px rgba(5,150,105,0.3)',
+                '&:hover': { background: 'linear-gradient(135deg, #047857, #065F46)' }
+              }}
+            >
+              + Add Offline Candidate
+            </Button>
           </Box>
 
           {/* Session Selector */}
@@ -701,33 +810,34 @@ const CompetitionManagement = () => {
             <Grid item xs={12} sm={6} md={2.4}>
               <Card sx={{ background: 'linear-gradient(135deg, #ECFDF5, #D1FAE5)', border: '1px solid #A7F3D0', borderRadius: 3, boxShadow: '0 4px 16px -2px rgba(15,23,42,0.04)' }}>
                 <CardContent sx={{ p: 2.5 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#065F46', textTransform: 'uppercase', letterSpacing: '1px', mb: 0.5, fontWeight: 700, fontSize: '0.7rem' }}>GK Applications</Typography>
-                  <Typography variant="h3" fontWeight={800} sx={{ color: '#064E3B', fontFamily: '"Saira Condensed", sans-serif' }}>{gkApplications}</Typography>
+                  <Typography variant="subtitle2" sx={{ color: '#065F46', textTransform: 'uppercase', letterSpacing: '1px', mb: 0.5, fontWeight: 700, fontSize: '0.7rem' }}>💳 Online Received</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#059669', fontFamily: '"Saira Condensed", sans-serif' }}>{onlinePaidApplications}</Typography>
+                  <Typography variant="caption" sx={{ color: '#047857', fontWeight: 600 }}>Rs. {onlinePaidApplications * 150} collected</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} sm={6} md={2.4}>
+              <Card sx={{ background: 'linear-gradient(135deg, #F0FDF4, #DCFCE7)', border: '1px solid #86EFAC', borderRadius: 3, boxShadow: '0 4px 16px -2px rgba(15,23,42,0.04)' }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#15803D', textTransform: 'uppercase', letterSpacing: '1px', mb: 0.5, fontWeight: 700, fontSize: '0.7rem' }}>📝 Offline (Direct)</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#166534', fontFamily: '"Saira Condensed", sans-serif' }}>{offlineApplications}</Typography>
+                  <Typography variant="caption" sx={{ color: '#15803D', fontWeight: 600 }}>0 to wallet • Direct Cash</Typography>
                 </CardContent>
               </Card>
             </Grid>
             <Grid item xs={12} sm={6} md={2.4}>
               <Card sx={{ background: 'linear-gradient(135deg, #FFFBEB, #FEF3C7)', border: '1px solid #FDE68A', borderRadius: 3, boxShadow: '0 4px 16px -2px rgba(15,23,42,0.04)' }}>
                 <CardContent sx={{ p: 2.5 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#92400E', textTransform: 'uppercase', letterSpacing: '1px', mb: 0.5, fontWeight: 700, fontSize: '0.7rem' }}>Computer Applications</Typography>
-                  <Typography variant="h3" fontWeight={800} sx={{ color: '#78350F', fontFamily: '"Saira Condensed", sans-serif' }}>{computerApplications}</Typography>
+                  <Typography variant="subtitle2" sx={{ color: '#92400E', textTransform: 'uppercase', letterSpacing: '1px', mb: 0.5, fontWeight: 700, fontSize: '0.7rem' }}>GK Applications</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#78350F', fontFamily: '"Saira Condensed", sans-serif' }}>{gkApplications}</Typography>
                 </CardContent>
               </Card>
             </Grid>
             <Grid item xs={12} sm={6} md={2.4}>
               <Card sx={{ background: 'linear-gradient(135deg, #FAF5FF, #F3E8FF)', border: '1px solid #E9D5FF', borderRadius: 3, boxShadow: '0 4px 16px -2px rgba(15,23,42,0.04)' }}>
                 <CardContent sx={{ p: 2.5 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#6B21A8', textTransform: 'uppercase', letterSpacing: '1px', mb: 0.5, fontWeight: 700, fontSize: '0.7rem' }}>Both Subjects</Typography>
-                  <Typography variant="h3" fontWeight={800} sx={{ color: '#581C87', fontFamily: '"Saira Condensed", sans-serif' }}>{bothApplications}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={2.4}>
-              <Card sx={{ background: 'linear-gradient(135deg, #ECFDF5, #D1FAE5)', border: '1px solid #A7F3D0', borderRadius: 3, boxShadow: '0 4px 16px -2px rgba(15,23,42,0.04)' }}>
-                <CardContent sx={{ p: 2.5 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#065F46', textTransform: 'uppercase', letterSpacing: '1px', mb: 0.5, fontWeight: 700, fontSize: '0.7rem' }}>💳 Payments Received</Typography>
-                  <Typography variant="h3" fontWeight={800} sx={{ color: '#059669', fontFamily: '"Saira Condensed", sans-serif' }}>{paidApplications}</Typography>
-                  <Typography variant="caption" sx={{ color: '#047857', fontWeight: 600 }}>Rs. {paidApplications * 150} collected</Typography>
+                  <Typography variant="subtitle2" sx={{ color: '#6B21A8', textTransform: 'uppercase', letterSpacing: '1px', mb: 0.5, fontWeight: 700, fontSize: '0.7rem' }}>Computer Applications</Typography>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: '#581C87', fontFamily: '"Saira Condensed", sans-serif' }}>{computerApplications}</Typography>
                 </CardContent>
               </Card>
             </Grid>
@@ -758,8 +868,10 @@ const CompetitionManagement = () => {
                 <Select value={paymentFilter} label="Payment" onChange={(e) => setPaymentFilter(e.target.value)}
                   sx={{ color: '#0F172A', backgroundColor: '#FFFFFF', '.MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' }, '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94A3B8' }, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#059669' } }}>
                   <MenuItem value="all">💳 All Payments</MenuItem>
-                  <MenuItem value="paid">✅ Paid</MenuItem>
-                  <MenuItem value="pending">⏳ Pending</MenuItem>
+                  <MenuItem value="online_paid">🌐 Online Paid</MenuItem>
+                  <MenuItem value="offline_paid">📝 Offline (Cash/Manual)</MenuItem>
+                  <MenuItem value="paid">✅ All Paid</MenuItem>
+                  <MenuItem value="pending">⏳ Pending (Legacy)</MenuItem>
                   <MenuItem value="failed">❌ Failed</MenuItem>
                 </Select>
               </FormControl>
@@ -806,24 +918,40 @@ const CompetitionManagement = () => {
                       </TableCell>
                       <TableCell sx={{ color: '#475569', borderBottom: '1px solid #F1F5F9' }}>{application.fatherName || 'Not provided'}</TableCell>
                       <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
-                        <Chip
-                          label={application.paymentStatus === 'paid' || application.paymentStatus === 'verified' ? 'PAID' : application.paymentStatus === 'failed' ? 'FAILED' : 'PENDING'}
-                          size="small"
-                          sx={{
-                            background: application.paymentStatus === 'paid' || application.paymentStatus === 'verified'
-                              ? '#ECFDF5' : application.paymentStatus === 'failed'
-                              ? '#FEF2F2' : '#FFFBEB',
-                            color: application.paymentStatus === 'paid' || application.paymentStatus === 'verified'
-                              ? '#059669' : application.paymentStatus === 'failed'
-                              ? '#DC2626' : '#D97706',
-                            fontWeight: 700, fontSize: '0.7rem', border: '1px solid',
-                            borderColor: application.paymentStatus === 'paid' || application.paymentStatus === 'verified'
-                              ? '#A7F3D0' : application.paymentStatus === 'failed'
-                              ? '#FECACA' : '#FDE68A',
-                          }}
-                        />
+                        {application.registrationType === 'offline' ? (
+                          <Chip
+                            label="OFFLINE (PAID)"
+                            size="small"
+                            sx={{
+                              background: '#F0FDF4',
+                              color: '#15803D',
+                              border: '1px solid #86EFAC',
+                              fontWeight: 800,
+                              fontSize: '0.68rem',
+                            }}
+                          />
+                        ) : (
+                          <Chip
+                            label={application.paymentStatus === 'paid' || application.paymentStatus === 'verified' ? 'ONLINE PAID' : application.paymentStatus === 'failed' ? 'FAILED' : 'PENDING'}
+                            size="small"
+                            sx={{
+                              background: application.paymentStatus === 'paid' || application.paymentStatus === 'verified'
+                                ? '#EFF6FF' : application.paymentStatus === 'failed'
+                                ? '#FEF2F2' : '#FFFBEB',
+                              color: application.paymentStatus === 'paid' || application.paymentStatus === 'verified'
+                                ? '#1D4ED8' : application.paymentStatus === 'failed'
+                                ? '#DC2626' : '#D97706',
+                              fontWeight: 700, fontSize: '0.68rem', border: '1px solid',
+                              borderColor: application.paymentStatus === 'paid' || application.paymentStatus === 'verified'
+                                ? '#BFDBFE' : application.paymentStatus === 'failed'
+                                ? '#FECACA' : '#FDE68A',
+                            }}
+                          />
+                        )}
                         {application.paymentTransactionId && (
-                          <Typography variant="caption" sx={{ color: '#64748B', display: 'block', fontSize: '0.65rem', mt: 0.3 }}>{application.paymentTransactionId.slice(0, 12)}…</Typography>
+                          <Typography variant="caption" sx={{ color: '#64748B', display: 'block', fontSize: '0.65rem', mt: 0.3 }}>
+                            {application.paymentTransactionId.slice(0, 16)}
+                          </Typography>
                         )}
                       </TableCell>
                       <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
@@ -879,6 +1007,283 @@ const CompetitionManagement = () => {
         application={previewApplication}
         initialDocType={previewDocType}
       />
+
+      {/* Offline Candidate Registration Modal */}
+      <Dialog 
+        open={offlineModalOpen} 
+        onClose={() => !submittingOffline && setOfflineModalOpen(false)} 
+        maxWidth="md" 
+        fullWidth
+        PaperProps={{ sx: { borderRadius: '24px', p: 1.5 } }}
+      >
+        <DialogTitle sx={{ fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: 1.5, pb: 0.5 }}>
+          <Box sx={{ p: 1, borderRadius: 2, background: '#DCFCE7', color: '#166534', display: 'flex' }}>
+            <FaUserPlus size={22} />
+          </Box>
+          <Box>
+            <Typography variant="h6" fontWeight={800} color="#0F172A">
+              Offline Candidate Registration (ऑफ़लाइन छात्र फॉर्म)
+            </Typography>
+            <Typography variant="caption" color="#64748B">
+              Direct offline manual registration: Automatically marked as Paid. Sequential Roll No generated. Rs. 0 added to online collection.
+            </Typography>
+          </Box>
+        </DialogTitle>
+        <Divider sx={{ my: 1.5 }} />
+
+        <DialogContent sx={{ pt: 1 }}>
+          {offlineError && (
+            <Alert severity="error" sx={{ mb: 2, borderRadius: '12px' }}>
+              {offlineError}
+            </Alert>
+          )}
+
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Candidate Full Name *"
+                required
+                value={offlineFormData.name}
+                onChange={(e) => setOfflineFormData(p => ({ ...p, name: e.target.value.toUpperCase() }))}
+                placeholder="e.g. RAHUL KUMAR"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Candidate Mobile Number (10 digits) *"
+                required
+                value={offlineFormData.phone}
+                onChange={(e) => setOfflineFormData(p => ({ ...p, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
+                placeholder="10 digit number"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Father's Name *"
+                required
+                value={offlineFormData.fatherName}
+                onChange={(e) => setOfflineFormData(p => ({ ...p, fatherName: e.target.value.toUpperCase() }))}
+                placeholder="Father's Name"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Mother's Name *"
+                required
+                value={offlineFormData.motherName}
+                onChange={(e) => setOfflineFormData(p => ({ ...p, motherName: e.target.value.toUpperCase() }))}
+                placeholder="Mother's Name"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Date of Birth *"
+                required
+                InputLabelProps={{ shrink: true }}
+                value={offlineFormData.dateOfBirth}
+                onChange={(e) => setOfflineFormData(p => ({ ...p, dateOfBirth: e.target.value }))}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Class Passed / Studying *"
+                required
+                value={offlineFormData.classPassed}
+                onChange={(e) => setOfflineFormData(p => ({ ...p, classPassed: e.target.value }))}
+                placeholder="e.g. 10th / 12th / Graduate"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Subject *</InputLabel>
+                <Select
+                  value={offlineFormData.subject}
+                  label="Subject *"
+                  onChange={(e) => setOfflineFormData(p => ({ ...p, subject: e.target.value }))}
+                >
+                  <MenuItem value="GK">GK (General Knowledge)</MenuItem>
+                  <MenuItem value="Computer">Computer Literacy</MenuItem>
+                  <MenuItem value="Both">Both (GK & Computer)</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Aadhaar Number (Optional 12 digits)"
+                value={offlineFormData.aadhaar}
+                onChange={(e) => setOfflineFormData(p => ({ ...p, aadhaar: e.target.value.replace(/\D/g, '').slice(0, 12) }))}
+                placeholder="12 digit Aadhaar"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Parent Mobile Number (Optional)"
+                value={offlineFormData.parentPhone}
+                onChange={(e) => setOfflineFormData(p => ({ ...p, parentPhone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
+                placeholder="Parent's contact"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Session / Exam Year</InputLabel>
+                <Select
+                  value={offlineFormData.session}
+                  label="Session / Exam Year"
+                  onChange={(e) => setOfflineFormData(p => ({ ...p, session: e.target.value }))}
+                >
+                  {availableSessions.map(s => (
+                    <MenuItem key={s} value={s}>{s}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="School / College / Institution Name *"
+                required
+                value={offlineFormData.school}
+                onChange={(e) => setOfflineFormData(p => ({ ...p, school: e.target.value.toUpperCase() }))}
+                placeholder="Enter candidate's school or college name"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={2}
+                label="Complete Residential Address *"
+                required
+                value={offlineFormData.address}
+                onChange={(e) => setOfflineFormData(p => ({ ...p, address: e.target.value }))}
+                placeholder="Village/Mohalla, Post, District, State, PIN"
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 2, pt: 1, gap: 1.5 }}>
+          <Button 
+            onClick={() => setOfflineModalOpen(false)} 
+            disabled={submittingOffline}
+            variant="outlined" 
+            sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 600 }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleOfflineSubmit} 
+            disabled={submittingOffline}
+            variant="contained" 
+            sx={{ 
+              borderRadius: '10px', 
+              textTransform: 'none', 
+              fontWeight: 800, 
+              background: 'linear-gradient(135deg, #059669, #047857)',
+              px: 3.5,
+              boxShadow: '0 4px 14px rgba(5,150,105,0.3)' 
+            }}
+          >
+            {submittingOffline ? <CircularProgress size={20} color="inherit" /> : 'Confirm & Register (Mark Paid)'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Offline Success Dialog with Instant Print Actions */}
+      <Dialog
+        open={offlineSuccessModalOpen}
+        onClose={() => setOfflineSuccessModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: '24px', p: 2, textAlign: 'center' } }}
+      >
+        <DialogContent sx={{ pt: 3 }}>
+          <Box sx={{ width: 80, height: 80, borderRadius: '50%', background: '#DCFCE7', color: '#166534', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+            <FaCheckCircle size={44} />
+          </Box>
+          <Typography variant="h5" fontWeight={800} color="#0F172A" gutterBottom>
+            Offline Registration Successful!
+          </Typography>
+          <Typography variant="body2" color="#64748B" sx={{ mb: 3 }}>
+            Candidate has been registered directly and marked as <strong>PAID</strong>.
+          </Typography>
+
+          {createdOfflineCandidate && (
+            <Paper elevation={0} sx={{ p: 2.5, mb: 3, background: '#F8FAFC', borderRadius: '16px', border: '1px solid #E2E8F0', textAlign: 'left' }}>
+              <Box display="flex" justifyContent="space-between" mb={1}>
+                <Typography variant="body2" color="#64748B">Allocated Roll Number</Typography>
+                <Typography variant="h6" fontWeight={800} color="#2563EB">{createdOfflineCandidate.rollNumber}</Typography>
+              </Box>
+              <Box display="flex" justifyContent="space-between" mb={1}>
+                <Typography variant="body2" color="#64748B">Candidate Name</Typography>
+                <Typography variant="body2" fontWeight={700} color="#0F172A">{createdOfflineCandidate.name}</Typography>
+              </Box>
+              <Box display="flex" justifyContent="space-between" mb={1}>
+                <Typography variant="body2" color="#64748B">Subject</Typography>
+                <Typography variant="body2" fontWeight={600} color="#0F172A">{createdOfflineCandidate.subject}</Typography>
+              </Box>
+              <Box display="flex" justifyContent="space-between">
+                <Typography variant="body2" color="#64748B">Payment Status</Typography>
+                <Chip label="PAID (OFFLINE CASH)" size="small" sx={{ background: '#DCFCE7', color: '#166534', fontWeight: 800, fontSize: '0.7rem' }} />
+              </Box>
+            </Paper>
+          )}
+
+          <Box display="flex" flexDirection="column" gap={1.5}>
+            <Button
+              variant="contained"
+              fullWidth
+              size="large"
+              startIcon={<FaPrint />}
+              onClick={() => createdOfflineCandidate && printAdmitCard(createdOfflineCandidate)}
+              sx={{
+                borderRadius: '12px', py: 1.4, fontWeight: 700, textTransform: 'none',
+                background: 'linear-gradient(135deg, #2563EB, #1D4ED8)'
+              }}
+            >
+              Print E-Admit Card (Hall Ticket)
+            </Button>
+
+            <Button
+              variant="contained"
+              fullWidth
+              size="large"
+              startIcon={<FaReceipt />}
+              onClick={() => createdOfflineCandidate && printApplicationForm(createdOfflineCandidate)}
+              sx={{
+                borderRadius: '12px', py: 1.4, fontWeight: 700, textTransform: 'none',
+                background: 'linear-gradient(135deg, #059669, #047857)'
+              }}
+            >
+              Print Application Form &amp; Fee Receipt
+            </Button>
+
+            <Button
+              variant="outlined"
+              fullWidth
+              startIcon={<FaUserPlus />}
+              onClick={() => { setOfflineSuccessModalOpen(false); resetOfflineForm(); setOfflineModalOpen(true); }}
+              sx={{ borderRadius: '12px', py: 1.2, fontWeight: 700, textTransform: 'none', borderColor: '#CBD5E1', color: '#0F172A' }}
+            >
+              + Register Another Offline Candidate
+            </Button>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+          <Button onClick={() => setOfflineSuccessModalOpen(false)} sx={{ color: '#64748B', fontWeight: 600, textTransform: 'none' }}>
+            Close Window
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
