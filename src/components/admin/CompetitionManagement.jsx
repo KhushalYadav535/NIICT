@@ -51,7 +51,7 @@ const CompetitionManagement = () => {
     parentPhone: '',
     school: '',
     address: '',
-    subject: 'GK',
+    subject: 'Both',
     aadhaar: '',
     dateOfBirth: '',
     classPassed: '',
@@ -451,7 +451,7 @@ const CompetitionManagement = () => {
       parentPhone: '',
       school: '',
       address: '',
-      subject: 'GK',
+      subject: 'Both',
       aadhaar: '',
       dateOfBirth: '',
       classPassed: '',
@@ -1732,9 +1732,9 @@ const CompetitionManagement = () => {
                       </Typography>
                       <Grid container spacing={1.5}>
                         {[
+                          { val: 'Both', label: 'Both (GK + Computer)', sub: 'Default • Combined Comprehensive Paper', icon: <FaTrophy size={18} /> },
                           { val: 'GK', label: 'GK (General Knowledge)', sub: 'General Knowledge Exam', icon: <FaBook size={18} /> },
-                          { val: 'Computer', label: 'Computer Literacy', sub: 'Computer Knowledge Exam', icon: <FaLaptopCode size={18} /> },
-                          { val: 'Both', label: 'Both (GK + Computer)', sub: 'Combined Comprehensive Paper', icon: <FaTrophy size={18} /> }
+                          { val: 'Computer', label: 'Computer Literacy', sub: 'Computer Knowledge Exam', icon: <FaLaptopCode size={18} /> }
                         ].map((item) => {
                           const isSelected = offlineFormData.subject === item.val;
                           return (

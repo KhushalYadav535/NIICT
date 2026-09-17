@@ -273,7 +273,7 @@ const CompetitionForm = () => {
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
     name: '', phone: '', school: '', parentPhone: '', address: '',
-    subject: 'GK', fatherName: '', motherName: '', aadhaar: '',
+    subject: 'Both', fatherName: '', motherName: '', aadhaar: '',
     dateOfBirth: '', classPassed: '', image: null
   });
   const [loading, setLoading] = useState(false);
