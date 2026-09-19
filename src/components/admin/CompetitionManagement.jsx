@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Container, Typography, Paper, Table, TableBody, TableCell, 
-         TableContainer, TableHead, TableRow, Button, Box, Chip, Grid, Card, CardContent, TextField, InputAdornment, FormControl, InputLabel, Select, MenuItem, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Alert, CircularProgress, Divider, IconButton } from '@mui/material';
+         TableContainer, TableHead, TableRow, Button, Box, Chip, Grid, Card, CardContent, TextField, InputAdornment, FormControl, InputLabel, Select, MenuItem, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Alert, CircularProgress, Divider, IconButton, Checkbox } from '@mui/material';
 import { motion } from 'framer-motion';
 import { 
   FaTrophy, FaSearch, FaPrint, FaEye, FaTrash, FaDownload, FaFileAlt, 
@@ -29,6 +29,12 @@ const CompetitionManagement = () => {
   const [previewDocType, setPreviewDocType] = useState('admit_card');
   const [libsLoaded, setLibsLoaded] = useState(false);
   const [imageLightBox, setImageLightBox] = useState(null);
+
+  // Bulk selection and deletion state
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  const [deletingBulk, setDeletingBulk] = useState(false);
+  const [markingBulkPaid, setMarkingBulkPaid] = useState(false);
 
   // Offline registration state
   const [offlineModalOpen, setOfflineModalOpen] = useState(false);
@@ -127,9 +133,112 @@ const CompetitionManagement = () => {
         throw new Error(err.message || 'Delete failed');
       }
       setApplications(prev => prev.filter(a => a._id !== id));
+      setSelectedIds(prev => prev.filter(item => item !== id));
     } catch (e) {
       console.error(e);
       alert(e.message || 'Delete failed');
+    }
+  };
+
+  const handleToggleSelect = (id) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]);
+  };
+
+  const handleSelectAll = () => {
+    const visibleIds = filteredApplications.map(a => a._id);
+    const allVisibleSelected = visibleIds.length > 0 && visibleIds.every(id => selectedIds.includes(id));
+    if (allVisibleSelected) {
+      setSelectedIds(prev => prev.filter(id => !visibleIds.includes(id)));
+    } else {
+      setSelectedIds(prev => Array.from(new Set([...prev, ...visibleIds])));
+    }
+  };
+
+  const handleSelectAllPending = () => {
+    const pendingIds = applications.filter(a => a.paymentStatus === 'pending').map(a => a._id);
+    setSelectedIds(pendingIds);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds([]);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    try {
+      setDeletingBulk(true);
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000');
+      const res = await fetch(`${API_BASE_URL}/api/competition-applications/bulk-delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedIds })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to delete selected applications');
+      setApplications(prev => prev.filter(a => !selectedIds.includes(a._id)));
+      if (selectedApplication && selectedIds.includes(selectedApplication._id)) {
+        setSelectedApplication(null);
+        setShowDetails(false);
+      }
+      setSelectedIds([]);
+      setBulkDeleteDialogOpen(false);
+      alert(data.message || 'Selected applications deleted successfully');
+    } catch (e) {
+      console.error(e);
+      alert(e.message || 'Failed to delete selected applications');
+    } finally {
+      setDeletingBulk(false);
+    }
+  };
+
+  const handleBulkMarkPaid = async () => {
+    if (selectedIds.length === 0) return;
+    const confirmMsg = `Are you sure you want to mark ${selectedIds.length} selected application(s) as PAID (Offline/Desk - ₹0 to wallet)?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      setMarkingBulkPaid(true);
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000');
+      const res = await fetch(`${API_BASE_URL}/api/competition-applications/bulk-mark-paid`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedIds, status: 'verified' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Bulk mark paid failed');
+
+      setApplications(prev => prev.map(a => {
+        if (selectedIds.includes(a._id)) {
+          return {
+            ...a,
+            paymentStatus: 'verified',
+            registrationType: 'offline',
+            paymentMode: 'offline_cash',
+            paymentAmount: 0,
+            paidAt: new Date().toISOString()
+          };
+        }
+        return a;
+      }));
+
+      if (selectedApplication && selectedIds.includes(selectedApplication._id)) {
+        setSelectedApplication(prev => ({
+          ...prev,
+          paymentStatus: 'verified',
+          registrationType: 'offline',
+          paymentMode: 'offline_cash',
+          paymentAmount: 0,
+          paidAt: new Date().toISOString()
+        }));
+      }
+
+      alert(data.message || 'Selected applications marked as Offline Paid successfully');
+      setSelectedIds([]);
+    } catch (e) {
+      console.error(e);
+      alert(e.message || 'Failed to update payment status');
+    } finally {
+      setMarkingBulkPaid(false);
     }
   };
 
@@ -434,13 +543,29 @@ const CompetitionManagement = () => {
     }
   });
 
+  const isOnlinePaid = (app) => {
+    const isPaidOrVerified = app.paymentStatus === 'paid' || app.paymentStatus === 'verified';
+    const isNotOffline = app.registrationType !== 'offline' && app.paymentMode !== 'offline_cash' && app.paymentMode !== 'manual_admin';
+    const hasRealAmount = (app.paymentAmount ?? 150) > 0;
+    return isPaidOrVerified && isNotOffline && hasRealAmount;
+  };
+
   const totalApplications = applications.length;
   const gkApplications = applications.filter(app => app.subject === 'GK').length;
   const computerApplications = applications.filter(app => app.subject === 'Computer').length;
   const bothApplications = applications.filter(app => app.subject === 'Both').length;
-  // Online collection only (Offline registrations DO NOT add to wallet / online collection!)
-  const onlinePaidApplications = applications.filter(app => app.registrationType !== 'offline' && (app.paymentStatus === 'paid' || app.paymentStatus === 'verified')).length;
-  const offlineApplications = applications.filter(app => app.registrationType === 'offline' || app.paymentMode === 'offline_cash').length;
+  // Online collection only (Offline registrations & Manual Admin verifications DO NOT add to wallet / online collection!)
+  const onlinePaidApplications = applications.filter(isOnlinePaid).length;
+  const offlineApplications = applications.filter(app => !isOnlinePaid(app) && (app.paymentStatus === 'paid' || app.paymentStatus === 'verified')).length;
+  const totalPendingCount = applications.filter(app => app.paymentStatus === 'pending').length;
+
+  const selectedApplicationsList = applications.filter(a => selectedIds.includes(a._id));
+  const selectedPendingCount = selectedApplicationsList.filter(a => a.paymentStatus === 'pending').length;
+  const selectedPaidCount = selectedApplicationsList.filter(a => a.paymentStatus === 'paid' || a.paymentStatus === 'verified').length;
+
+  const visibleIds = filteredApplications.map(a => a._id);
+  const allSelected = visibleIds.length > 0 && visibleIds.every(id => selectedIds.includes(id));
+  const someSelected = visibleIds.some(id => selectedIds.includes(id)) && !allSelected;
 
   const resetOfflineForm = () => {
     setOfflineFormData({
@@ -875,9 +1000,14 @@ const CompetitionManagement = () => {
 
                     {/* Verification and Navigation */}
                     {selectedApplication.paymentStatus !== 'verified' ? (
-                      <Button variant="contained" size="large" disabled={updating} onClick={() => updatePaymentStatus(selectedApplication._id, 'verified')} sx={{ background: 'linear-gradient(135deg, #059669, #047857)', color: '#fff', fontWeight: 700, textTransform: 'none', borderRadius: 2 }}>
-                        Mark as Verified
-                      </Button>
+                      <Box display="flex" flexDirection="column" gap={0.8}>
+                        <Button variant="contained" size="large" disabled={updating} onClick={() => updatePaymentStatus(selectedApplication._id, 'verified')} sx={{ background: 'linear-gradient(135deg, #059669, #047857)', color: '#fff', fontWeight: 700, textTransform: 'none', borderRadius: 2 }}>
+                          Mark as Verified (Offline/Desk - 0 to Wallet)
+                        </Button>
+                        <Typography variant="caption" sx={{ color: '#059669', textAlign: 'center', fontWeight: 600 }}>
+                          ✓ Marked as Paid with Rs. 0 added to online wallet
+                        </Typography>
+                      </Box>
                     ) : (
                       <Button variant="outlined" color="warning" size="large" disabled={updating} onClick={() => updatePaymentStatus(selectedApplication._id, 'pending')} sx={{ borderColor: '#FDE68A', color: '#D97706', backgroundColor: '#FFFBEB', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { background: '#FEF3C7' } }}>
                         Revert to Pending
@@ -1078,14 +1208,121 @@ const CompetitionManagement = () => {
               <Button variant="contained" onClick={exportToCSV} startIcon={<FaDownload />} sx={{ background: 'linear-gradient(135deg, #059669, #047857)', color: '#fff', textTransform: 'none', fontWeight: 700, borderRadius: 2 }}>CSV</Button>
               <Button variant="contained" onClick={exportAttendancePDF} startIcon={<FaDownload />} sx={{ background: 'linear-gradient(135deg, #DC2626, #B91C1C)', color: '#fff', textTransform: 'none', fontWeight: 700, borderRadius: 2 }}>PDF</Button>
               <Button variant="contained" onClick={exportAttendanceJPG} startIcon={<FaDownload />} sx={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', color: '#fff', textTransform: 'none', fontWeight: 700, borderRadius: 2 }}>JPG</Button>
+              
+              {totalPendingCount > 0 && (
+                <Button 
+                  variant="outlined" 
+                  onClick={handleSelectAllPending} 
+                  sx={{ 
+                    color: '#D97706', 
+                    borderColor: '#FDE68A', 
+                    backgroundColor: '#FFFBEB', 
+                    textTransform: 'none', 
+                    fontWeight: 700, 
+                    borderRadius: 2,
+                    '&:hover': { backgroundColor: '#FEF3C7', borderColor: '#F59E0B' }
+                  }}
+                >
+                  ⚡ Select All Pending ({totalPendingCount})
+                </Button>
+              )}
             </Box>
           </Paper>
+
+          {/* Bulk Selection Action Bar */}
+          {selectedIds.length > 0 && (
+            <Paper elevation={3} sx={{
+              p: 2, mb: 3, borderRadius: 2.5,
+              background: 'linear-gradient(135deg, #1E293B, #0F172A)',
+              color: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              flexWrap: 'wrap', gap: 2,
+              border: '1px solid #334155',
+              boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.3)'
+            }}>
+              <Box display="flex" alignItems="center" gap={1.5} flexWrap="wrap">
+                <Box sx={{ px: 1.5, py: 0.5, borderRadius: 1.5, background: '#2563EB', color: '#fff', fontWeight: 800, fontSize: '0.85rem' }}>
+                  {selectedIds.length}
+                </Box>
+                <Typography variant="subtitle1" fontWeight={700} sx={{ color: '#F8FAFC' }}>
+                  Candidate{selectedIds.length > 1 ? 's' : ''} Selected
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#94A3B8', fontSize: '0.8rem' }}>
+                  ({selectedPendingCount} Pending, {selectedPaidCount} Paid)
+                </Typography>
+              </Box>
+
+              <Box display="flex" alignItems="center" gap={1.5} flexWrap="wrap">
+                <Button
+                  variant="contained"
+                  disabled={markingBulkPaid || deletingBulk}
+                  onClick={handleBulkMarkPaid}
+                  startIcon={markingBulkPaid ? <CircularProgress size={16} color="inherit" /> : <FaCheckCircle />}
+                  sx={{
+                    background: 'linear-gradient(135deg, #059669, #047857)',
+                    fontWeight: 700, textTransform: 'none', borderRadius: 2, px: 2.5,
+                    boxShadow: '0 4px 14px rgba(5, 150, 105, 0.4)',
+                    '&:hover': { background: '#047857' }
+                  }}
+                >
+                  {markingBulkPaid ? 'Marking Paid...' : `Mark Paid (Offline - ₹0 Wallet)`}
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  disabled={markingBulkPaid || deletingBulk}
+                  startIcon={<FaTrash />}
+                  onClick={() => setBulkDeleteDialogOpen(true)}
+                  sx={{
+                    background: 'linear-gradient(135deg, #DC2626, #B91C1C)',
+                    fontWeight: 700, textTransform: 'none', borderRadius: 2, px: 2.5,
+                    '&:hover': { background: '#991B1B' }
+                  }}
+                >
+                  Delete Selected ({selectedIds.length})
+                </Button>
+                {totalPendingCount > 0 && (
+                  <Button
+                    variant="outlined"
+                    onClick={handleSelectAllPending}
+                    sx={{
+                      color: '#FDE68A', borderColor: '#F59E0B', textTransform: 'none', fontWeight: 600, borderRadius: 2,
+                      backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                      '&:hover': { backgroundColor: 'rgba(245, 158, 11, 0.2)', borderColor: '#F59E0B' }
+                    }}
+                  >
+                    ⚡ Select All Pending ({totalPendingCount})
+                  </Button>
+                )}
+                <Button
+                  variant="outlined"
+                  onClick={handleClearSelection}
+                  sx={{
+                    color: '#94A3B8', borderColor: '#475569', textTransform: 'none', fontWeight: 600, borderRadius: 2,
+                    '&:hover': { borderColor: '#CBD5E1', color: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.05)' }
+                  }}
+                >
+                  Clear Selection
+                </Button>
+              </Box>
+            </Paper>
+          )}
 
           <Paper sx={{ borderRadius: 3, overflow: 'hidden', background: '#FFFFFF', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px -2px rgba(15,23,42,0.05)' }}>
             <TableContainer>
               <Table>
                 <TableHead sx={{ background: '#F8FAFC', borderBottom: '2px solid #E2E8F0' }}>
                   <TableRow>
+                    <TableCell padding="checkbox" sx={{ pl: 2, py: 2 }}>
+                      <Checkbox
+                        color="primary"
+                        indeterminate={someSelected}
+                        checked={allSelected}
+                        onChange={handleSelectAll}
+                        inputProps={{ 'aria-label': 'select all candidates' }}
+                        sx={{ color: '#94A3B8', '&.Mui-checked': { color: '#2563EB' } }}
+                      />
+                    </TableCell>
                     {['Roll Number', 'Name', "Father's Name", 'Payment', 'Photo', 'Signature', 'Actions'].map((header) => (
                       <TableCell key={header} sx={{ color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '0.75rem', py: 2 }}>
                         {header}
@@ -1095,7 +1332,24 @@ const CompetitionManagement = () => {
                 </TableHead>
                 <TableBody>
                   {filteredApplications.map((application) => (
-                    <TableRow key={application._id || application.rollNumber} hover sx={{ '&:hover': { backgroundColor: '#F8FAFC !important' } }}>
+                    <TableRow 
+                      key={application._id || application.rollNumber} 
+                      hover 
+                      selected={selectedIds.includes(application._id)}
+                      sx={{ 
+                        '&:hover': { backgroundColor: '#F8FAFC !important' },
+                        '&.Mui-selected, &.Mui-selected:hover': { backgroundColor: 'rgba(37, 99, 235, 0.06) !important' }
+                      }}
+                    >
+                      <TableCell padding="checkbox" sx={{ pl: 2, borderBottom: '1px solid #F1F5F9' }}>
+                        <Checkbox
+                          color="primary"
+                          checked={selectedIds.includes(application._id)}
+                          onChange={() => handleToggleSelect(application._id)}
+                          inputProps={{ 'aria-label': `select candidate ${application.name}` }}
+                          sx={{ color: '#CBD5E1', '&.Mui-checked': { color: '#2563EB' } }}
+                        />
+                      </TableCell>
                       <TableCell sx={{ color: '#2563EB', fontWeight: 700, borderBottom: '1px solid #F1F5F9' }}>{application.rollNumber}</TableCell>
                       <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
                         <Typography sx={{ color: '#0F172A', fontWeight: 700 }}>{application.name}</Typography>
@@ -1105,9 +1359,9 @@ const CompetitionManagement = () => {
                       </TableCell>
                       <TableCell sx={{ color: '#475569', borderBottom: '1px solid #F1F5F9' }}>{application.fatherName || 'Not provided'}</TableCell>
                       <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
-                        {application.registrationType === 'offline' ? (
+                        {application.registrationType === 'offline' || application.paymentMode === 'offline_cash' || application.paymentMode === 'manual_admin' ? (
                           <Chip
-                            label="OFFLINE (PAID)"
+                            label={application.paymentMode === 'manual_admin' ? "MANUAL (₹0)" : "OFFLINE (PAID)"}
                             size="small"
                             sx={{
                               background: '#F0FDF4',
@@ -1117,21 +1371,29 @@ const CompetitionManagement = () => {
                               fontSize: '0.68rem',
                             }}
                           />
-                        ) : (
+                        ) : isOnlinePaid(application) ? (
                           <Chip
-                            label={application.paymentStatus === 'paid' || application.paymentStatus === 'verified' ? 'ONLINE PAID' : application.paymentStatus === 'failed' ? 'FAILED' : 'PENDING'}
+                            label="ONLINE PAID (₹150)"
                             size="small"
                             sx={{
-                              background: application.paymentStatus === 'paid' || application.paymentStatus === 'verified'
-                                ? '#EFF6FF' : application.paymentStatus === 'failed'
-                                ? '#FEF2F2' : '#FFFBEB',
-                              color: application.paymentStatus === 'paid' || application.paymentStatus === 'verified'
-                                ? '#1D4ED8' : application.paymentStatus === 'failed'
-                                ? '#DC2626' : '#D97706',
-                              fontWeight: 700, fontSize: '0.68rem', border: '1px solid',
-                              borderColor: application.paymentStatus === 'paid' || application.paymentStatus === 'verified'
-                                ? '#BFDBFE' : application.paymentStatus === 'failed'
-                                ? '#FECACA' : '#FDE68A',
+                              background: '#EFF6FF',
+                              color: '#1D4ED8',
+                              border: '1px solid #BFDBFE',
+                              fontWeight: 700,
+                              fontSize: '0.68rem',
+                            }}
+                          />
+                        ) : (
+                          <Chip
+                            label={application.paymentStatus === 'failed' ? 'FAILED' : 'PENDING'}
+                            size="small"
+                            sx={{
+                              background: application.paymentStatus === 'failed' ? '#FEF2F2' : '#FFFBEB',
+                              color: application.paymentStatus === 'failed' ? '#DC2626' : '#D97706',
+                              border: '1px solid',
+                              borderColor: application.paymentStatus === 'failed' ? '#FECACA' : '#FDE68A',
+                              fontWeight: 700,
+                              fontSize: '0.68rem',
                             }}
                           />
                         )}
@@ -1228,6 +1490,57 @@ const CompetitionManagement = () => {
         application={previewApplication}
         initialDocType={previewDocType}
       />
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <Dialog
+        open={bulkDeleteDialogOpen}
+        onClose={() => !deletingBulk && setBulkDeleteDialogOpen(false)}
+        PaperProps={{ sx: { borderRadius: 3, p: 1, maxWidth: 500 } }}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: '#DC2626', fontWeight: 800 }}>
+          <FaTrash size={22} /> Confirm Bulk Deletion
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ color: '#334155', mb: 2 }}>
+            Are you sure you want to permanently delete <strong>{selectedIds.length}</strong> selected application{selectedIds.length > 1 ? 's' : ''}?
+          </Typography>
+          <Alert severity={selectedPaidCount > 0 ? "warning" : "info"} sx={{ mb: 2, borderRadius: 2 }}>
+            {selectedPaidCount > 0 ? (
+              <>
+                <strong>Caution:</strong> {selectedPaidCount} of the selected application{selectedPaidCount > 1 ? 's are' : ' is'} marked as <strong>PAID/VERIFIED</strong>.
+                {selectedPendingCount > 0 && ` (${selectedPendingCount} are PENDING).`}
+              </>
+            ) : (
+              <>All <strong>{selectedIds.length}</strong> selected applications are <strong>PENDING</strong> (unpaid/fake).</>
+            )}
+          </Alert>
+          <Typography variant="caption" sx={{ color: '#64748B' }}>
+            This action will permanently delete candidate records and roll numbers from the database.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button
+            disabled={deletingBulk}
+            onClick={() => setBulkDeleteDialogOpen(false)}
+            sx={{ color: '#64748B', fontWeight: 600, textTransform: 'none' }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            disabled={deletingBulk}
+            onClick={handleBulkDelete}
+            sx={{
+              background: 'linear-gradient(135deg, #DC2626, #B91C1C)',
+              fontWeight: 700, textTransform: 'none', borderRadius: 2, px: 3,
+              '&:hover': { background: '#991B1B' }
+            }}
+          >
+            {deletingBulk ? <CircularProgress size={20} color="inherit" /> : `Yes, Delete (${selectedIds.length})`}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Offline Candidate Registration Modal (Beautiful & Enhanced Design with Photo Upload) */}
       {/* Offline Candidate Registration Modal (Full Screen with Pure English UI) */}
