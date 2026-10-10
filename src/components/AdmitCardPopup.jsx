@@ -45,12 +45,14 @@ const AdmitCardPopup = () => {
     try {
       let url = '';
       if (searchMethod === 'roll') {
-        if (!rollNumber.trim()) {
-          setError('Please enter your Roll Number (e.g. SKMIC-001 or NIICT1234)');
+        const cleanRoll = rollNumber.trim().toUpperCase().replace(/^NIICT/i, '');
+        if (!cleanRoll) {
+          setError('Please enter your Roll Number digits (e.g. 1234)');
           setLoading(false);
           return;
         }
-        url = `${API_BASE_URL}/api/competition-applications/roll/${encodeURIComponent(rollNumber.trim())}`;
+        const fullRoll = `NIICT${cleanRoll}`;
+        url = `${API_BASE_URL}/api/competition-applications/roll/${encodeURIComponent(fullRoll)}`;
       } else if (searchMethod === 'mobile') {
         if (!/^\d{10,11}$/.test(mobile.trim())) {
           setError('Please enter a valid 10-digit mobile number');
@@ -229,23 +231,28 @@ const AdmitCardPopup = () => {
                   <form onSubmit={handleSearch} className="space-y-3">
                     {searchMethod === 'roll' && (
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 mb-1">
+                        <label className="block text-xs font-bold text-slate-300 mb-1.5">
                           Enter Candidate Roll Number *
                         </label>
-                        <div className="relative">
+                        <div className="flex rounded-xl overflow-hidden border border-slate-700 bg-black/40 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/30 transition-all">
+                          <span className="inline-flex items-center px-4 py-3 bg-emerald-950/90 border-r border-slate-700/80 text-emerald-400 font-mono font-black text-sm tracking-widest select-none">
+                            NIICT
+                          </span>
                           <input
                             type="text"
                             required
                             autoFocus
-                            placeholder="e.g. SKMIC-001 or NIICT..."
+                            placeholder="1001 or 1234"
                             value={rollNumber}
-                            onChange={(e) => setRollNumber(e.target.value.toUpperCase())}
-                            className="w-full px-4 py-3 bg-black/40 border border-slate-700 rounded-xl text-white font-mono placeholder:font-sans placeholder:text-slate-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 tracking-wider"
+                            onChange={(e) => {
+                              const val = e.target.value.toUpperCase().replace(/^NIICT/i, '').trim();
+                              setRollNumber(val);
+                            }}
+                            className="w-full px-3.5 py-3 bg-transparent text-white font-mono placeholder:font-sans placeholder:text-slate-500 text-sm focus:outline-none tracking-wider"
                           />
-                          <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none" />
                         </div>
-                        <span className="block text-[11px] text-slate-400 mt-1">
-                          💡 You can enter your full Roll No or last sequence number.
+                        <span className="block text-[11px] text-emerald-400/90 mt-1.5 font-medium">
+                          💡 NIICT पहले से लिखा है, आपको सिर्फ अपना नंबर लिखना है (जैसे 1234)।
                         </span>
                       </div>
                     )}

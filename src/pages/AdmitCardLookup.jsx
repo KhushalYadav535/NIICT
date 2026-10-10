@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Paper, TextField, Button, Box, Typography, Alert, FormControl, InputLabel, Select, MenuItem, Chip } from '@mui/material';
+import { Container, Paper, TextField, Button, Box, Typography, Alert, FormControl, InputLabel, Select, MenuItem, Chip, InputAdornment } from '@mui/material';
 import PrintIcon from '@mui/icons-material/Print';
 import DownloadIcon from '@mui/icons-material/Download';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -67,12 +67,14 @@ const AdmitCardLookup = () => {
       let url = '';
       
       if (searchMethod === 'roll') {
-        if (!rollNumber.trim()) {
-          setError('Please enter your Roll Number (e.g. NIICT1234)');
+        const cleanRoll = rollNumber.trim().toUpperCase().replace(/^NIICT/i, '');
+        if (!cleanRoll) {
+          setError('Please enter your Roll Number digits (e.g. 1234)');
           setLoading(false);
           return;
         }
-        url = `${backendUrl}/api/competition-applications/roll/${encodeURIComponent(rollNumber.trim())}`;
+        const searchRoll = `NIICT${cleanRoll}`;
+        url = `${backendUrl}/api/competition-applications/roll/${encodeURIComponent(searchRoll)}`;
       } else if (searchMethod === 'aadhaar') {
         // Validate Aadhaar format
         if (!/^\d{12}$/.test(aadhaar)) {
@@ -192,8 +194,19 @@ const AdmitCardLookup = () => {
                 label="Roll Number" 
                 required 
                 value={rollNumber} 
-                onChange={(e) => setRollNumber(e.target.value.toUpperCase())}
-                placeholder="e.g. NIICT1234 or 1234"
+                onChange={(e) => {
+                  const val = e.target.value.toUpperCase().replace(/^NIICT/i, '').trim();
+                  setRollNumber(val);
+                }}
+                placeholder="1234"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start" sx={{ fontWeight: 'bold', color: '#059669' }}>
+                      NIICT
+                    </InputAdornment>
+                  ),
+                }}
+                helperText="NIICT पहले से लिखा है, बस अपना नंबर लिखें"
               />
             )}
             {searchMethod === 'aadhaar' && (
