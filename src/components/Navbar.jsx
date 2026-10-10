@@ -39,12 +39,13 @@ const Navbar = () => {
     {
       label: 'Student',
       dropdown: [
+        { label: 'Admit Card (2026-27)', path: '/admit-card', isSpecial: true },
         { label: 'Semester Result', path: '/results' },
         { label: 'Final Result', path: '/results' },
         { label: 'Verification', path: '/student-portal' },
       ]
     },
-    { label: 'GKExam', path: '/competition' },
+    { label: 'Admit Card', path: '/admit-card', badge: '2026-27' },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -85,12 +86,16 @@ const Navbar = () => {
                       <ChevronDown size={12} className={`transition-transform ${openDropdown === idx ? 'rotate-180' : ''}`} />
                     </button>
                     {openDropdown === idx && (
-                      <div className="absolute top-full left-0 mt-0 w-48 bg-white shadow-lg border border-gray-100 py-2 z-50 rounded-b-lg">
+                      <div className="absolute top-full left-0 mt-0 w-52 bg-white shadow-lg border border-gray-100 py-2 z-50 rounded-b-lg">
                         {item.dropdown.map((drop, di) => (
                           <Link
                             key={di}
                             to={drop.path}
-                            className="block px-4 py-2.5 text-sm text-gray-700 hover:text-[#d13030] hover:bg-gray-50 transition-colors"
+                            className={`block px-4 py-2.5 text-sm transition-colors ${
+                              drop.isSpecial
+                                ? 'text-emerald-700 font-bold bg-emerald-50/70 hover:bg-emerald-100/80 hover:text-emerald-800'
+                                : 'text-gray-700 hover:text-[#d13030] hover:bg-gray-50'
+                            }`}
                           >
                             {drop.label}
                           </Link>
@@ -101,11 +106,19 @@ const Navbar = () => {
                 ) : (
                   <Link
                     to={item.path}
-                    className={`inline-flex items-center px-4 py-2 text-sm font-semibold transition-colors h-20 ${
+                    className={`inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold transition-colors h-20 ${
                       isActive(item.path) ? 'text-[#d13030] border-b-2 border-[#d13030]' : 'text-gray-800 hover:text-[#d13030]'
                     }`}
                   >
-                    {item.label}
+                    <span>{item.label}</span>
+                    {item.badge && (
+                      <span className="relative flex items-center">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60"></span>
+                        <span className="relative inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 text-white tracking-wide shadow-sm">
+                          {item.badge}
+                        </span>
+                      </span>
+                    )}
                   </Link>
                 )}
               </div>
@@ -119,8 +132,6 @@ const Navbar = () => {
               Franchise
             </Link>
           </div>
-
-
 
           {/* Mobile menu button */}
           <button onClick={() => setIsMobileOpen(!isMobileOpen)} className="lg:hidden p-2 text-gray-800 hover:text-[#d13030]">
@@ -147,7 +158,11 @@ const Navbar = () => {
                     {openDropdown === idx && (
                       <div className="pl-4 space-y-1 pb-2">
                         {item.dropdown.map((drop, di) => (
-                          <Link key={di} to={drop.path} className="block px-4 py-2.5 text-sm text-gray-700 hover:text-[#d13030] hover:bg-gray-50 rounded-md">
+                          <Link key={di} to={drop.path} className={`block px-4 py-2.5 text-sm rounded-md transition-colors ${
+                            drop.isSpecial
+                              ? 'text-emerald-700 font-bold bg-emerald-50 hover:bg-emerald-100'
+                              : 'text-gray-700 hover:text-[#d13030] hover:bg-gray-50'
+                          }`}>
                             {drop.label}
                           </Link>
                         ))}
@@ -155,15 +170,23 @@ const Navbar = () => {
                     )}
                   </>
                 ) : (
-                  <Link to={item.path} className={`block px-4 py-3 text-sm font-semibold rounded-md ${
+                  <Link to={item.path} className={`flex items-center justify-between px-4 py-3 text-sm font-semibold rounded-md ${
                     isActive(item.path) ? 'text-[#d13030] bg-gray-50' : 'text-gray-800 hover:text-[#d13030] hover:bg-gray-50'
                   }`}>
-                    {item.label}
+                    <span>{item.label}</span>
+                    {item.badge && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 text-white shadow-sm">
+                        {item.badge}
+                      </span>
+                    )}
                   </Link>
                 )}
               </div>
             ))}
             <div className="mt-3 space-y-2">
+              <Link to="/admit-card" className="block text-center bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-5 py-3 rounded-full text-sm font-bold shadow-md hover:from-emerald-700 hover:to-teal-700 transition-colors uppercase tracking-wide">
+                🎫 Download Admit Card (2026-27)
+              </Link>
               <Link to="/franchise" className="block text-center bg-[#245894] text-white px-5 py-3 rounded-full text-sm font-semibold hover:bg-[#1a3f6a] transition-colors uppercase">
                 New Registration
               </Link>

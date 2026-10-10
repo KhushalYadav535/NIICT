@@ -2,7 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import Hero from '../components/Hero';
 import AboutSection from '../components/AboutSection';
 import StatsSection from '../components/StatsSection';
-import GKBanner from '../components/GKBanner';
+import AdmitCardPopup from '../components/AdmitCardPopup';
 
 const Courses = lazy(() => import('../components/Courses'));
 const Team = lazy(() => import('../components/Team'));
@@ -18,7 +18,7 @@ const LoadingFallback = () => (
 function Home() {
   return (
     <div>
-      <GKBanner />
+      <AdmitCardPopup />
       <Hero />
       <AboutSection />
       <StatsSection />
