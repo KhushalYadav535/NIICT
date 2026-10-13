@@ -9,7 +9,15 @@ import {
   FaIdCard, FaBook, FaLaptopCode, FaCheck, FaInfoCircle, FaRegLightbulb, FaPaste
 } from 'react-icons/fa';
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
-import { openAdmitCardPrintWindow, openApplicationFormPrintWindow, formatAdmitCardDob } from '../../utils/admitCardGenerator';
+import { 
+  openAdmitCardPrintWindow, 
+  openApplicationFormPrintWindow, 
+  formatAdmitCardDob,
+  isCandidateOverAge,
+  AGE_RESTRICTION_MESSAGE 
+} from '../../utils/admitCardGenerator';
+import { downloadBulkAdmitCardsZip } from '../../utils/bulkAdmitCardDownloader';
+import { downloadAttendanceSheetPdf, openAttendanceSheetPrintWindow } from '../../utils/attendanceSheetGenerator';
 import GovernmentAdmitCardModal from './GovernmentAdmitCardModal';
 import OfflineCandidateModal from './OfflineCandidateModal';
 
@@ -45,6 +53,13 @@ const CompetitionManagement = () => {
   // Table pagination state (ensures lightning fast rendering even with thousands of candidates)
   const [page, setPage] = useState(1);
   const rowsPerPage = 25;
+
+  // Bulk operations progress state (Admit cards ZIP & Attendance PDF)
+  const [progressModalOpen, setProgressModalOpen] = useState(false);
+  const [progressTitle, setProgressTitle] = useState('');
+  const [progressStatus, setProgressStatus] = useState('');
+  const [progressPercent, setProgressPercent] = useState(0);
+
   const attendanceContainerId = 'attendance-export-container';
   const html2canvasRef = useRef(null);
   const jsPDFRef = useRef(null);
@@ -451,49 +466,75 @@ const CompetitionManagement = () => {
     return canvases;
   };
 
-  const exportAttendancePDF = async () => {
+  // 1. Bulk Download Admit Cards ZIP Handler
+  const handleDownloadBulkZip = async (candidatesToDownload, label = 'All Candidates') => {
+    if (!candidatesToDownload || candidatesToDownload.length === 0) {
+      alert('No candidates available to download.');
+      return;
+    }
     try {
-      const ok = await ensureExportLibs();
-      if (!ok) throw new Error('Libraries not loaded');
-      const canvases = await getAttendancePagesAsCanvases(filteredApplications);
-      const PDFCtor = jsPDFRef.current;
-      if (!PDFCtor) throw new Error('jsPDF not available');
-      const pdf = new PDFCtor('p', 'pt', 'a4');
-      canvases.forEach((canvas, idx) => {
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
+      setProgressTitle(`Packaging Admit Cards ZIP (${label})`);
+      setProgressStatus('Initializing export...');
+      setProgressPercent(0);
+      setProgressModalOpen(true);
 
-        const imgWidth = pageWidth;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        const yOffset = Math.max(0, (pageHeight - imgHeight) / 2);
-        pdf.addImage(imgData, 'JPEG', 0, yOffset, imgWidth, imgHeight, undefined, 'FAST');
-        if (idx < canvases.length - 1) pdf.addPage();
-      });
-      pdf.save(`attendance_${new Date().toISOString().split('T')[0]}.pdf`);
-    } catch (e) {
-      console.error(e);
-      alert(`Failed to export PDF: ${e && e.message ? e.message : 'Unknown error'}`);
+      await downloadBulkAdmitCardsZip(
+        candidatesToDownload,
+        { session: activeSession },
+        (current, total, statusText) => {
+          setProgressStatus(statusText);
+          setProgressPercent(total > 0 ? Math.round((current / total) * 100) : 0);
+        }
+      );
+
+      setTimeout(() => {
+        setProgressModalOpen(false);
+      }, 900);
+    } catch (err) {
+      console.error('Bulk zip error:', err);
+      alert('Failed to generate ZIP: ' + (err.message || 'Unknown error'));
+      setProgressModalOpen(false);
     }
   };
 
-  const exportAttendanceJPG = async () => {
-    try {
-      const ok = await ensureExportLibs();
-      if (!ok) return;
-      const canvases = await getAttendancePagesAsCanvases(filteredApplications);
-      canvases.forEach((canvas, idx) => {
-        const a = document.createElement('a');
-        a.href = canvas.toDataURL('image/jpeg', 0.95);
-        a.download = `attendance_page_${idx + 1}.jpg`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      });
-    } catch (e) {
-      console.error(e);
-      alert(`Failed to export JPG: ${e && e.message ? e.message : 'Unknown error'}`);
+  // 2. Attendance Sheet PDF Download Handler
+  const handleDownloadAttendancePdf = async (candidatesToExport, label = 'All Candidates') => {
+    if (!candidatesToExport || candidatesToExport.length === 0) {
+      alert('No candidates available to generate Attendance Sheet.');
+      return;
     }
+    try {
+      setProgressTitle(`Generating Attendance Sheet PDF (${label})`);
+      setProgressStatus('Loading candidate details & photos...');
+      setProgressPercent(0);
+      setProgressModalOpen(true);
+
+      await downloadAttendanceSheetPdf(
+        candidatesToExport,
+        { session: activeSession },
+        (current, total, statusText) => {
+          setProgressStatus(statusText);
+          setProgressPercent(total > 0 ? Math.round((current / total) * 100) : 0);
+        }
+      );
+
+      setTimeout(() => {
+        setProgressModalOpen(false);
+      }, 700);
+    } catch (err) {
+      console.error('Attendance PDF error:', err);
+      alert('Failed to generate Attendance Sheet PDF: ' + (err.message || 'Unknown error'));
+      setProgressModalOpen(false);
+    }
+  };
+
+  // 3. Attendance Sheet Print Window Handler
+  const handlePrintAttendanceSheet = (candidatesToPrint) => {
+    if (!candidatesToPrint || candidatesToPrint.length === 0) {
+      alert('No candidates available to print Attendance Sheet.');
+      return;
+    }
+    openAttendanceSheetPrintWindow(candidatesToPrint, { session: activeSession });
   };
 
   const isOnlinePaid = (app) => {
@@ -1034,9 +1075,68 @@ const CompetitionManagement = () => {
                 </Button>
               )}
               
+              {/* 1. Bulk Admit Cards ZIP Button */}
+              <Tooltip title="Download all candidates' admit cards in a ZIP file (Single Click)">
+                <Button 
+                  variant="contained" 
+                  onClick={() => handleDownloadBulkZip(filteredApplications, 'All Candidates')} 
+                  startIcon={<FaFileAlt />} 
+                  sx={{ 
+                    background: 'linear-gradient(135deg, #4F46E5, #3730A3)', 
+                    color: '#fff', 
+                    textTransform: 'none', 
+                    fontWeight: 800, 
+                    borderRadius: 2,
+                    px: 2,
+                    boxShadow: '0 4px 14px rgba(79, 70, 229, 0.35)',
+                    '&:hover': { background: '#4338CA' }
+                  }}
+                >
+                  📦 Download Admit Cards (ZIP)
+                </Button>
+              </Tooltip>
+
+              {/* 2. Attendance Sheet PDF Button */}
+              <Tooltip title="Download multi-student printable exam attendance sheet PDF (with Roll No, Name, Father's Name, Photo, Signature Box)">
+                <Button 
+                  variant="contained" 
+                  onClick={() => handleDownloadAttendancePdf(filteredApplications, 'Attendance Sheet')} 
+                  startIcon={<FaDownload />} 
+                  sx={{ 
+                    background: 'linear-gradient(135deg, #DC2626, #B91C1C)', 
+                    color: '#fff', 
+                    textTransform: 'none', 
+                    fontWeight: 800, 
+                    borderRadius: 2,
+                    px: 2,
+                    boxShadow: '0 4px 14px rgba(220, 38, 38, 0.35)',
+                    '&:hover': { background: '#991B1B' }
+                  }}
+                >
+                  📋 Attendance Sheet (PDF)
+                </Button>
+              </Tooltip>
+
+              {/* 3. Print Attendance Sheet Window */}
+              <Tooltip title="Open high-density printable attendance sheet in new tab">
+                <Button 
+                  variant="contained" 
+                  onClick={() => handlePrintAttendanceSheet(filteredApplications)} 
+                  startIcon={<FaPrint />} 
+                  sx={{ 
+                    background: 'linear-gradient(135deg, #0284C7, #0369A1)', 
+                    color: '#fff', 
+                    textTransform: 'none', 
+                    fontWeight: 700, 
+                    borderRadius: 2,
+                    '&:hover': { background: '#075985' }
+                  }}
+                >
+                  Print Attendance Sheet
+                </Button>
+              </Tooltip>
+
               <Button variant="contained" onClick={exportToCSV} startIcon={<FaDownload />} sx={{ background: 'linear-gradient(135deg, #059669, #047857)', color: '#fff', textTransform: 'none', fontWeight: 700, borderRadius: 2 }}>CSV</Button>
-              <Button variant="contained" onClick={exportAttendancePDF} startIcon={<FaDownload />} sx={{ background: 'linear-gradient(135deg, #DC2626, #B91C1C)', color: '#fff', textTransform: 'none', fontWeight: 700, borderRadius: 2 }}>PDF</Button>
-              <Button variant="contained" onClick={exportAttendanceJPG} startIcon={<FaDownload />} sx={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', color: '#fff', textTransform: 'none', fontWeight: 700, borderRadius: 2 }}>JPG</Button>
               
               {totalPendingCount > 0 && (
                 <Button 
@@ -1082,6 +1182,58 @@ const CompetitionManagement = () => {
               </Box>
 
               <Box display="flex" alignItems="center" gap={1.5} flexWrap="wrap">
+                {/* Download Selected Admit Cards ZIP */}
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    const selectedApps = applications.filter(a => selectedIds.includes(a._id));
+                    handleDownloadBulkZip(selectedApps, `${selectedApps.length} Selected Candidates`);
+                  }}
+                  startIcon={<FaFileAlt />}
+                  sx={{
+                    background: 'linear-gradient(135deg, #4F46E5, #3730A3)',
+                    fontWeight: 700, textTransform: 'none', borderRadius: 2, px: 2,
+                    boxShadow: '0 4px 14px rgba(79, 70, 229, 0.4)',
+                    '&:hover': { background: '#4338CA' }
+                  }}
+                >
+                  📦 Download ZIP ({selectedIds.length})
+                </Button>
+
+                {/* Download Selected Attendance PDF */}
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    const selectedApps = applications.filter(a => selectedIds.includes(a._id));
+                    handleDownloadAttendancePdf(selectedApps, `${selectedApps.length} Selected Candidates`);
+                  }}
+                  startIcon={<FaDownload />}
+                  sx={{
+                    background: 'linear-gradient(135deg, #DC2626, #B91C1C)',
+                    fontWeight: 700, textTransform: 'none', borderRadius: 2, px: 2,
+                    boxShadow: '0 4px 14px rgba(220, 38, 38, 0.4)',
+                    '&:hover': { background: '#991B1B' }
+                  }}
+                >
+                  📋 Attendance PDF ({selectedIds.length})
+                </Button>
+
+                {/* Print Selected Attendance Sheet */}
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    const selectedApps = applications.filter(a => selectedIds.includes(a._id));
+                    handlePrintAttendanceSheet(selectedApps);
+                  }}
+                  startIcon={<FaPrint />}
+                  sx={{
+                    borderColor: '#38BDF8', color: '#38BDF8', fontWeight: 700, textTransform: 'none', borderRadius: 2,
+                    '&:hover': { backgroundColor: 'rgba(56, 189, 248, 0.1)', borderColor: '#7DD3FC' }
+                  }}
+                >
+                  Print Attendance ({selectedIds.length})
+                </Button>
+
                 <Button
                   variant="contained"
                   disabled={markingBulkPaid || deletingBulk}
@@ -1096,6 +1248,7 @@ const CompetitionManagement = () => {
                 >
                   {markingBulkPaid ? 'Marking Paid...' : `Mark Paid (Offline - ₹0 Wallet)`}
                 </Button>
+
                 <Button
                   variant="contained"
                   color="error"
@@ -1108,21 +1261,9 @@ const CompetitionManagement = () => {
                     '&:hover': { background: '#991B1B' }
                   }}
                 >
-                  Delete Selected ({selectedIds.length})
+                  Delete ({selectedIds.length})
                 </Button>
-                {totalPendingCount > 0 && (
-                  <Button
-                    variant="outlined"
-                    onClick={handleSelectAllPending}
-                    sx={{
-                      color: '#FDE68A', borderColor: '#F59E0B', textTransform: 'none', fontWeight: 600, borderRadius: 2,
-                      backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                      '&:hover': { backgroundColor: 'rgba(245, 158, 11, 0.2)', borderColor: '#F59E0B' }
-                    }}
-                  >
-                    ⚡ Select All Pending ({totalPendingCount})
-                  </Button>
-                )}
+
                 <Button
                   variant="outlined"
                   onClick={handleClearSelection}
@@ -1181,7 +1322,25 @@ const CompetitionManagement = () => {
                       </TableCell>
                       <TableCell sx={{ color: '#2563EB', fontWeight: 700, borderBottom: '1px solid #F1F5F9' }}>{application.rollNumber}</TableCell>
                       <TableCell sx={{ borderBottom: '1px solid #F1F5F9' }}>
-                        <Typography sx={{ color: '#0F172A', fontWeight: 700 }}>{application.name}</Typography>
+                        <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                          <Typography sx={{ color: '#0F172A', fontWeight: 700 }}>{application.name}</Typography>
+                          {(application.isOverAge || isCandidateOverAge(application.dateOfBirth, application.createdAt)) && (
+                            <Tooltip title="Candidate age exceeds 20 years. E-admit card is withheld.">
+                              <Chip
+                                label="⚠️ >20 YRS"
+                                size="small"
+                                sx={{
+                                  backgroundColor: '#FEF2F2',
+                                  color: '#DC2626',
+                                  border: '1px solid #FECACA',
+                                  fontWeight: 800,
+                                  fontSize: '0.62rem',
+                                  height: 18
+                                }}
+                              />
+                            </Tooltip>
+                          )}
+                        </Box>
                         <Typography variant="body2" sx={{ color: '#64748B', fontSize: '0.78rem' }}>
                           📱 {application.phone || 'No phone'}
                         </Typography>
@@ -1566,6 +1725,47 @@ const CompetitionManagement = () => {
             />
           )}
         </Box>
+      </Dialog>
+
+      {/* Bulk Operation Progress Modal */}
+      <Dialog 
+        open={progressModalOpen} 
+        disableEscapeKeyDown
+        PaperProps={{ 
+          sx: { 
+            borderRadius: '18px', 
+            p: 2, 
+            background: 'linear-gradient(135deg, #0F172A, #1E293B)', 
+            color: '#FFFFFF',
+            border: '1px solid #334155',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
+          } 
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 800, color: '#F8FAFC', pb: 1, fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <CircularProgress size={24} sx={{ color: '#60A5FA' }} />
+          {progressTitle || 'Processing...'}
+        </DialogTitle>
+        <DialogContent sx={{ py: 2 }}>
+          <Typography variant="body2" sx={{ color: '#94A3B8', mb: 2, fontWeight: 500 }}>
+            {progressStatus || 'Please wait while documents are generated...'}
+          </Typography>
+          
+          <Box sx={{ width: '100%', background: '#334155', height: 8, borderRadius: 4, overflow: 'hidden', mb: 1 }}>
+            <Box 
+              sx={{ 
+                width: `${Math.min(100, Math.max(0, progressPercent))}%`, 
+                height: '100%', 
+                background: 'linear-gradient(90deg, #3B82F6, #10B981)',
+                transition: 'width 0.3s ease'
+              }} 
+            />
+          </Box>
+          <Box display="flex" justifyContent="space-between">
+            <Typography variant="caption" sx={{ color: '#64748B' }}>Single Click Packaging</Typography>
+            <Typography variant="caption" sx={{ color: '#60A5FA', fontWeight: 800 }}>{progressPercent}% Complete</Typography>
+          </Box>
+        </DialogContent>
       </Dialog>
     </Box>
   );

@@ -79,6 +79,73 @@ export const formatAdmitCardDob = (dateVal) => {
   return `${d}/${m}/${y}`;
 };
 
+export const AGE_RESTRICTION_MESSAGE = 'Contact to NIICT Computer Institute Office - NIICT Computer Institute Janghai';
+
+// Checks if a candidate is older than 20 years (>20 years + 1 day)
+// Cutoff reference: 5 September 2026 or application date
+export const checkCandidateAgeStatus = (dobVal, applicationDate = null) => {
+  if (!dobVal) return { isOverAge: false, message: '' };
+  
+  let by, bm, bd;
+  if (typeof dobVal === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dobVal)) {
+    [by, bm, bd] = dobVal.slice(0, 10).split('-').map(Number);
+  } else {
+    const dt = new Date(dobVal);
+    if (isNaN(dt.getTime())) return { isOverAge: false, message: '' };
+    by = dt.getUTCFullYear();
+    bm = dt.getUTCMonth() + 1;
+    bd = dt.getUTCDate();
+  }
+
+  // Exact 20th birthday (UTC)
+  const twentiethBirthday = new Date(Date.UTC(by + 20, bm - 1, bd, 0, 0, 0));
+
+  // Baseline cutoff: 5 September 2026
+  const cutoffDate = new Date(Date.UTC(2026, 8, 5, 0, 0, 0)); // 5 Sept 2026
+
+  if (twentiethBirthday < cutoffDate) {
+    return {
+      isOverAge: true,
+      message: AGE_RESTRICTION_MESSAGE,
+      twentiethBirthday
+    };
+  }
+
+  if (applicationDate) {
+    const appDt = new Date(applicationDate);
+    if (!isNaN(appDt.getTime())) {
+      const appDtUtc = new Date(Date.UTC(appDt.getUTCFullYear(), appDt.getUTCMonth(), appDt.getUTCDate(), 0, 0, 0));
+      if (twentiethBirthday < appDtUtc) {
+        return {
+          isOverAge: true,
+          message: AGE_RESTRICTION_MESSAGE,
+          twentiethBirthday
+        };
+      }
+    }
+  }
+
+  const now = new Date();
+  const nowUtc = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
+  if (twentiethBirthday < nowUtc) {
+    return {
+      isOverAge: true,
+      message: AGE_RESTRICTION_MESSAGE,
+      twentiethBirthday
+    };
+  }
+
+  return {
+    isOverAge: false,
+    message: '',
+    twentiethBirthday
+  };
+};
+
+export const isCandidateOverAge = (dobVal, applicationDate = null) => {
+  return checkCandidateAgeStatus(dobVal, applicationDate).isOverAge;
+};
+
 /* ═════════════════════════════════════════════════════════════════
    1. GOVERNMENT E-ADMIT CARD (HALL TICKET ONLY - NO PAYMENT DATA)
    ═════════════════════════════════════════════════════════════════ */
@@ -1483,6 +1550,10 @@ export const generateApplicationFormHtml = (application = {}) => {
 
 // Open E-Admit Card in print window
 export const openAdmitCardPrintWindow = (application) => {
+  if (application && isCandidateOverAge(application.dateOfBirth, application.createdAt)) {
+    alert(`Contact to NIICT Computer Institute Office - NIICT Computer Institute Janghai\n\nAdmit card cannot be downloaded or printed: Candidate exceeds the maximum age limit of 20 years.`);
+    return;
+  }
   const htmlContent = generateAdmitCardHtml(application);
   const printWindow = window.open('', '_blank', 'width=920,height=1000');
   

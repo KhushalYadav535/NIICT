@@ -10,7 +10,13 @@ import {
   FaTrophy, FaCalendarAlt, FaClock, FaMapMarkerAlt,
   FaCheckCircle, FaCreditCard, FaDownload, FaEye, FaShieldAlt, FaReceipt, FaPrint
 } from 'react-icons/fa';
-import { openAdmitCardPrintWindow, openApplicationFormPrintWindow, formatAdmitCardDob } from '../utils/admitCardGenerator';
+import { 
+  openAdmitCardPrintWindow, 
+  openApplicationFormPrintWindow, 
+  formatAdmitCardDob,
+  isCandidateOverAge,
+  AGE_RESTRICTION_MESSAGE 
+} from '../utils/admitCardGenerator';
 
 // Timezone-safe age calculation directly from YYYY-MM-DD
 const calculateCandidateAge = (dob) => {
@@ -218,20 +224,46 @@ const ThankYouScreen = ({ admitCardData, onDownloadAdmitCard, onDownloadAppForm 
           </Box>
 
           <Box display="flex" flexDirection="column" gap={1.5} mb={2}>
-            <Button 
-              variant="contained" 
-              size="large" 
-              fullWidth 
-              onClick={onDownloadAdmitCard} 
-              startIcon={<FaPrint />}
-              sx={{ 
-                borderRadius: '16px', py: 1.8, fontWeight: 800, textTransform: 'none', fontSize: '1.05rem', 
-                background: 'linear-gradient(90deg, #2563EB, #1D4ED8)', 
-                boxShadow: '0 8px 24px rgba(37,99,235,0.35)' 
-              }}
-            >
-              Print Official E-Admit Card
-            </Button>
+            {(() => {
+              const isOverAge = admitCardData && (admitCardData.isOverAge ?? isCandidateOverAge(admitCardData.dateOfBirth, admitCardData.createdAt));
+              if (isOverAge) {
+                return (
+                  <Alert 
+                    severity="error" 
+                    sx={{ 
+                      borderRadius: '16px', p: 2, textAlign: 'left', fontWeight: 700,
+                      backgroundColor: '#FEF2F2', border: '1.5px solid #F87171' 
+                    }}
+                  >
+                    <Typography variant="subtitle2" fontWeight={800} color="#991B1B">
+                      ⚠️ Admit Card Withheld (&gt;20 Years)
+                    </Typography>
+                    <Typography variant="body2" color="#B91C1C" sx={{ mt: 0.5, fontWeight: 700 }}>
+                      {AGE_RESTRICTION_MESSAGE}
+                    </Typography>
+                    <Typography variant="caption" color="#7F1D1D" sx={{ mt: 0.5, display: 'block' }}>
+                      उम्मीदवार की आयु 20 वर्ष से अधिक होने के कारण ई-प्रवेश पत्र रोक दिया गया है। कृपया समाधान हेतु सीधे NIICT कार्यालय से संपर्क करें।
+                    </Typography>
+                  </Alert>
+                );
+              }
+              return (
+                <Button 
+                  variant="contained" 
+                  size="large" 
+                  fullWidth 
+                  onClick={onDownloadAdmitCard} 
+                  startIcon={<FaPrint />}
+                  sx={{ 
+                    borderRadius: '16px', py: 1.8, fontWeight: 800, textTransform: 'none', fontSize: '1.05rem', 
+                    background: 'linear-gradient(90deg, #2563EB, #1D4ED8)', 
+                    boxShadow: '0 8px 24px rgba(37,99,235,0.35)' 
+                  }}
+                >
+                  Print Official E-Admit Card
+                </Button>
+              );
+            })()}
 
             <Button 
               variant="outlined" 

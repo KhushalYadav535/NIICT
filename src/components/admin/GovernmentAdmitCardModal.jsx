@@ -14,7 +14,8 @@ import {
   generateAdmitCardHtml, 
   generateApplicationFormHtml, 
   openAdmitCardPrintWindow, 
-  openApplicationFormPrintWindow 
+  openApplicationFormPrintWindow,
+  isCandidateOverAge 
 } from '../../utils/admitCardGenerator';
 
 const GovernmentAdmitCardModal = ({ open, onClose, application, initialDocType = 'admit_card' }) => {
@@ -102,6 +103,20 @@ const GovernmentAdmitCardModal = ({ open, onClose, application, initialDocType =
                   letterSpacing: '0.5px'
                 }} 
               />
+              {(application.isOverAge || isCandidateOverAge(application.dateOfBirth, application.createdAt)) && (
+                <Chip 
+                  label="⚠️ OVER AGE (>20 YRS) - WITHHELD FOR CANDIDATE" 
+                  size="small" 
+                  sx={{ 
+                    backgroundColor: 'rgba(239,68,68,0.2)', 
+                    color: '#FCA5A5', 
+                    border: '1px solid #EF4444', 
+                    fontWeight: 800, 
+                    fontSize: '0.68rem',
+                    letterSpacing: '0.5px'
+                  }} 
+                />
+              )}
             </Box>
             <Typography variant="caption" color="#94A3B8">
               Candidate: <strong style={{ color: '#F1F5F9' }}>{application.name}</strong> &bull; Roll No: <strong style={{ color: '#F59E0B' }}>{application.rollNumber}</strong> &bull; Official A4 Format
