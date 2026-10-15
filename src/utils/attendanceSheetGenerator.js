@@ -89,6 +89,7 @@ export const generateAttendanceSheetHtml = (candidates = [], userOptions = {}) =
           <td class="col-roll">
             <div class="roll-badge">${roll}</div>
             <div class="roll-sub">${subject}</div>
+            ${app.benchTag ? `<div class="bench-badge" style="margin-top: 3px; font-size: 7.5px; font-weight: 800; background: #1e3a8a; color: #fff; padding: 2px 4px; border-radius: 4px; text-transform: uppercase;">${app.benchTag}</div>` : ''}
           </td>
           <td class="col-photo">
             <div class="photo-frame">
@@ -102,6 +103,7 @@ export const generateAttendanceSheetHtml = (candidates = [], userOptions = {}) =
             <div class="cand-name">${name}</div>
             <div class="cand-father"><strong>Father:</strong> ${father}</div>
             <div class="cand-school">${school}</div>
+            ${app.benchTag ? `<div class="cand-bench-info" style="margin-top: 2.5px; font-size: 8px; font-weight: 700; color: #1e40af;">📍 Assigned Seat: <strong>${app.benchTag}</strong> (${app.rowPos || ''})</div>` : ''}
           </td>
           <td class="col-sign">
             <div class="sign-box">
@@ -727,12 +729,13 @@ export const downloadAttendanceSheetPdf = async (candidates = [], userOptions = 
       const name = (app.name || 'CANDIDATE NAME').toUpperCase();
       const father = (app.fatherName || app.fathersName || 'FATHER NAME').toUpperCase();
       const school = app.school || 'NIICT ACADEMY';
+      const benchStr = app.benchTag ? `\n[${app.benchTag}]` : '';
 
       return [
         String(sno),
-        roll,
+        app.benchTag ? `${roll}\n${app.seatSide || ''}` : roll,
         '', // Handled in didDrawCell for Photo
-        `${name}\nFather: ${father}\n${school}`,
+        `${name}\nFather: ${father}\n${school}${benchStr}`,
         '', // Handled in didDrawCell for Signature Box
         ''  // Handled in didDrawCell for Attendance & Invigilator
       ];

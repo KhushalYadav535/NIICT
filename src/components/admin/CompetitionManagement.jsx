@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Container, Typography, Paper, Table, TableBody, TableCell, 
-         TableContainer, TableHead, TableRow, Button, Box, Chip, Grid, Card, CardContent, TextField, InputAdornment, FormControl, InputLabel, Select, MenuItem, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Alert, CircularProgress, Divider, IconButton, Checkbox, Pagination } from '@mui/material';
+         TableContainer, TableHead, TableRow, Button, Box, Chip, Grid, Card, CardContent, TextField, InputAdornment, FormControl, InputLabel, Select, MenuItem, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Alert, CircularProgress, Divider, IconButton, Checkbox, Pagination, RadioGroup, Radio, FormControlLabel } from '@mui/material';
 import { motion } from 'framer-motion';
 import { 
   FaTrophy, FaSearch, FaPrint, FaEye, FaTrash, FaDownload, FaFileAlt, 
@@ -18,6 +18,7 @@ import {
 } from '../../utils/admitCardGenerator';
 import { downloadBulkAdmitCardsZip } from '../../utils/bulkAdmitCardDownloader';
 import { downloadAttendanceSheetPdf, openAttendanceSheetPrintWindow } from '../../utils/attendanceSheetGenerator';
+import { generateBenchSeatingPlanForCandidates } from '../../utils/benchSeatingSolver';
 import GovernmentAdmitCardModal from './GovernmentAdmitCardModal';
 import OfflineCandidateModal from './OfflineCandidateModal';
 
@@ -59,6 +60,12 @@ const CompetitionManagement = () => {
   const [progressTitle, setProgressTitle] = useState('');
   const [progressStatus, setProgressStatus] = useState('');
   const [progressPercent, setProgressPercent] = useState(0);
+
+  // Attendance Sheet Options Modal state (Bench-Wise vs Roll-Wise)
+  const [attendanceModalOpen, setAttendanceModalOpen] = useState(false);
+  const [attendanceCandidatesTarget, setAttendanceCandidatesTarget] = useState([]);
+  const [attendanceLabel, setAttendanceLabel] = useState('All Candidates');
+  const [attendanceOrderType, setAttendanceOrderType] = useState('bench'); // 'bench' (Recommended) or 'roll'
 
   const attendanceContainerId = 'attendance-export-container';
   const html2canvasRef = useRef(null);
@@ -497,21 +504,31 @@ const CompetitionManagement = () => {
     }
   };
 
-  // 2. Attendance Sheet PDF Download Handler
-  const handleDownloadAttendancePdf = async (candidatesToExport, label = 'All Candidates') => {
+  // 2. Attendance Sheet PDF Download Handler (Supports Bench-wise and Roll-wise)
+  const handleDownloadAttendancePdf = async (candidatesToExport, label = 'All Candidates', orderType = 'bench') => {
     if (!candidatesToExport || candidatesToExport.length === 0) {
       alert('No candidates available to generate Attendance Sheet.');
       return;
     }
     try {
       setProgressTitle(`Generating Attendance Sheet PDF (${label})`);
-      setProgressStatus('Loading candidate details & photos...');
+      setProgressStatus(orderType === 'bench' ? 'Solving anti-cheating bench seating & photos...' : 'Loading candidate details & photos...');
       setProgressPercent(0);
       setProgressModalOpen(true);
 
+      let processedCandidates = candidatesToExport;
+      if (orderType === 'bench') {
+        const { benchOrderedCandidates } = generateBenchSeatingPlanForCandidates(candidatesToExport, 40);
+        processedCandidates = benchOrderedCandidates.length > 0 ? benchOrderedCandidates : candidatesToExport;
+      } else {
+        processedCandidates = [...candidatesToExport].sort((a, b) =>
+          String(a.rollNumber || '').localeCompare(String(b.rollNumber || ''), undefined, { numeric: true })
+        );
+      }
+
       await downloadAttendanceSheetPdf(
-        candidatesToExport,
-        { session: activeSession },
+        processedCandidates,
+        { session: activeSession, isBenchWise: orderType === 'bench' },
         (current, total, statusText) => {
           setProgressStatus(statusText);
           setProgressPercent(total > 0 ? Math.round((current / total) * 100) : 0);
@@ -528,13 +545,29 @@ const CompetitionManagement = () => {
     }
   };
 
-  // 3. Attendance Sheet Print Window Handler
-  const handlePrintAttendanceSheet = (candidatesToPrint) => {
+  // 3. Attendance Sheet Print Window Handler (Supports Bench-wise and Roll-wise)
+  const handlePrintAttendanceSheet = (candidatesToPrint, orderType = 'bench') => {
     if (!candidatesToPrint || candidatesToPrint.length === 0) {
       alert('No candidates available to print Attendance Sheet.');
       return;
     }
-    openAttendanceSheetPrintWindow(candidatesToPrint, { session: activeSession });
+    let processedCandidates = candidatesToPrint;
+    if (orderType === 'bench') {
+      const { benchOrderedCandidates } = generateBenchSeatingPlanForCandidates(candidatesToPrint, 40);
+      processedCandidates = benchOrderedCandidates.length > 0 ? benchOrderedCandidates : candidatesToPrint;
+    } else {
+      processedCandidates = [...candidatesToPrint].sort((a, b) =>
+        String(a.rollNumber || '').localeCompare(String(b.rollNumber || ''), undefined, { numeric: true })
+      );
+    }
+    openAttendanceSheetPrintWindow(processedCandidates, { session: activeSession, isBenchWise: orderType === 'bench' });
+  };
+
+  const openAttendanceConfigModal = (candidates, label = 'All Candidates') => {
+    setAttendanceCandidatesTarget(candidates);
+    setAttendanceLabel(label);
+    setAttendanceOrderType('bench');
+    setAttendanceModalOpen(true);
   };
 
   const isOnlinePaid = (app) => {
@@ -1096,11 +1129,11 @@ const CompetitionManagement = () => {
                 </Button>
               </Tooltip>
 
-              {/* 2. Attendance Sheet PDF Button */}
-              <Tooltip title="Download multi-student printable exam attendance sheet PDF (with Roll No, Name, Father's Name, Photo, Signature Box)">
+              {/* 2. Attendance Sheet (Bench-Wise or Roll-Wise) */}
+              <Tooltip title="Generate Attendance Sheet with Photos, Signatures & P/A Boxes (Choose Seat/Bench-Wise or Roll-Wise)">
                 <Button 
                   variant="contained" 
-                  onClick={() => handleDownloadAttendancePdf(filteredApplications, 'Attendance Sheet')} 
+                  onClick={() => openAttendanceConfigModal(filteredApplications, 'All Applications')} 
                   startIcon={<FaDownload />} 
                   sx={{ 
                     background: 'linear-gradient(135deg, #DC2626, #B91C1C)', 
@@ -1113,15 +1146,15 @@ const CompetitionManagement = () => {
                     '&:hover': { background: '#991B1B' }
                   }}
                 >
-                  📋 Attendance Sheet (PDF)
+                  📋 Attendance Sheet (Bench/Roll)
                 </Button>
               </Tooltip>
 
-              {/* 3. Print Attendance Sheet Window */}
-              <Tooltip title="Open high-density printable attendance sheet in new tab">
+              {/* 3. Direct Print Attendance Sheet */}
+              <Tooltip title="Open printable attendance sheet in new tab (Bench-Wise or Roll-Wise)">
                 <Button 
                   variant="contained" 
-                  onClick={() => handlePrintAttendanceSheet(filteredApplications)} 
+                  onClick={() => openAttendanceConfigModal(filteredApplications, 'All Applications')} 
                   startIcon={<FaPrint />} 
                   sx={{ 
                     background: 'linear-gradient(135deg, #0284C7, #0369A1)', 
@@ -1200,12 +1233,12 @@ const CompetitionManagement = () => {
                   📦 Download ZIP ({selectedIds.length})
                 </Button>
 
-                {/* Download Selected Attendance PDF */}
+                {/* Selected Attendance Sheet (Bench/Roll) */}
                 <Button
                   variant="contained"
                   onClick={() => {
                     const selectedApps = applications.filter(a => selectedIds.includes(a._id));
-                    handleDownloadAttendancePdf(selectedApps, `${selectedApps.length} Selected Candidates`);
+                    openAttendanceConfigModal(selectedApps, `${selectedApps.length} Selected Candidates`);
                   }}
                   startIcon={<FaDownload />}
                   sx={{
@@ -1215,23 +1248,7 @@ const CompetitionManagement = () => {
                     '&:hover': { background: '#991B1B' }
                   }}
                 >
-                  📋 Attendance PDF ({selectedIds.length})
-                </Button>
-
-                {/* Print Selected Attendance Sheet */}
-                <Button
-                  variant="outlined"
-                  onClick={() => {
-                    const selectedApps = applications.filter(a => selectedIds.includes(a._id));
-                    handlePrintAttendanceSheet(selectedApps);
-                  }}
-                  startIcon={<FaPrint />}
-                  sx={{
-                    borderColor: '#38BDF8', color: '#38BDF8', fontWeight: 700, textTransform: 'none', borderRadius: 2,
-                    '&:hover': { backgroundColor: 'rgba(56, 189, 248, 0.1)', borderColor: '#7DD3FC' }
-                  }}
-                >
-                  Print Attendance ({selectedIds.length})
+                  📋 Attendance Sheet ({selectedIds.length})
                 </Button>
 
                 <Button
@@ -1725,6 +1742,177 @@ const CompetitionManagement = () => {
             />
           )}
         </Box>
+      </Dialog>
+
+      {/* Attendance Sheet Configuration Modal (Bench-Wise vs Roll-Wise) */}
+      <Dialog 
+        open={attendanceModalOpen} 
+        onClose={() => setAttendanceModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ 
+          sx: { 
+            borderRadius: '20px', 
+            p: 1, 
+            background: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+            boxShadow: '0 25px 50px -12px rgba(15,23,42,0.25)'
+          } 
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 800, color: '#0F172A', pb: 1, fontSize: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box display="flex" alignItems="center" gap={1.5}>
+            <Box sx={{ width: 40, height: 40, borderRadius: 2, background: 'linear-gradient(135deg, #DC2626, #B91C1C)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.2rem' }}>
+              📋
+            </Box>
+            <Box>
+              <Typography variant="h6" fontWeight={800} color="#0F172A" lineHeight={1.2}>
+                Exam Attendance Sheet
+              </Typography>
+              <Typography variant="caption" color="#64748B">
+                {attendanceLabel} • {attendanceCandidatesTarget.length} Candidates
+              </Typography>
+            </Box>
+          </Box>
+          <IconButton onClick={() => setAttendanceModalOpen(false)} sx={{ color: '#94A3B8' }}>
+            <FaTimes size={16} />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent sx={{ py: 2 }}>
+          <Typography variant="subtitle2" fontWeight={700} color="#334155" mb={1.5}>
+            Select Attendance Sequence / Ordering:
+          </Typography>
+
+          <RadioGroup 
+            value={attendanceOrderType} 
+            onChange={(e) => setAttendanceOrderType(e.target.value)}
+          >
+            {/* Option 1: Bench-wise (Recommended) */}
+            <Paper 
+              elevation={0}
+              onClick={() => setAttendanceOrderType('bench')}
+              sx={{ 
+                p: 2, 
+                mb: 2, 
+                borderRadius: 3, 
+                border: '2px solid', 
+                borderColor: attendanceOrderType === 'bench' ? '#2563EB' : '#E2E8F0',
+                backgroundColor: attendanceOrderType === 'bench' ? '#EFF6FF' : '#F8FAFC',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                '&:hover': { borderColor: '#3B82F6' }
+              }}
+            >
+              <FormControlLabel 
+                value="bench" 
+                control={<Radio color="primary" />} 
+                label={
+                  <Box>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Typography variant="subtitle1" fontWeight={800} color={attendanceOrderType === 'bench' ? '#1E3A8A' : '#0F172A'}>
+                        🪑 Seat / Bench-Wise Order (Room & Desk Sequence)
+                      </Typography>
+                      <Chip label="RECOMMENDED" size="small" sx={{ background: '#2563EB', color: '#fff', fontWeight: 800, fontSize: '0.62rem', height: 20 }} />
+                    </Box>
+                    <Typography variant="body2" color="#64748B" sx={{ mt: 0.5 }}>
+                      Arranged room-by-room in desk sequence: <strong>Bench 1 (Left), Bench 1 (Right), Bench 2 (Left)...</strong> according to the anti-cheating seating plan. Invigilators can mark signatures bench-by-bench effortlessly without searching.
+                    </Typography>
+                  </Box>
+                }
+                sx={{ m: 0, alignItems: 'flex-start' }}
+              />
+            </Paper>
+
+            {/* Option 2: Roll number-wise */}
+            <Paper 
+              elevation={0}
+              onClick={() => setAttendanceOrderType('roll')}
+              sx={{ 
+                p: 2, 
+                borderRadius: 3, 
+                border: '2px solid', 
+                borderColor: attendanceOrderType === 'roll' ? '#2563EB' : '#E2E8F0',
+                backgroundColor: attendanceOrderType === 'roll' ? '#EFF6FF' : '#F8FAFC',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                '&:hover': { borderColor: '#3B82F6' }
+              }}
+            >
+              <FormControlLabel 
+                value="roll" 
+                control={<Radio color="primary" />} 
+                label={
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight={800} color={attendanceOrderType === 'roll' ? '#1E3A8A' : '#0F172A'}>
+                      🔢 Roll Number-Wise Order (Sequential)
+                    </Typography>
+                    <Typography variant="body2" color="#64748B" sx={{ mt: 0.5 }}>
+                      Arranged strictly by numerical Roll Number order (NIICT1313, NIICT1314, NIICT1316...). Standard registry format.
+                    </Typography>
+                  </Box>
+                }
+                sx={{ m: 0, alignItems: 'flex-start' }}
+              />
+            </Paper>
+          </RadioGroup>
+        </DialogContent>
+
+        <DialogActions sx={{ p: 2.5, pt: 1, gap: 1.5 }}>
+          <Button 
+            variant="outlined" 
+            onClick={() => setAttendanceModalOpen(false)}
+            sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2, px: 2.5, color: '#64748B', borderColor: '#CBD5E1' }}
+          >
+            Cancel
+          </Button>
+
+          <Button 
+            variant="contained" 
+            startIcon={<FaPrint />}
+            onClick={() => {
+              const currentTarget = attendanceCandidatesTarget;
+              const currentOrder = attendanceOrderType;
+              setAttendanceModalOpen(false);
+              handlePrintAttendanceSheet(currentTarget, currentOrder);
+            }}
+            sx={{ 
+              background: 'linear-gradient(135deg, #0284C7, #0369A1)', 
+              color: '#fff', 
+              fontWeight: 700, 
+              textTransform: 'none', 
+              borderRadius: 2, 
+              px: 2.5,
+              '&:hover': { background: '#075985' }
+            }}
+          >
+            🖨️ Print in New Tab
+          </Button>
+
+          <Button 
+            variant="contained" 
+            startIcon={<FaDownload />}
+            onClick={() => {
+              const currentTarget = attendanceCandidatesTarget;
+              const currentLabel = attendanceLabel;
+              const currentOrder = attendanceOrderType;
+              setAttendanceModalOpen(false);
+              handleDownloadAttendancePdf(currentTarget, currentLabel, currentOrder);
+            }}
+            sx={{ 
+              background: 'linear-gradient(135deg, #DC2626, #B91C1C)', 
+              color: '#fff', 
+              fontWeight: 800, 
+              textTransform: 'none', 
+              borderRadius: 2, 
+              px: 3,
+              boxShadow: '0 4px 14px rgba(220, 38, 38, 0.4)',
+              '&:hover': { background: '#991B1B' }
+            }}
+          >
+            📥 Download PDF
+          </Button>
+        </DialogActions>
       </Dialog>
 
       {/* Bulk Operation Progress Modal */}
