@@ -66,6 +66,7 @@ const CompetitionManagement = () => {
   const [attendanceCandidatesTarget, setAttendanceCandidatesTarget] = useState([]);
   const [attendanceLabel, setAttendanceLabel] = useState('All Candidates');
   const [attendanceOrderType, setAttendanceOrderType] = useState('bench'); // 'bench' (Recommended) or 'roll'
+  const [attendanceStudentsPerPage, setAttendanceStudentsPerPage] = useState(12); // Default to 12 students per page to fill the page cleanly
 
   const attendanceContainerId = 'attendance-export-container';
   const html2canvasRef = useRef(null);
@@ -505,7 +506,7 @@ const CompetitionManagement = () => {
   };
 
   // 2. Attendance Sheet PDF Download Handler (Supports Bench-wise and Roll-wise)
-  const handleDownloadAttendancePdf = async (candidatesToExport, label = 'All Candidates', orderType = 'bench') => {
+  const handleDownloadAttendancePdf = async (candidatesToExport, label = 'All Candidates', orderType = 'bench', perPage = 12) => {
     if (!candidatesToExport || candidatesToExport.length === 0) {
       alert('No candidates available to generate Attendance Sheet.');
       return;
@@ -528,7 +529,7 @@ const CompetitionManagement = () => {
 
       await downloadAttendanceSheetPdf(
         processedCandidates,
-        { session: activeSession, isBenchWise: orderType === 'bench' },
+        { session: activeSession, isBenchWise: orderType === 'bench', studentsPerPage: Number(perPage) || 12 },
         (current, total, statusText) => {
           setProgressStatus(statusText);
           setProgressPercent(total > 0 ? Math.round((current / total) * 100) : 0);
@@ -546,7 +547,7 @@ const CompetitionManagement = () => {
   };
 
   // 3. Attendance Sheet Print Window Handler (Supports Bench-wise and Roll-wise)
-  const handlePrintAttendanceSheet = (candidatesToPrint, orderType = 'bench') => {
+  const handlePrintAttendanceSheet = (candidatesToPrint, orderType = 'bench', perPage = 12) => {
     if (!candidatesToPrint || candidatesToPrint.length === 0) {
       alert('No candidates available to print Attendance Sheet.');
       return;
@@ -560,13 +561,14 @@ const CompetitionManagement = () => {
         String(a.rollNumber || '').localeCompare(String(b.rollNumber || ''), undefined, { numeric: true })
       );
     }
-    openAttendanceSheetPrintWindow(processedCandidates, { session: activeSession, isBenchWise: orderType === 'bench' });
+    openAttendanceSheetPrintWindow(processedCandidates, { session: activeSession, isBenchWise: orderType === 'bench', studentsPerPage: Number(perPage) || 12 });
   };
 
   const openAttendanceConfigModal = (candidates, label = 'All Candidates') => {
     setAttendanceCandidatesTarget(candidates);
     setAttendanceLabel(label);
     setAttendanceOrderType('bench');
+    setAttendanceStudentsPerPage(12);
     setAttendanceModalOpen(true);
   };
 
@@ -1856,6 +1858,86 @@ const CompetitionManagement = () => {
               />
             </Paper>
           </RadioGroup>
+
+          {/* Page Density / Candidates Per Page Selector */}
+          <Box sx={{ mt: 2.5, pt: 2, borderTop: '1px solid #E2E8F0' }}>
+            <Typography variant="subtitle2" fontWeight={700} color="#334155" mb={1.2}>
+              📄 Candidates Per Page (Page Density & Blank Space Control):
+            </Typography>
+            <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr 1fr' }} gap={1.5}>
+              <Paper
+                elevation={0}
+                onClick={() => setAttendanceStudentsPerPage(12)}
+                sx={{
+                  p: 1.5,
+                  borderRadius: 2.5,
+                  border: '2px solid',
+                  borderColor: attendanceStudentsPerPage === 12 ? '#16A34A' : '#E2E8F0',
+                  backgroundColor: attendanceStudentsPerPage === 12 ? '#F0FDF4' : '#F8FAFC',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  textAlign: 'center',
+                  '&:hover': { borderColor: '#22C55E' }
+                }}
+              >
+                <Box display="flex" alignItems="center" justifyContent="center" gap={0.5} mb={0.5}>
+                  <Typography variant="body2" fontWeight={800} color={attendanceStudentsPerPage === 12 ? '#166534' : '#0F172A'}>
+                    12 Candidates
+                  </Typography>
+                </Box>
+                <Chip label="RECOMMENDED" size="small" sx={{ background: '#16A34A', color: '#fff', fontWeight: 800, fontSize: '0.6rem', height: 18, mb: 0.5 }} />
+                <Typography variant="caption" display="block" color="#64748B" lineHeight={1.2}>
+                  Full A4 fit, saves paper, no empty blank space at bottom.
+                </Typography>
+              </Paper>
+
+              <Paper
+                elevation={0}
+                onClick={() => setAttendanceStudentsPerPage(10)}
+                sx={{
+                  p: 1.5,
+                  borderRadius: 2.5,
+                  border: '2px solid',
+                  borderColor: attendanceStudentsPerPage === 10 ? '#2563EB' : '#E2E8F0',
+                  backgroundColor: attendanceStudentsPerPage === 10 ? '#EFF6FF' : '#F8FAFC',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  textAlign: 'center',
+                  '&:hover': { borderColor: '#3B82F6' }
+                }}
+              >
+                <Typography variant="body2" fontWeight={800} color={attendanceStudentsPerPage === 10 ? '#1E3A8A' : '#0F172A'} mb={0.5}>
+                  10 Candidates
+                </Typography>
+                <Typography variant="caption" display="block" color="#64748B" lineHeight={1.2}>
+                  Balanced row heights and spacious layout.
+                </Typography>
+              </Paper>
+
+              <Paper
+                elevation={0}
+                onClick={() => setAttendanceStudentsPerPage(8)}
+                sx={{
+                  p: 1.5,
+                  borderRadius: 2.5,
+                  border: '2px solid',
+                  borderColor: attendanceStudentsPerPage === 8 ? '#2563EB' : '#E2E8F0',
+                  backgroundColor: attendanceStudentsPerPage === 8 ? '#EFF6FF' : '#F8FAFC',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  textAlign: 'center',
+                  '&:hover': { borderColor: '#3B82F6' }
+                }}
+              >
+                <Typography variant="body2" fontWeight={800} color={attendanceStudentsPerPage === 8 ? '#1E3A8A' : '#0F172A'} mb={0.5}>
+                  8 Candidates
+                </Typography>
+                <Typography variant="caption" display="block" color="#64748B" lineHeight={1.2}>
+                  Large rows with wider bottom margin.
+                </Typography>
+              </Paper>
+            </Box>
+          </Box>
         </DialogContent>
 
         <DialogActions sx={{ p: 2.5, pt: 1, gap: 1.5 }}>
@@ -1873,8 +1955,9 @@ const CompetitionManagement = () => {
             onClick={() => {
               const currentTarget = attendanceCandidatesTarget;
               const currentOrder = attendanceOrderType;
+              const perPage = attendanceStudentsPerPage;
               setAttendanceModalOpen(false);
-              handlePrintAttendanceSheet(currentTarget, currentOrder);
+              handlePrintAttendanceSheet(currentTarget, currentOrder, perPage);
             }}
             sx={{ 
               background: 'linear-gradient(135deg, #0284C7, #0369A1)', 
@@ -1896,8 +1979,9 @@ const CompetitionManagement = () => {
               const currentTarget = attendanceCandidatesTarget;
               const currentLabel = attendanceLabel;
               const currentOrder = attendanceOrderType;
+              const perPage = attendanceStudentsPerPage;
               setAttendanceModalOpen(false);
-              handleDownloadAttendancePdf(currentTarget, currentLabel, currentOrder);
+              handleDownloadAttendancePdf(currentTarget, currentLabel, currentOrder, perPage);
             }}
             sx={{ 
               background: 'linear-gradient(135deg, #DC2626, #B91C1C)', 

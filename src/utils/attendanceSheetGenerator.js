@@ -23,7 +23,7 @@ const DEFAULT_OPTIONS = {
   examCenter: 'S K Modern Intermediate College Semari Janghai Jaunpur',
   centerCode: 'SKMIC-222201',
   subject: 'GK & Computer Talent Competition 2026',
-  studentsPerPage: 8
+  studentsPerPage: 12
 };
 
 // Chunk array helper
@@ -66,6 +66,10 @@ const loadImageAsDataUrl = (url) => {
    ═════════════════════════════════════════════════════════════════ */
 export const generateAttendanceSheetHtml = (candidates = [], userOptions = {}) => {
   const opt = { ...DEFAULT_OPTIONS, ...userOptions };
+  const rowHeightMm = opt.studentsPerPage >= 12 ? '17.2mm' : (opt.studentsPerPage === 10 ? '20.5mm' : '25.5mm');
+  const photoHeightPx = opt.studentsPerPage >= 12 ? '40px' : (opt.studentsPerPage === 10 ? '48px' : '58px');
+  const photoWidthPx = opt.studentsPerPage >= 12 ? '32px' : (opt.studentsPerPage === 10 ? '38px' : '46px');
+  const signBoxHeightPx = opt.studentsPerPage >= 12 ? '36px' : (opt.studentsPerPage === 10 ? '44px' : '52px');
   const chunks = chunkArray(candidates, opt.studentsPerPage);
   const totalPages = Math.max(1, chunks.length);
   const totalCandidates = candidates.length;
@@ -404,12 +408,12 @@ export const generateAttendanceSheetHtml = (candidates = [], userOptions = {}) =
     }
     .attendance-table td {
       border: 1px solid #64748B;
-      padding: 4px 6px;
+      padding: 2.5px 5px;
       vertical-align: middle;
-      font-size: 10.5px;
+      font-size: 9.5px;
     }
     .cand-row {
-      height: 25.5mm;
+      height: ${rowHeightMm};
     }
     .cand-row:nth-child(even) {
       background: #F8FAFC;
@@ -418,7 +422,7 @@ export const generateAttendanceSheetHtml = (candidates = [], userOptions = {}) =
     .col-sno {
       text-align: center;
       font-weight: 800;
-      font-size: 11px;
+      font-size: 10.5px;
       color: #334155;
     }
     .col-roll {
@@ -426,28 +430,28 @@ export const generateAttendanceSheetHtml = (candidates = [], userOptions = {}) =
     }
     .roll-badge {
       font-family: 'Courier New', monospace;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 800;
       color: #0F172A;
       background: #E2E8F0;
-      padding: 3px 6px;
+      padding: 2px 5px;
       border-radius: 4px;
       border: 1px solid #CBD5E1;
       display: inline-block;
     }
     .roll-sub {
-      font-size: 9px;
+      font-size: 8.5px;
       font-weight: 700;
       color: #2563EB;
-      margin-top: 2px;
+      margin-top: 1px;
     }
 
     .col-photo {
       text-align: center;
     }
     .photo-frame {
-      width: 38px;
-      height: 48px;
+      width: ${photoWidthPx};
+      height: ${photoHeightPx};
       border: 1px solid #475569;
       background: #F1F5F9;
       border-radius: 3px;
@@ -463,7 +467,7 @@ export const generateAttendanceSheetHtml = (candidates = [], userOptions = {}) =
       object-fit: cover;
     }
     .no-photo {
-      font-size: 7.5px;
+      font-size: 7px;
       font-weight: 700;
       color: #64748B;
       text-align: center;
@@ -472,20 +476,20 @@ export const generateAttendanceSheetHtml = (candidates = [], userOptions = {}) =
     }
 
     .col-details {
-      line-height: 1.3;
+      line-height: 1.25;
     }
     .cand-name {
       font-weight: 800;
-      font-size: 12px;
+      font-size: 11px;
       color: #0F172A;
     }
     .cand-father {
-      font-size: 10px;
+      font-size: 9.5px;
       color: #334155;
       margin-top: 1px;
     }
     .cand-school {
-      font-size: 9px;
+      font-size: 8.5px;
       color: #64748B;
       font-style: italic;
       margin-top: 1px;
@@ -496,18 +500,18 @@ export const generateAttendanceSheetHtml = (candidates = [], userOptions = {}) =
     }
 
     .col-sign {
-      padding: 4px 8px;
+      padding: 2px 6px;
     }
     .sign-box {
       border: 1.5px dashed #94A3B8;
       background: #FFFFFF;
-      height: 44px;
+      height: ${signBoxHeightPx};
       border-radius: 4px;
       position: relative;
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      padding: 3px 6px;
+      padding: 2px 4px;
     }
     .sign-line {
       border-bottom: 1px solid #CBD5E1;
@@ -747,8 +751,9 @@ export const downloadAttendanceSheetPdf = async (candidates = [], userOptions = 
       body: tableBody,
       theme: 'grid',
       styles: {
-        fontSize: 8.5,
-        cellPadding: 2,
+        fontSize: opt.studentsPerPage >= 12 ? 7.8 : 8.5,
+        cellPadding: opt.studentsPerPage >= 12 ? 1.4 : 2,
+        minCellHeight: opt.studentsPerPage >= 12 ? 17.5 : (opt.studentsPerPage === 10 ? 21 : 25),
         valign: 'middle',
         lineColor: [100, 116, 139],
         lineWidth: 0.25,
@@ -764,8 +769,8 @@ export const downloadAttendanceSheetPdf = async (candidates = [], userOptions = 
       columnStyles: {
         0: { cellWidth: 10, halign: 'center', fontStyle: 'bold' },
         1: { cellWidth: 26, halign: 'center', fontStyle: 'bold' },
-        2: { cellWidth: 22, halign: 'center' },
-        3: { cellWidth: 64 },
+        2: { cellWidth: 20, halign: 'center' },
+        3: { cellWidth: 66 },
         4: { cellWidth: 44, halign: 'center' },
         5: { cellWidth: 24, halign: 'center' }
       },
@@ -777,10 +782,10 @@ export const downloadAttendanceSheetPdf = async (candidates = [], userOptions = 
           // Photo Column
           if (data.column.index === 2) {
             const photoUrl = loadedPhotos[rowApp.rollNumber];
-            const px = data.cell.x + 3;
-            const py = data.cell.y + 2;
-            const pw = 16;
-            const ph = 21;
+            const pw = opt.studentsPerPage >= 12 ? 13 : 15;
+            const ph = opt.studentsPerPage >= 12 ? 15.5 : 18;
+            const px = data.cell.x + (data.cell.width - pw) / 2;
+            const py = data.cell.y + (data.cell.height - ph) / 2;
 
             if (photoUrl) {
               try {
@@ -806,9 +811,9 @@ export const downloadAttendanceSheetPdf = async (candidates = [], userOptions = 
           // Signature Box Column
           if (data.column.index === 4) {
             const sx = data.cell.x + 2;
-            const sy = data.cell.y + 2.5;
+            const sy = data.cell.y + 1.2;
             const sw = data.cell.width - 4;
-            const sh = data.cell.height - 5;
+            const sh = data.cell.height - 2.5;
 
             // Draw neat signature box
             doc.setDrawColor(148, 163, 184);
@@ -818,41 +823,41 @@ export const downloadAttendanceSheetPdf = async (candidates = [], userOptions = 
 
             doc.setFontSize(5.5);
             doc.setTextColor(148, 163, 184);
-            doc.text('Candidate Signature', sx + sw / 2, sy + sh - 1.5, { align: 'center' });
+            doc.text('Candidate Signature', sx + sw / 2, sy + sh - 1.2, { align: 'center' });
           }
 
           // Attendance Verification Column
           if (data.column.index === 5) {
             const ax = data.cell.x + 2;
-            const ay = data.cell.y + 4;
+            const ay = data.cell.y + (data.cell.height / 2) - 1.5;
             doc.setFontSize(7.5);
             doc.setTextColor(15, 23, 42);
             doc.text('[ ] P   [ ] A', ax + 2, ay);
 
-            const lineY = data.cell.y + data.cell.height - 4;
+            const lineY = data.cell.y + data.cell.height - 3;
             doc.setDrawColor(203, 213, 225);
             doc.line(ax, lineY, ax + data.cell.width - 4, lineY);
             doc.setFontSize(5.5);
             doc.setTextColor(148, 163, 184);
-            doc.text('Invigilator Sign', ax + (data.cell.width - 4) / 2, lineY + 2.5, { align: 'center' });
+            doc.text('Invigilator Sign', ax + (data.cell.width - 4) / 2, lineY + 2.2, { align: 'center' });
           }
         }
       }
     });
 
     // FOOTER SUMMARY
-    const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 4 : 260;
+    const finalY = Math.min(266, (doc.lastAutoTable ? doc.lastAutoTable.finalY + 3.5 : 255));
 
     doc.setDrawColor(15, 23, 42);
     doc.line(10, finalY, 200, finalY);
 
     doc.setFontSize(7.5);
     doc.setTextColor(15, 23, 42);
-    doc.text(`Candidates on Page: ${slice.length}   |   Present (उपस्थित): ______   |   Absent (अनुपस्थित): ______`, 12, finalY + 5);
+    doc.text(`Candidates on Page: ${slice.length}   |   Present (P): ______   |   Absent (A): ______`, 12, finalY + 4.5);
 
     // Signature lines
-    doc.text('Room Invigilator Signature: __________________', 12, finalY + 14);
-    doc.text('Center Superintendent Signature & Seal: __________________', 105, finalY + 14);
+    doc.text('Room Invigilator Signature: __________________', 12, finalY + 13);
+    doc.text('Center Superintendent Signature & Seal: __________________', 105, finalY + 13);
 
     doc.setFontSize(6.5);
     doc.setTextColor(148, 163, 184);
