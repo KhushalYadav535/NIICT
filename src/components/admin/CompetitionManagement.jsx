@@ -6,7 +6,8 @@ import {
   FaTrophy, FaSearch, FaPrint, FaEye, FaTrash, FaDownload, FaFileAlt, 
   FaReceipt, FaUserPlus, FaCheckCircle, FaTimes, FaCamera, FaCloudUploadAlt,
   FaVideo, FaUser, FaPhoneAlt, FaGraduationCap, FaMapMarkerAlt, FaCalendarAlt, 
-  FaIdCard, FaBook, FaLaptopCode, FaCheck, FaInfoCircle, FaRegLightbulb, FaPaste
+  FaIdCard, FaBook, FaLaptopCode, FaCheck, FaInfoCircle, FaRegLightbulb, FaPaste,
+  FaEdit
 } from 'react-icons/fa';
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
 import { 
@@ -21,6 +22,7 @@ import { downloadAttendanceSheetPdf, openAttendanceSheetPrintWindow } from '../.
 import { generateBenchSeatingPlanForCandidates } from '../../utils/benchSeatingSolver';
 import GovernmentAdmitCardModal from './GovernmentAdmitCardModal';
 import OfflineCandidateModal from './OfflineCandidateModal';
+import EditCandidateModal from './EditCandidateModal';
 
 const CURRENT_SESSION = '2026-2027'; // Update this each year
 
@@ -50,6 +52,11 @@ const CompetitionManagement = () => {
   const [offlineModalOpen, setOfflineModalOpen] = useState(false);
   const [offlineSuccessModalOpen, setOfflineSuccessModalOpen] = useState(false);
   const [createdOfflineCandidate, setCreatedOfflineCandidate] = useState(null);
+
+  // Edit candidate modal state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [candidateToEdit, setCandidateToEdit] = useState(null);
+  const [editSuccessAlert, setEditSuccessAlert] = useState('');
 
   // Table pagination state (ensures lightning fast rendering even with thousands of candidates)
   const [page, setPage] = useState(1);
@@ -666,19 +673,63 @@ const CompetitionManagement = () => {
     setOfflineSuccessModalOpen(true);
   };
 
+  const handleOpenEditModal = (candidate) => {
+    setCandidateToEdit(candidate);
+    setEditModalOpen(true);
+  };
+
+  const handleEditCandidateSuccess = (updatedCandidate) => {
+    setApplications(prev => prev.map(a => (a._id === updatedCandidate._id ? updatedCandidate : a)));
+    if (selectedApplication && selectedApplication._id === updatedCandidate._id) {
+      setSelectedApplication(updatedCandidate);
+    }
+    setEditModalOpen(false);
+    setCandidateToEdit(null);
+    setEditSuccessAlert(`Candidate "${updatedCandidate.name}" (Roll: ${updatedCandidate.rollNumber}) updated successfully!`);
+    setTimeout(() => setEditSuccessAlert(''), 5000);
+  };
+
   if (showDetails && selectedApplication) {
     return (
       <Box sx={{ minHeight: '100vh', backgroundColor: '#F8FAFC', pt: 4, pb: 8 }}>
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-            <Box display="flex" alignItems="center" mb={4} gap={2}>
-              <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', boxShadow: '0 8px 20px -4px rgba(37,99,235,0.3)', display: 'flex' }}>
-                <FaTrophy size={32} color="#fff" />
+            <Box display="flex" alignItems="center" justifyContent="space-between" mb={4} gap={2} flexWrap="wrap">
+              <Box display="flex" alignItems="center" gap={2}>
+                <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', boxShadow: '0 8px 20px -4px rgba(37,99,235,0.3)', display: 'flex' }}>
+                  <FaTrophy size={32} color="#fff" />
+                </Box>
+                <Box>
+                  <Typography variant="h3" fontWeight={800} color="#0F172A" sx={{ letterSpacing: '1px', textTransform: 'uppercase', fontFamily: '"Saira Condensed", sans-serif', lineHeight: 1 }}>
+                    Application <span style={{ color: '#2563EB' }}>Details</span>
+                  </Typography>
+                </Box>
               </Box>
-              <Box>
-                <Typography variant="h3" fontWeight={800} color="#0F172A" sx={{ letterSpacing: '1px', textTransform: 'uppercase', fontFamily: '"Saira Condensed", sans-serif', lineHeight: 1 }}>
-                  Application <span style={{ color: '#2563EB' }}>Details</span>
-                </Typography>
+
+              <Box display="flex" gap={1.5} flexWrap="wrap">
+                <Button
+                  variant="contained"
+                  onClick={() => handleOpenEditModal(selectedApplication)}
+                  startIcon={<FaEdit />}
+                  sx={{
+                    background: 'linear-gradient(135deg, #D97706, #B45309)',
+                    color: '#fff',
+                    fontWeight: 700,
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    boxShadow: '0 4px 12px rgba(217,119,6,0.25)',
+                    '&:hover': { background: 'linear-gradient(135deg, #B45309, #92400E)' }
+                  }}
+                >
+                  Edit Application (आवेदन सुधार)
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => setShowDetails(false)}
+                  sx={{ borderColor: '#CBD5E1', color: '#64748B', fontWeight: 600, textTransform: 'none', borderRadius: 2, '&:hover': { background: '#F1F5F9', borderColor: '#94A3B8' } }}
+                >
+                  Back to List
+                </Button>
               </Box>
             </Box>
 
@@ -903,7 +954,25 @@ const CompetitionManagement = () => {
                       </Box>
                     </Box>
 
-                    {/* Verification and Navigation */}
+                    {/* Verification, Edit and Navigation */}
+                    <Button 
+                      variant="contained" 
+                      size="large" 
+                      onClick={() => handleOpenEditModal(selectedApplication)} 
+                      startIcon={<FaEdit />}
+                      sx={{ 
+                        background: 'linear-gradient(135deg, #D97706, #B45309)', 
+                        color: '#fff', 
+                        fontWeight: 700, 
+                        textTransform: 'none', 
+                        borderRadius: 2,
+                        boxShadow: '0 4px 12px rgba(217,119,6,0.25)',
+                        '&:hover': { background: 'linear-gradient(135deg, #B45309, #92400E)' }
+                      }}
+                    >
+                      Edit Application Details (Galti Sudharein)
+                    </Button>
+
                     {selectedApplication.paymentStatus !== 'verified' ? (
                       <Box display="flex" flexDirection="column" gap={0.8}>
                         <Button variant="contained" size="large" disabled={updating} onClick={() => updatePaymentStatus(selectedApplication._id, 'verified')} sx={{ background: 'linear-gradient(135deg, #059669, #047857)', color: '#fff', fontWeight: 700, textTransform: 'none', borderRadius: 2 }}>
@@ -927,6 +996,23 @@ const CompetitionManagement = () => {
             </Paper>
           </motion.div>
         </Container>
+
+        {/* Live Preview Modal inside Details View */}
+        <GovernmentAdmitCardModal 
+          open={previewModalOpen}
+          onClose={() => setPreviewModalOpen(false)}
+          application={previewApplication}
+          initialDocType={previewDocType}
+        />
+
+        {/* Edit Candidate Modal inside Details View */}
+        <EditCandidateModal
+          open={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          candidate={candidateToEdit}
+          availableSessions={availableSessions}
+          onSuccess={handleEditCandidateSuccess}
+        />
       </Box>
     );
   }
@@ -968,6 +1054,16 @@ const CompetitionManagement = () => {
               + Add Offline Candidate
             </Button>
           </Box>
+
+          {editSuccessAlert && (
+            <Alert 
+              severity="success" 
+              sx={{ mb: 3, borderRadius: '14px', border: '1px solid #BBF7D0', bgcolor: '#F0FDF4', color: '#166534', fontWeight: 600 }}
+              onClose={() => setEditSuccessAlert('')}
+            >
+              ✓ {editSuccessAlert}
+            </Alert>
+          )}
 
           {/* Session Selector */}
           <Box sx={{ mb: 4, p: 1.5, background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15,23,42,0.04)', display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -1459,6 +1555,9 @@ const CompetitionManagement = () => {
                           <Tooltip title="View Candidate Application Details">
                             <Button variant="outlined" size="small" onClick={() => handleViewDetails(application)} sx={{ color: '#2563EB', borderColor: '#BFDBFE', backgroundColor: '#EFF6FF', minWidth: 0, p: 1, '&:hover': { backgroundColor: '#DBEAFE' } }}><FaEye /></Button>
                           </Tooltip>
+                          <Tooltip title="Edit Application (Galti Sudharein / Fix Mistakes)">
+                            <Button variant="outlined" size="small" onClick={() => handleOpenEditModal(application)} sx={{ color: '#D97706', borderColor: '#FDE68A', backgroundColor: '#FFFBEB', minWidth: 0, p: 1, '&:hover': { backgroundColor: '#FEF3C7', borderColor: '#F59E0B' } }}><FaEdit /></Button>
+                          </Tooltip>
                           <Tooltip title="Print E-Admit Card (Exam Hall Ticket)">
                             <Button variant="outlined" size="small" onClick={() => printAdmitCard(application)} sx={{ color: '#2563EB', borderColor: '#BFDBFE', backgroundColor: '#EFF6FF', minWidth: 0, p: 1, '&:hover': { backgroundColor: '#DBEAFE' } }}><FaPrint /></Button>
                           </Tooltip>
@@ -1582,6 +1681,15 @@ const CompetitionManagement = () => {
         activeSession={activeSession}
         availableSessions={availableSessions}
         onSuccess={handleOfflineCandidateSuccess}
+      />
+
+      {/* Isolated Edit Candidate Application Modal */}
+      <EditCandidateModal
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        candidate={candidateToEdit}
+        availableSessions={availableSessions}
+        onSuccess={handleEditCandidateSuccess}
       />
 
       {/* Offline Success Dialog with Instant Print Actions */}
