@@ -1,823 +1,848 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Typography, Paper, TextField, Button, Box, Card, CardContent, Grid, Chip, Alert } from '@mui/material';
-import { motion } from 'framer-motion';
-import { FaSearch, FaTrophy, FaMedal, FaStar, FaQuoteLeft } from 'react-icons/fa';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Trophy, Medal, Award, Search, Printer, Share2, 
+  CheckCircle2, AlertCircle, Phone, User, Calendar, 
+  Sparkles, School, Hash, ArrowRight, ShieldCheck, 
+  Star, RefreshCw, FileText, Check, Download, 
+  ChevronRight, BookmarkCheck, HeartHandshake, HelpCircle,
+  Building2, GraduationCap, CheckCircle
+} from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
+import niictLogo from '../assets/logo.jpg';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+  (import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000');
 
 const Results = () => {
-  const [rollNumber, setRollNumber] = useState('');
+  const location = useLocation();
+  const scorecardRef = useRef(null);
+
+  const [searchMethod, setSearchMethod] = useState('roll'); // 'roll' | 'mobile' | 'aadhaar'
+  const [rollDigits, setRollDigits] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [aadhaarNumber, setAadhaarNumber] = useState('');
+  
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
   const [top3Students, setTop3Students] = useState([]);
-  const [loadingTop3, setLoadingTop3] = useState(false);
+  const [top10Students, setTop10Students] = useState([]);
+  const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
-  // Sample inspirational quotes
-  const quotes = [
-    "Success is not final, failure is not fatal: it is the courage to continue that counts. - Winston Churchill",
-    "The future belongs to those who believe in the beauty of their dreams. - Eleanor Roosevelt",
-    "Education is the passport to the future, for tomorrow belongs to those who prepare for it today. - Malcolm X",
-    "The only way to do great work is to love what you do. - Steve Jobs",
-    "Don't watch the clock; do what it does. Keep going. - Sam Levenson",
-    "Success is walking from failure to failure with no loss of enthusiasm. - Winston Churchill",
-    "The expert in anything was once a beginner. - Helen Hayes",
-    "Your limitation—it's only your imagination.",
-    "Great things never come from comfort zones.",
-    "Dream it. Wish it. Do it."
-  ];
-
-  const [currentQuote] = useState(quotes[Math.floor(Math.random() * quotes.length)]);
-
-  // Fetch top 3 students on component mount
+  // Auto-search if ?roll= is present in URL
   useEffect(() => {
-    fetchTop3Students();
-  }, []);
+    const params = new URLSearchParams(location.search);
+    const urlRoll = params.get('roll');
+    if (urlRoll) {
+      const cleanDigits = urlRoll.trim().toUpperCase().replace(/^NIICT/i, '');
+      setRollDigits(cleanDigits);
+      executeSearch(`NIICT${cleanDigits}`);
+    }
+    fetchLeaderboard();
+  }, [location.search]);
 
-  const fetchTop3Students = async () => {
-    setLoadingTop3(true);
+  const fetchLeaderboard = async () => {
+    setLoadingLeaderboard(true);
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000');
-      
-      const response = await fetch(`${API_BASE_URL}/api/results/top3`);
-      const data = await response.json();
-      
-      if (response.ok && data.success) {
-        setTop3Students(data.data);
-      }
+      const [res3, res10] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/results/top3`),
+        fetch(`${API_BASE_URL}/api/results/top10`)
+      ]);
+      const data3 = await res3.json();
+      const data10 = await res10.json();
+
+      if (res3.ok && data3.success) setTop3Students(data3.data || []);
+      if (res10.ok && data10.success) setTop10Students(data10.data || []);
     } catch (err) {
-      console.error('Error fetching top 3 students:', err);
+      console.error('Error fetching leaderboard:', err);
     } finally {
-      setLoadingTop3(false);
+      setLoadingLeaderboard(false);
     }
   };
 
-  const handleSearch = async () => {
-    if (!rollNumber.trim()) {
-      setError('Please enter a roll number');
-      return;
-    }
-
+  const executeSearch = async (query) => {
+    if (!query) return;
     setLoading(true);
     setError('');
     setResult(null);
 
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === 'production' ? 'https://niictbackend.onrender.com' : 'http://localhost:5000');
-      
-      const response = await fetch(`${API_BASE_URL}/api/results/search/${rollNumber.trim()}`);
+      const response = await fetch(`${API_BASE_URL}/api/results/search/${encodeURIComponent(query)}`);
       const data = await response.json();
-      
-      if (response.ok && data.success) {
+
+      if (response.ok && data.success && data.data) {
         setResult(data.data);
+        setTimeout(() => {
+          scorecardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
       } else {
-        setError(data.message || 'No result found for this roll number. Please check and try again.');
+        setError(data.message || 'No result found matching your entered details. Please verify and try again.');
       }
-      
     } catch (err) {
-      setError('Failed to fetch result. Please check your internet connection and try again.');
       console.error('Search error:', err);
+      setError('Unable to fetch result. Please check your network connection and try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const getRankIcon = (rank) => {
-    if (rank === 1) return <FaTrophy style={{ color: '#FFD700' }} />;
-    if (rank === 2) return <FaMedal style={{ color: '#C0C0C0' }} />;
-    if (rank === 3) return <FaMedal style={{ color: '#CD7F32' }} />;
-    return <FaStar style={{ color: '#4CAF50' }} />;
+  const handleSearchSubmit = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setError('');
+
+    let query = '';
+    if (searchMethod === 'roll') {
+      const cleanDigits = rollDigits.trim().toUpperCase().replace(/^NIICT/i, '');
+      if (!cleanDigits) {
+        setError('Please enter your 4-digit roll number (e.g. 1655)');
+        return;
+      }
+      query = `NIICT${cleanDigits}`;
+    } else if (searchMethod === 'mobile') {
+      const cleanPhone = mobileNumber.trim().replace(/\D/g, '');
+      if (cleanPhone.length < 10) {
+        setError('Please enter a valid 10-digit registered mobile number');
+        return;
+      }
+      query = cleanPhone.slice(-10);
+    } else if (searchMethod === 'aadhaar') {
+      const cleanAadhaar = aadhaarNumber.trim().replace(/\D/g, '');
+      if (cleanAadhaar.length !== 12) {
+        setError('Please enter a valid 12-digit Aadhaar number');
+        return;
+      }
+      query = cleanAadhaar;
+    }
+
+    executeSearch(query);
   };
 
-  const getRankColor = (rank) => {
-    if (rank === 1) return '#FFD700';
-    if (rank === 2) return '#C0C0C0';
-    if (rank === 3) return '#CD7F32';
-    return '#4CAF50';
+  const handlePrint = () => {
+    window.print();
   };
 
-  const getGradeColor = (marks) => {
-    if (marks >= 90) return '#4CAF50'; // Green
-    if (marks >= 80) return '#2196F3'; // Blue
-    if (marks >= 70) return '#FF9800'; // Orange
-    if (marks >= 60) return '#FF5722'; // Red-Orange
-    return '#F44336'; // Red
+  const handleShare = () => {
+    if (navigator.clipboard && result) {
+      const url = `${window.location.origin}/results?roll=${encodeURIComponent(result.rollNumber)}`;
+      navigator.clipboard.writeText(url);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2500);
+    }
+  };
+
+  const getRankBadgeInfo = (rank) => {
+    if (rank === 1) {
+      return {
+        title: 'State Topper (Rank #1)',
+        subtitle: 'Gold Medalist & State Champion',
+        badgeBg: 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950',
+        cardBg: 'bg-gradient-to-br from-amber-50/80 via-white to-yellow-50/70 border-amber-300 text-amber-950 shadow-amber-500/10',
+        icon: <Trophy className="w-8 h-8 text-amber-600 fill-amber-400" />
+      };
+    }
+    if (rank === 2) {
+      return {
+        title: 'Second Ranker (Rank #2)',
+        subtitle: 'Silver Medalist',
+        badgeBg: 'bg-gradient-to-r from-slate-300 via-slate-200 to-slate-400 text-slate-900',
+        cardBg: 'bg-gradient-to-br from-slate-50 via-white to-slate-100 border-slate-300 text-slate-900',
+        icon: <Medal className="w-8 h-8 text-slate-600 fill-slate-300" />
+      };
+    }
+    if (rank === 3) {
+      return {
+        title: 'Third Ranker (Rank #3)',
+        subtitle: 'Bronze Medalist',
+        badgeBg: 'bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-600 text-white',
+        cardBg: 'bg-gradient-to-br from-amber-50/60 via-white to-orange-50/50 border-amber-300 text-amber-950',
+        icon: <Award className="w-8 h-8 text-amber-700 fill-amber-500" />
+      };
+    }
+    return {
+      title: `State Merit Rank #${rank}`,
+      subtitle: 'Merit List Holder',
+      badgeBg: 'bg-gradient-to-r from-[#245894] to-[#1e40af] text-white',
+      cardBg: 'bg-gradient-to-br from-blue-50/50 via-white to-slate-50 border-blue-200 text-slate-900',
+      icon: <Award className="w-8 h-8 text-[#245894]" />
+    };
+  };
+
+  const getInitials = (name) => {
+    if (!name) return 'ST';
+    return name.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4, paddingTop: '80px' }}>
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        {/* Header Section */}
-        <Box textAlign="center" mb={6}>
-          <motion.div
-            initial={{ scale: 0.8, rotate: -10 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ duration: 0.8, delay: 0.2, type: "spring", stiffness: 200 }}
-          >
-            <Box sx={{ 
-              display: 'inline-block',
-              p: 3,
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
-              boxShadow: '0 8px 32px rgba(255, 215, 0, 0.3)',
-              mb: 3
-            }}>
-              <FaTrophy size={80} color="white" />
-            </Box>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <Typography variant="h2" fontWeight={800} sx={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              mb: 2,
-              textShadow: '0 2px 4px rgba(0,0,0,0.1)'
-            }}>
-              Competition Results
-            </Typography>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-          >
-            <Typography variant="h5" color="#64748b" sx={{ 
-              maxWidth: 700, 
-              mx: 'auto',
-              fontWeight: 400,
-              lineHeight: 1.6
-            }}>
-              🎯 Check your competition exam results by entering your roll number
-            </Typography>
-          </motion.div>
-        </Box>
+    <div className="min-h-screen bg-[#fafafc] text-slate-800 selection:bg-amber-400 selection:text-slate-950 pb-24 relative overflow-hidden">
+      
+      {/* ── Background Micro Grid Pattern (Awwwards Style) ── */}
+      <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-70 pointer-events-none" />
 
-        {/* Results Announcement */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-        >
-          <Paper 
-            elevation={8} 
-            sx={{ 
-              p: 5, 
-              mb: 5, 
-              borderRadius: 6, 
-              background: 'linear-gradient(135deg, #10b981 0%, #22d3ee 50%, #06b6d4 100%)',
-              color: 'white',
-              textAlign: 'center',
-              position: 'relative',
-              overflow: 'hidden',
-              border: '2px solid rgba(255, 255, 255, 0.2)',
-              backdropFilter: 'blur(10px)'
-            }}
-          >
-            {/* Animated background elements */}
-            <motion.div
-              animate={{ 
-                rotate: 360,
-                scale: [1, 1.1, 1]
-              }}
-              transition={{ 
-                rotate: { duration: 20, repeat: Infinity, ease: "linear" },
-                scale: { duration: 3, repeat: Infinity, ease: "easeInOut" }
-              }}
-              style={{
-                position: 'absolute',
-                top: -50,
-                right: -50,
-                width: 100,
-                height: 100,
-                background: 'rgba(255, 255, 255, 0.1)',
-                borderRadius: '50%',
-                zIndex: 0
-              }}
-            />
-            <motion.div
-              animate={{ 
-                rotate: -360,
-                scale: [1.1, 1, 1.1]
-              }}
-              transition={{ 
-                rotate: { duration: 25, repeat: Infinity, ease: "linear" },
-                scale: { duration: 4, repeat: Infinity, ease: "easeInOut" }
-              }}
-              style={{
-                position: 'absolute',
-                bottom: -30,
-                left: -30,
-                width: 80,
-                height: 80,
-                background: 'rgba(255, 255, 255, 0.1)',
-                borderRadius: '50%',
-                zIndex: 0
-              }}
-            />
-            
-            <Box sx={{ position: 'relative', zIndex: 1 }}>
-              <motion.div
-                initial={{ y: -20, opacity: 0, scale: 0.8 }}
-                animate={{ y: 0, opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 1.0, type: "spring", stiffness: 200 }}
-              >
-                <Box sx={{ 
-                  display: 'inline-block',
-                  p: 2,
-                  borderRadius: '50%',
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  backdropFilter: 'blur(10px)',
-                  border: '2px solid rgba(255, 255, 255, 0.3)',
-                  mb: 3
-                }}>
-                  <FaTrophy size={70} style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />
-                </Box>
-              </motion.div>
-              
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 1.2 }}
-              >
-                <Typography variant="h3" fontWeight={800} gutterBottom sx={{ 
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
-                  fontSize: { xs: '2rem', md: '3rem' }
-                }}>
-                  🎉 Results Are Now Available! 🎉
-                </Typography>
-              </motion.div>
-              
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 1.4 }}
-              >
-                <Box sx={{ 
-                  background: 'rgba(255, 255, 255, 0.15)',
-                  borderRadius: 3,
-                  p: 3,
-                  mb: 3,
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)'
-                }}>
-                  <Typography variant="h4" fontWeight={700} sx={{ mb: 1, textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}>
-                    📅 Published on 18th October 2024
-                  </Typography>
-                  <Typography variant="h5" sx={{ textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}>
-                    🕐 12:00 PM
-                  </Typography>
-                </Box>
-              </motion.div>
-              
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.5, delay: 1.6 }}
-              >
-                <Typography variant="h6" sx={{ 
-                  opacity: 0.95,
-                  textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
-                  maxWidth: 700,
-                  mx: 'auto',
-                  lineHeight: 1.6,
-                  fontWeight: 400
-                }}>
-                  🏆 Competition results are now live! Enter your roll number below to view your result. 
-                  Congratulations to all participants for their hard work and dedication!
-                </Typography>
-              </motion.div>
-            </Box>
-          </Paper>
-        </motion.div>
+      {/* ── Ambient Soft Glow Orbs ── */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[450px] bg-gradient-to-b from-blue-100/50 via-amber-100/30 to-transparent blur-[120px] pointer-events-none" />
+      <div className="absolute top-80 right-0 w-96 h-96 bg-amber-200/20 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-[800px] left-0 w-96 h-96 bg-blue-200/20 rounded-full blur-[100px] pointer-events-none" />
 
-        {/* Inspirational Quote */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.3 }}
-        >
-          <Paper 
-            elevation={3} 
-            sx={{ 
-              p: 3, 
-              mb: 4, 
-              borderRadius: 3, 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              textAlign: 'center'
-            }}
+      {/* ── Print Specific Styles ── */}
+      <style>{`
+        @media print {
+          body {
+            background: white !important;
+            color: black !important;
+          }
+          nav, footer, .no-print, .app > div:not(.print-container) {
+            display: none !important;
+          }
+          .print-area {
+            display: block !important;
+            box-shadow: none !important;
+            border: 2px solid #000 !important;
+            padding: 24px !important;
+            width: 100% !important;
+            margin: 0 auto !important;
+            background: white !important;
+            color: #000 !important;
+          }
+          .print-area * {
+            color: #000 !important;
+            text-shadow: none !important;
+          }
+        }
+      `}</style>
+
+      {/* ── Hero Header ── */}
+      <section className="relative z-10 pt-14 pb-14 border-b border-slate-200/70 no-print">
+        <div className="max-w-5xl mx-auto px-4 text-center">
+          
+          {/* Top Pill */}
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 mb-5 rounded-full bg-white border border-slate-200 shadow-[0_2px_10px_rgba(0,0,0,0.04)] text-slate-800 text-xs sm:text-sm font-bold tracking-wide"
           >
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 1.5 }}
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+            <span className="text-slate-900 font-extrabold">Official Result Portal</span>
+            <span className="text-slate-300">&bull;</span>
+            <span className="text-[#245894] font-black uppercase text-[11px] tracking-wider">Session 2026-2027</span>
+          </motion.div>
+
+          <motion.h1 
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl sm:text-6xl font-black tracking-tight text-slate-900 leading-[1.12]"
+          >
+            Check Competition Results
+          </motion.h1>
+
+          <motion.p 
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-3.5 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto font-medium"
+          >
+            State Level General Knowledge &amp; Computer Literacy Talent Search Exam 2026-2027.
+          </motion.p>
+
+          {/* Quick Metrics */}
+          <motion.div 
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-6 inline-flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs sm:text-sm text-slate-600 bg-white/90 backdrop-blur-md px-6 py-3 rounded-2xl border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)]"
+          >
+            <div className="flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-amber-500" />
+              <span>Highest Marks: <strong className="text-slate-900 font-black font-mono">92.02 / 100</strong></span>
+            </div>
+            <span className="hidden sm:inline text-slate-300">&bull;</span>
+            <div className="flex items-center gap-2">
+              <GraduationCap className="w-4 h-4 text-[#245894]" />
+              <span>Evaluated: <strong className="text-slate-900 font-black">395 Candidates</strong></span>
+            </div>
+            <span className="hidden sm:inline text-slate-300">&bull;</span>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-emerald-600" />
+              <span>Exam Date: <strong className="text-slate-900 font-bold">18 Oct 2026</strong></span>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── Search Container (Awwwards Style Floating Elevated Card) ── */}
+      <section className="max-w-3xl mx-auto px-4 -mt-6 relative z-20 no-print">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98, y: 15 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="bg-white border-2 border-slate-200/90 rounded-[2rem] p-6 sm:p-9 shadow-[0_20px_60px_-15px_rgba(15,23,42,0.08)]"
+        >
+          {/* Search Method Segmented Tabs */}
+          <div className="flex p-1.5 bg-slate-100/90 rounded-2xl border border-slate-200/80 mb-7 max-w-md mx-auto">
+            <button
+              type="button"
+              onClick={() => { setSearchMethod('roll'); setError(''); }}
+              className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                searchMethod === 'roll'
+                  ? 'bg-white text-[#245894] shadow-sm font-black border border-slate-200'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
             >
-              <FaQuoteLeft size={24} style={{ marginBottom: '12px', opacity: 0.8 }} />
-              <Typography variant="h6" fontStyle="italic" sx={{ lineHeight: 1.6 }}>
-                "{currentQuote}"
-              </Typography>
-            </motion.div>
-          </Paper>
-        </motion.div>
+              <Hash className="w-4 h-4 text-[#245894]" />
+              <span>Roll Number</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setSearchMethod('mobile'); setError(''); }}
+              className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                searchMethod === 'mobile'
+                  ? 'bg-white text-[#245894] shadow-sm font-black border border-slate-200'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Phone className="w-4 h-4 text-emerald-600" />
+              <span>Mobile</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setSearchMethod('aadhaar'); setError(''); }}
+              className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                searchMethod === 'aadhaar'
+                  ? 'bg-white text-[#245894] shadow-sm font-black border border-slate-200'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <User className="w-4 h-4 text-amber-600" />
+              <span>Aadhaar</span>
+            </button>
+          </div>
 
-        {/* Search Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.8 }}
-        >
-          <Paper elevation={6} sx={{ 
-            p: 5, 
-            mb: 5, 
-            borderRadius: 6, 
-            background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-            border: '1px solid rgba(0, 0, 0, 0.05)'
-          }}>
-            <Typography variant="h4" fontWeight={700} color="#1e293b" gutterBottom sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: 2,
-              mb: 4
-            }}>
-              <Box sx={{ 
-                p: 1.5,
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white'
-              }}>
-                <FaSearch size={24} />
-              </Box>
-              Search Your Result
-            </Typography>
-            
-            <Box sx={{ display: 'flex', gap: 3, alignItems: 'center', mt: 3 }}>
-              <TextField
-                fullWidth
-                label="Enter Roll Number"
-                placeholder="e.g., 1158, GK1158, 1134"
-                value={rollNumber}
-                onChange={(e) => setRollNumber(e.target.value.toUpperCase())}
-                sx={{ 
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 3,
-                    backgroundColor: 'white',
-                    fontSize: '1.1rem',
-                    '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    },
-                    '&.Mui-focused': {
-                      backgroundColor: 'white',
-                    }
-                  },
-                  '& .MuiInputLabel-root': {
-                    fontSize: '1.1rem'
-                  }
-                }}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              />
-              <Button
-                variant="contained"
-                size="large"
-                onClick={handleSearch}
-                disabled={loading}
-                sx={{ 
-                  borderRadius: 3, 
-                  px: 5,
-                  py: 2,
-                  minWidth: 160,
-                  fontSize: '1.1rem',
-                  fontWeight: 600,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-                    boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)',
-                    transform: 'translateY(-2px)'
-                  },
-                  '&:disabled': {
-                    background: '#ccc',
-                    boxShadow: 'none'
-                  }
-                }}
-                startIcon={<FaSearch />}
-              >
-                {loading ? 'Searching...' : 'Search'}
-              </Button>
-            </Box>
+          {/* Search Form */}
+          <form onSubmit={handleSearchSubmit} className="space-y-4 max-w-lg mx-auto">
+            {searchMethod === 'roll' && (
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Enter Roll Number <span className="text-[#245894] normal-case font-semibold">(Prefix NIICT is default)</span>
+                </label>
+                <div className="flex rounded-2xl overflow-hidden border-2 border-slate-300 bg-white shadow-sm focus-within:border-[#245894] focus-within:ring-4 focus-within:ring-blue-100 transition-all">
+                  <span className="px-5 py-3.5 bg-blue-50 text-[#245894] font-black text-base tracking-widest border-r border-slate-200 flex items-center select-none">
+                    NIICT
+                  </span>
+                  <input
+                    type="text"
+                    value={rollDigits}
+                    onChange={(e) => setRollDigits(e.target.value.replace(/\D/g, ''))}
+                    placeholder="e.g. 1655"
+                    className="flex-1 bg-transparent px-4 py-3.5 text-slate-900 placeholder-slate-400 text-base font-bold outline-none tracking-wider"
+                    autoFocus
+                  />
+                </div>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 Just enter the 4 digits printed on your Admit Card (e.g. <strong className="text-[#245894]">1655</strong> for roll <strong className="text-slate-800">NIICT1655</strong>).
+                </p>
+              </div>
+            )}
+
+            {searchMethod === 'mobile' && (
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  10-Digit Registered Mobile Number
+                </label>
+                <div className="flex rounded-2xl overflow-hidden border-2 border-slate-300 bg-white shadow-sm focus-within:border-[#245894] focus-within:ring-4 focus-within:ring-blue-100 transition-all">
+                  <span className="px-4 py-3.5 bg-slate-100 text-slate-600 font-bold text-sm tracking-wider border-r border-slate-200 flex items-center select-none">
+                    +91
+                  </span>
+                  <input
+                    type="tel"
+                    maxLength={10}
+                    value={mobileNumber}
+                    onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, ''))}
+                    placeholder="Enter registered mobile number"
+                    className="flex-1 bg-transparent px-4 py-3.5 text-slate-900 placeholder-slate-400 text-base font-semibold outline-none tracking-wider"
+                    autoFocus
+                  />
+                </div>
+              </div>
+            )}
+
+            {searchMethod === 'aadhaar' && (
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  12-Digit Aadhaar Card Number
+                </label>
+                <div className="flex rounded-2xl overflow-hidden border-2 border-slate-300 bg-white shadow-sm focus-within:border-[#245894] focus-within:ring-4 focus-within:ring-blue-100 transition-all">
+                  <input
+                    type="text"
+                    maxLength={12}
+                    value={aadhaarNumber}
+                    onChange={(e) => setAadhaarNumber(e.target.value.replace(/\D/g, ''))}
+                    placeholder="Enter 12-digit Aadhaar number"
+                    className="flex-1 bg-transparent px-4 py-3.5 text-slate-900 placeholder-slate-400 text-base font-semibold outline-none tracking-wider text-center"
+                    autoFocus
+                  />
+                </div>
+              </div>
+            )}
 
             {error && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
+              <motion.div 
+                initial={{ opacity: 0, y: -4 }} 
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+                className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs sm:text-sm text-rose-800 flex items-start gap-2.5 font-medium"
               >
-                <Alert 
-                  severity={error.includes('18th October') ? 'info' : 'error'} 
-                  sx={{ 
-                    mt: 3, 
-                    borderRadius: 2,
-                    fontSize: '1.1rem',
-                    '& .MuiAlert-message': {
-                      fontWeight: 500
-                    }
-                  }}
-                >
-                  {error}
-                </Alert>
+                <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-600" />
+                <span>{error}</span>
               </motion.div>
             )}
-          </Paper>
-        </motion.div>
 
-        {/* Result Display */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-4 px-6 bg-gradient-to-r from-[#245894] via-[#1d4ed8] to-[#245894] hover:from-[#1e40af] hover:to-[#1e3a8a] text-white font-black rounded-2xl text-base transition-all duration-200 shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 disabled:opacity-50 tracking-wide cursor-pointer"
+            >
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Searching Official Records...</span>
+                </>
+              ) : (
+                <>
+                  <Search className="w-5 h-5" />
+                  <span>Search Result &amp; View Scorecard</span>
+                </>
+              )}
+            </button>
+          </form>
+        </motion.div>
+      </section>
+
+      {/* ── THE OFFICIAL SCORECARD (AWWWARDS-LEVEL LIGHT THEME MASTERPIECE) ── */}
+      <AnimatePresence>
         {result && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Paper elevation={6} sx={{ borderRadius: 4, overflow: 'hidden', boxShadow: 6 }}>
-              {/* Result Header */}
-              <Box sx={{ 
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-                color: 'white', 
-                p: 4, 
-                textAlign: 'center' 
-              }}>
-                <Typography variant="h4" fontWeight={700} gutterBottom>
-                  🎉 Congratulations! 🎉
-                </Typography>
-                <Typography variant="h6" sx={{ opacity: 0.9 }}>
-                  Competition Exam Result - {result.examDate}
-                </Typography>
-              </Box>
+          <section ref={scorecardRef} className="max-w-4xl mx-auto px-4 mt-14">
+            <motion.div 
+              initial={{ opacity: 0, y: 30, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.5, type: 'spring' }}
+              className="print-area relative bg-white rounded-[2.5rem] p-7 sm:p-11 shadow-[0_25px_70px_-15px_rgba(15,23,42,0.12)] border-2 border-amber-300 ring-8 ring-amber-100/60 overflow-hidden"
+            >
+              {/* Subtle Watermark Crest */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-[0.035] pointer-events-none select-none">
+                <img src={niictLogo} alt="NIICT Watermark" className="w-[500px] h-[500px] object-contain" />
+              </div>
 
-              {/* Result Content */}
-              <Box sx={{ p: 4 }}>
-                <Grid container spacing={3}>
-                  {/* Student Information */}
-                  <Grid item xs={12} md={6}>
-                    <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' }}>
-                      <CardContent>
-                        <Typography variant="h6" fontWeight={600} color="#1e293b" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <FaStar color="#4CAF50" />
-                          Student Information
-                        </Typography>
-                        
-                        <Box sx={{ mt: 2 }}>
-                          <Box sx={{ mb: 2 }}>
-                            <Typography variant="body2" color="#64748b">Roll Number</Typography>
-                            <Typography variant="h6" fontWeight={600} color="#1e293b">
-                              {result.rollNumber}
-                            </Typography>
-                          </Box>
-                          
-                          <Box sx={{ mb: 2 }}>
-                            <Typography variant="body2" color="#64748b">Student Name</Typography>
-                            <Typography variant="h6" fontWeight={600} color="#1e293b">
-                              {result.name}
-                            </Typography>
-                          </Box>
-                          
-                          <Box sx={{ mb: 2 }}>
-                            <Typography variant="body2" color="#64748b">Father's Name</Typography>
-                            <Typography variant="h6" fontWeight={600} color="#1e293b">
-                              {result.fatherName}
-                            </Typography>
-                          </Box>
-                          
-                          <Box>
-                            <Typography variant="body2" color="#64748b">Subject</Typography>
-                            <Chip 
-                              label={result.subject} 
-                              color="primary" 
-                              variant="filled"
-                              sx={{ fontWeight: 600 }}
-                            />
-                          </Box>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </Grid>
+              {/* Top Luxury Ribbon Border */}
+              <div className="absolute top-0 left-0 right-0 h-2.5 bg-gradient-to-r from-[#245894] via-amber-400 to-[#d13030]" />
 
-                  {/* Performance Information */}
-                  <Grid item xs={12} md={6}>
-                    <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' }}>
-                      <CardContent>
-                        <Typography variant="h6" fontWeight={600} color="#1e293b" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          {getRankIcon(result.rank)}
-                          Performance Details
-                        </Typography>
-                        
-                        <Box sx={{ mt: 2 }}>
-                          <Box sx={{ mb: 2 }}>
-                            <Typography variant="body2" color="#64748b">Rank</Typography>
-                            <Typography 
-                              variant="h4" 
-                              fontWeight={700} 
-                              sx={{ color: getRankColor(result.rank) }}
-                            >
-                              #{result.rank}
-                            </Typography>
-                          </Box>
-                          
-                          <Box sx={{ mb: 2 }}>
-                            <Typography variant="body2" color="#64748b">Marks Obtained</Typography>
-                            <Typography 
-                              variant="h4" 
-                              fontWeight={700} 
-                              sx={{ color: getGradeColor(result.marks) }}
-                            >
-                              {result.marks}/100
-                            </Typography>
-                          </Box>
-                          
-                          <Box sx={{ mb: 2 }}>
-                            <Typography variant="body2" color="#64748b">Status</Typography>
-                            <Chip 
-                              label={result.status} 
-                              color="success" 
-                              variant="filled"
-                              sx={{ fontWeight: 600 }}
-                            />
-                          </Box>
-                          
-                          <Box>
-                            <Typography variant="body2" color="#64748b">Exam Date</Typography>
-                            <Typography variant="h6" fontWeight={600} color="#1e293b">
-                              {new Date(result.examDate).toLocaleDateString('en-GB')}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                </Grid>
+              {/* Scorecard Official Header */}
+              <div className="border-b-2 border-slate-200 pb-7 mb-7">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-5 text-center sm:text-left">
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <img 
+                      src={niictLogo} 
+                      alt="NIICT Logo" 
+                      className="w-20 h-20 rounded-2xl object-cover border-2 border-slate-300 shadow-sm"
+                    />
+                    <div>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-[#245894] block">
+                        Government Registered &bull; An ISO 9001:2015 Certified Institution
+                      </span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">
+                        NIHANSHI INSTITUTE OF INFORMATION &amp; COMPUTER TECHNOLOGY
+                      </h2>
+                      <p className="text-xs text-slate-600 font-semibold mt-1">
+                        Janghai - Jaunpur Road, Uttar Pradesh &bull; Official Helpline: +91 8182838680
+                      </p>
+                    </div>
+                  </div>
 
-                {/* Achievement Message */}
-                <Box sx={{ mt: 4, p: 3, background: 'linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%)', borderRadius: 3, textAlign: 'center' }}>
-                  <Typography variant="h6" color="#2e7d32" fontWeight={600} gutterBottom>
-                    🏆 Outstanding Performance! 🏆
-                  </Typography>
-                  <Typography variant="body1" color="#333">
-                    {result.name}, you have achieved an excellent result in the {result.subject} competition. 
-                    Your dedication and hard work have paid off. Keep up the great work!
-                  </Typography>
-                </Box>
-              </Box>
-            </Paper>
-          </motion.div>
+                  {/* QR Code with Live Verification Seal */}
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div className="p-1.5 bg-white border border-slate-300 rounded-xl shadow-sm">
+                      <QRCodeSVG 
+                        value={`${window.location.origin}/results?roll=${result.rollNumber}`}
+                        size={72}
+                        level="M"
+                      />
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-bold mt-1">Scan to Verify</span>
+                  </div>
+                </div>
+
+                {/* Scorecard Title Banner */}
+                <div className="mt-6 py-2.5 px-4 bg-gradient-to-r from-[#245894] via-[#1d4ed8] to-[#245894] text-white rounded-xl text-center shadow-md">
+                  <h3 className="text-xs sm:text-sm font-black tracking-wider uppercase">
+                    OFFICIAL STATEMENT OF MARKS &bull; STATE LEVEL TALENT SEARCH EXAM 2026-2027
+                  </h3>
+                </div>
+              </div>
+
+              {/* Achievement Rank Banner */}
+              <div className="mb-8">
+                <div className={`p-5 sm:p-6 rounded-3xl border ${getRankBadgeInfo(result.rank).cardBg} flex flex-col sm:flex-row items-center justify-between gap-5 shadow-sm`}>
+                  <div className="flex items-center gap-4 text-center sm:text-left">
+                    <div className="p-3.5 bg-white rounded-2xl shadow-sm border border-slate-200">
+                      {getRankBadgeInfo(result.rank).icon}
+                    </div>
+                    <div>
+                      <span className="text-xs uppercase font-black tracking-widest text-slate-500 block">
+                        Official Standing
+                      </span>
+                      <h4 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                        {getRankBadgeInfo(result.rank).title}
+                      </h4>
+                      <p className="text-xs font-bold text-slate-600">{getRankBadgeInfo(result.rank).subtitle}</p>
+                    </div>
+                  </div>
+
+                  <div className="text-center sm:text-right bg-white px-6 py-3.5 rounded-2xl border border-slate-200 shadow-sm flex-shrink-0">
+                    <span className="text-[11px] uppercase font-black tracking-wider text-slate-500 block">
+                      Total Score Obtained
+                    </span>
+                    <span className="text-3xl sm:text-4xl font-black text-emerald-700 font-mono">
+                      {result.marks} <span className="text-sm font-bold text-slate-400">/ 100</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Candidate Particulars (With Monogram Avatar) */}
+              <div className="bg-slate-50/80 border border-slate-200 rounded-3xl p-6 sm:p-7 mb-8">
+                <div className="flex items-center gap-4 pb-4 mb-4 border-b border-slate-200">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#245894] to-[#1d4ed8] text-white font-black text-xl flex items-center justify-center shadow-md flex-shrink-0">
+                    {getInitials(result.name)}
+                  </div>
+                  <div>
+                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 uppercase">
+                      {result.name}
+                    </h3>
+                    <p className="text-xs text-slate-600 font-semibold">
+                      Father's Name: <strong className="text-slate-900 uppercase">{result.fatherName}</strong>
+                      {result.motherName ? ` &bull; Mother: ${result.motherName}` : ''}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs sm:text-sm">
+                  <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs">
+                    <span className="text-slate-500 font-semibold block text-[11px]">Official Roll Number</span>
+                    <span className="font-black text-[#245894] font-mono text-base tracking-wider">{result.rollNumber}</span>
+                  </div>
+
+                  <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs">
+                    <span className="text-slate-500 font-semibold block text-[11px]">Candidate Mobile / Contact</span>
+                    <span className="font-bold text-slate-900 flex items-center gap-1.5 text-sm mt-0.5">
+                      <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>{result.phone || 'Registered in Database'}</span>
+                    </span>
+                  </div>
+
+                  <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs">
+                    <span className="text-slate-500 font-semibold block text-[11px]">Aadhaar Identification</span>
+                    <span className="font-bold text-slate-800 font-mono text-sm mt-0.5 block">
+                      {result.aadhaar ? `XXXX-XXXX-${result.aadhaar.slice(-4)}` : 'Verified via Registration'}
+                    </span>
+                  </div>
+
+                  {result.school && (
+                    <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs sm:col-span-2">
+                      <span className="text-slate-500 font-semibold block text-[11px]">Institution / School</span>
+                      <span className="font-bold text-slate-900 text-sm mt-0.5 block">{result.school}</span>
+                    </div>
+                  )}
+
+                  <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs">
+                    <span className="text-slate-500 font-semibold block text-[11px]">Exam Date &bull; Session</span>
+                    <span className="font-bold text-slate-800 text-sm mt-0.5 block">
+                      18 October 2026 &bull; {result.session || '2026-2027'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Marks & Performance Table */}
+              <div className="border border-slate-300 rounded-2xl overflow-hidden mb-8 shadow-sm">
+                <table className="w-full text-left text-xs sm:text-sm">
+                  <thead className="bg-[#245894] text-white font-bold uppercase tracking-wider text-[11px]">
+                    <tr>
+                      <th className="py-3.5 px-4">Subject / Module</th>
+                      <th className="py-3.5 px-4 text-center">Max Marks</th>
+                      <th className="py-3.5 px-4 text-center">Marks Obtained</th>
+                      <th className="py-3.5 px-4 text-center">Percentage</th>
+                      <th className="py-3.5 px-4 text-center">Grade</th>
+                      <th className="py-3.5 px-4 text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 font-semibold text-slate-800 bg-white">
+                    <tr className="hover:bg-slate-50/80">
+                      <td className="py-4 px-4 font-bold text-slate-900">
+                        General Knowledge &amp; Computer Literacy (State Exam)
+                      </td>
+                      <td className="py-4 px-4 text-center font-mono">100</td>
+                      <td className="py-4 px-4 text-center font-black text-base text-slate-950 font-mono">
+                        {result.marks}
+                      </td>
+                      <td className="py-4 px-4 text-center font-mono font-bold">
+                        {result.percentage !== undefined ? `${result.percentage}%` : `${Math.round(result.marks)}%`}
+                      </td>
+                      <td className="py-4 px-4 text-center">
+                        <span className="px-3 py-1 rounded-md bg-amber-100 text-amber-900 font-black text-xs border border-amber-300">
+                          {result.grade || 'A+'}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-center">
+                        <span className={`px-3 py-1 rounded-md font-black text-xs ${
+                          result.status === 'Passed' 
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' 
+                            : result.status === 'Absent'
+                            ? 'bg-rose-100 text-rose-800 border border-rose-300'
+                            : 'bg-amber-100 text-amber-800 border border-amber-300'
+                        }`}>
+                          {result.status || 'Passed'}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                  <tfoot className="bg-slate-100 border-t-2 border-slate-300 font-bold text-slate-900">
+                    <tr>
+                      <td className="py-3.5 px-4 font-black">FINAL CONSOLIDATED SCORE</td>
+                      <td className="py-3.5 px-4 text-center font-mono">100</td>
+                      <td className="py-3.5 px-4 text-center font-black text-lg text-emerald-700 font-mono">
+                        {result.marks}
+                      </td>
+                      <td colSpan={3} className="py-3.5 px-4 text-center text-xs">
+                        Merit Standing: <strong>Rank #{result.rank}</strong> out of 395 Candidates
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              {/* Official Seal & Signature Footer */}
+              <div className="pt-6 border-t-2 border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-6 items-end text-center">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-300 rounded-full text-emerald-800 text-[11px] font-bold">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Digitally Verified &bull; Official Board</span>
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-1">Generated: {new Date().toLocaleDateString('en-GB')}</p>
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-full border-2 border-dashed border-amber-600 flex items-center justify-center text-[10px] font-black text-amber-800 uppercase text-center leading-tight bg-amber-50/50">
+                    NIICT<br/>OFFICIAL<br/>SEAL
+                  </div>
+                </div>
+
+                <div className="text-center sm:text-right">
+                  <div className="h-10 flex items-end justify-center sm:justify-end">
+                    <span className="font-serif italic font-bold text-slate-700 border-b-2 border-slate-800 px-4">
+                      Examinations Controller
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-600 font-bold block mt-1">
+                    NIICT Institute Examination Cell
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Toolbar (Hidden during print) */}
+              <div className="mt-9 pt-6 border-t border-slate-200 flex flex-wrap gap-3 items-center justify-between no-print">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handlePrint}
+                    className="py-3.5 px-6 bg-gradient-to-r from-[#245894] to-[#1e40af] hover:from-[#1d4370] hover:to-[#1e3a8a] text-white font-bold rounded-xl text-sm flex items-center gap-2 shadow-md transition-all cursor-pointer"
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>Print Scorecard</span>
+                  </button>
+
+                  <button
+                    onClick={handleShare}
+                    className="py-3.5 px-5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-sm flex items-center gap-2 transition-all cursor-pointer border border-slate-300"
+                  >
+                    {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
+                    <span>{copiedLink ? 'Link Copied!' : 'Share Scorecard'}</span>
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => { setResult(null); setRollDigits(''); setMobileNumber(''); setAadhaarNumber(''); }}
+                  className="py-3 px-4 text-slate-600 hover:text-slate-950 font-semibold text-sm flex items-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span>Check Another Candidate</span>
+                </button>
+              </div>
+            </motion.div>
+          </section>
         )}
+      </AnimatePresence>
 
-        {/* Top 3 Students Display */}
-        {top3Students.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-          >
-            <Paper elevation={8} sx={{ 
-              p: 5, 
-              mb: 5, 
-              borderRadius: 6, 
-              background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
-              border: '2px solid rgba(255, 215, 0, 0.3)',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
-            }}>
-              <Typography variant="h3" fontWeight={800} color="white" gutterBottom sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 3,
-                mb: 5,
-                textAlign: 'center',
-                justifyContent: 'center',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-                fontSize: { xs: '2rem', md: '2.5rem' }
-              }}>
-                <Box sx={{ 
-                  p: 2,
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
-                  color: 'white',
-                  boxShadow: '0 8px 20px rgba(255, 215, 0, 0.4)'
-                }}>
-                  <FaTrophy size={36} />
-                </Box>
-                🏆 Top 3 Computer Performers 🏆
-              </Typography>
-              
-              <Grid container spacing={3}>
-                {top3Students.map((student, index) => (
-                  <Grid item xs={12} md={4} key={`${student.rollNumber}-${index}`}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.1 * index }}
-                    >
-                      <Card sx={{ 
-                        height: '100%', 
-                        background: index === 0 
-                          ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)'
-                          : index === 1 
-                          ? 'linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%)'
-                          : 'linear-gradient(135deg, #CD7F32 0%, #B8860B 100%)',
-                        color: 'white',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-                        '&:hover': {
-                          transform: 'translateY(-5px)',
-                          boxShadow: '0 12px 40px rgba(0,0,0,0.3)',
-                          transition: 'all 0.3s ease'
-                        }
-                      }}>
-                        {/* Rank Badge */}
-                        <Box sx={{
-                          position: 'absolute',
-                          top: 16,
-                          right: 16,
-                          background: 'rgba(255, 255, 255, 0.2)',
-                          borderRadius: '50%',
-                          width: 50,
-                          height: 50,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          backdropFilter: 'blur(10px)',
-                          border: '2px solid rgba(255, 255, 255, 0.3)'
-                        }}>
-                          <Typography variant="h6" fontWeight={800}>
-                            #{student.rank}
-                          </Typography>
-                        </Box>
+      {/* ── Top 3 State Rankers Podium Gallery (Name, Rank, Number/Marks ONLY - NO scorecard links) ── */}
+      <section className="max-w-6xl mx-auto px-4 mt-24 no-print">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-black uppercase tracking-widest mb-3">
+            <Trophy className="w-4 h-4 text-amber-600" />
+            <span>State Level Merit List &bull; Session 2026-2027</span>
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
+            Competition Top Rankers
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600 mt-2 max-w-xl mx-auto font-medium">
+            Congratulations to the top performers of NIICT State Level Talent Search Competition.
+          </p>
+        </div>
 
-                        <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                          {/* Medal Icon */}
-                          <Box sx={{ mb: 3 }}>
-                            {index === 0 && <FaTrophy size={50} style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />}
-                            {index === 1 && <FaMedal size={50} style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />}
-                            {index === 2 && <FaMedal size={50} style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />}
-                          </Box>
+        {/* Podium Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+          {top3Students.map((student, idx) => {
+            const isRank1 = student.rank === 1;
+            const isRank2 = student.rank === 2;
+            const isRank3 = student.rank === 3;
 
-                          {/* Student Name */}
-                          <Typography variant="h4" fontWeight={800} gutterBottom sx={{ 
-                            textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
-                            mb: 2,
-                            fontSize: { xs: '1.5rem', md: '1.8rem' }
-                          }}>
-                            {student.name}
-                          </Typography>
+            return (
+              <motion.div
+                key={student.rollNumber || idx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * idx }}
+                className={`relative rounded-3xl p-6 sm:p-8 overflow-hidden border-2 transition-all duration-300 ${
+                  isRank1
+                    ? 'bg-gradient-to-b from-amber-50 via-white to-yellow-50/60 border-amber-400 shadow-[0_20px_50px_-15px_rgba(245,158,11,0.25)] md:-translate-y-4'
+                    : isRank2
+                    ? 'bg-gradient-to-b from-slate-50 via-white to-slate-100/60 border-slate-300 shadow-lg'
+                    : 'bg-gradient-to-b from-amber-50/40 via-white to-orange-50/40 border-amber-300 shadow-lg'
+                }`}
+              >
+                {/* Header Rank Pill */}
+                <div className="flex items-center justify-between mb-5">
+                  <div className={`px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5 ${
+                    isRank1 
+                      ? 'bg-amber-400 text-slate-950 font-black shadow-sm' 
+                      : isRank2
+                      ? 'bg-slate-300 text-slate-950 font-black shadow-sm'
+                      : 'bg-amber-600 text-white font-black shadow-sm'
+                  }`}>
+                    {isRank1 && <Trophy className="w-3.5 h-3.5 text-slate-950" />}
+                    {isRank2 && <Medal className="w-3.5 h-3.5 text-slate-950" />}
+                    {isRank3 && <Award className="w-3.5 h-3.5 text-white" />}
+                    <span>Rank #{student.rank}</span>
+                  </div>
 
-                          {/* Father's Name */}
-                          <Typography variant="h6" fontWeight={600} sx={{ 
-                            textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
-                            mb: 3,
-                            opacity: 0.95,
-                            fontSize: { xs: '1rem', md: '1.2rem' }
-                          }}>
-                            Son/Daughter of: {student.fatherName}
-                          </Typography>
+                  <span className="text-xs font-mono font-bold text-slate-500">
+                    {student.rollNumber}
+                  </span>
+                </div>
 
-                          {/* Roll Number */}
-                          <Box sx={{ 
-                            mb: 3,
-                            background: 'rgba(255, 255, 255, 0.25)',
-                            borderRadius: 3,
-                            p: 2,
-                            backdropFilter: 'blur(10px)',
-                            border: '1px solid rgba(255, 255, 255, 0.3)'
-                          }}>
-                            <Typography variant="body1" sx={{ 
-                              opacity: 1,
-                              fontWeight: 600,
-                              fontSize: '1.1rem'
-                            }}>
-                              Roll Number: {student.rollNumber}
-                            </Typography>
-                          </Box>
+                <h3 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight mb-1">
+                  {student.name}
+                </h3>
+                <p className="text-xs text-slate-600 font-semibold mb-6">
+                  S/D of {student.fatherName}
+                </p>
 
-                          {/* Marks */}
-                          <Typography variant="h3" fontWeight={900} sx={{ 
-                            textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
-                            mb: 2,
-                            fontSize: { xs: '2rem', md: '2.5rem' }
-                          }}>
-                            {student.marks}/100
-                          </Typography>
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-500 block">Marks Obtained</span>
+                    <span className="text-2xl sm:text-3xl font-black text-emerald-700 font-mono">
+                      {student.marks} <span className="text-xs text-slate-400 font-bold">/ 100</span>
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 block">Grade</span>
+                    <span className="text-xl font-black text-amber-600">
+                      {student.grade || 'A+'}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </section>
 
-                          {/* Subject */}
-                          <Chip 
-                            label={student.subject} 
-                            sx={{ 
-                              background: 'rgba(255, 255, 255, 0.3)',
-                              color: 'white',
-                              fontWeight: 700,
-                              fontSize: '1rem',
-                              backdropFilter: 'blur(10px)',
-                              border: '2px solid rgba(255, 255, 255, 0.4)',
-                              px: 2,
-                              py: 1
-                            }}
-                          />
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  </Grid>
-                ))}
-              </Grid>
+      {/* ── Top 10 Merit Leaderboard Table (NO Scorecard column or button - strictly Name, Rank, Number/Marks) ── */}
+      {top10Students.length > 0 && (
+        <section className="max-w-6xl mx-auto px-4 mt-20 no-print">
+          <div className="bg-white border-2 border-slate-200 rounded-[2rem] p-6 sm:p-9 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-7">
+              <div>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
+                  <Trophy className="w-6 h-6 text-amber-500" />
+                  <span>State Merit List Top 10 Performers (2026-2027)</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Evaluated based on official answer sheets with negative marking.
+                </p>
+              </div>
+            </div>
 
-              {/* Congratulations Message */}
-              <Box sx={{ 
-                mt: 5, 
-                p: 4, 
-                background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.2) 100%)', 
-                borderRadius: 4, 
-                textAlign: 'center',
-                backdropFilter: 'blur(15px)',
-                border: '2px solid rgba(255, 215, 0, 0.4)',
-                boxShadow: '0 8px 25px rgba(255, 215, 0, 0.2)'
-              }}>
-                <Typography variant="h5" fontWeight={700} sx={{ 
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-                  mb: 2,
-                  color: 'white',
-                  fontSize: { xs: '1.3rem', md: '1.5rem' }
-                }}>
-                  🎉 Congratulations to our Top Performers! 🎉
-                </Typography>
-                <Typography variant="h6" sx={{ 
-                  opacity: 0.95,
-                  textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
-                  color: 'white',
-                  fontWeight: 500,
-                  fontSize: { xs: '1rem', md: '1.1rem' }
-                }}>
-                  These students have shown exceptional dedication and achieved outstanding results in the competition.
-                </Typography>
-              </Box>
-            </Paper>
-          </motion.div>
-        )}
+            <div className="overflow-x-auto rounded-2xl border border-slate-200">
+              <table className="w-full text-left text-xs sm:text-sm">
+                <thead className="bg-slate-100 text-slate-700 uppercase font-black tracking-wider text-[11px] border-b border-slate-200">
+                  <tr>
+                    <th className="py-4 px-5">Rank</th>
+                    <th className="py-4 px-5">Student Name</th>
+                    <th className="py-4 px-5">Father's Name</th>
+                    <th className="py-4 px-5 font-mono">Roll Number</th>
+                    <th className="py-4 px-5 text-center font-mono">Marks</th>
+                    <th className="py-4 px-5 text-center">Grade</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-medium text-slate-800 bg-white">
+                  {top10Students.map((s, i) => (
+                    <tr key={s.rollNumber || i} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-4 px-5 font-black">
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-black ${
+                          s.rank === 1 
+                            ? 'bg-amber-400 text-slate-950' 
+                            : s.rank === 2 
+                            ? 'bg-slate-300 text-slate-950'
+                            : s.rank === 3 
+                            ? 'bg-amber-600 text-white'
+                            : 'bg-slate-200 text-slate-700'
+                        }`}>
+                          #{s.rank}
+                        </span>
+                      </td>
+                      <td className="py-4 px-5 font-bold text-slate-900 text-sm sm:text-base">{s.name}</td>
+                      <td className="py-4 px-5 text-slate-600">{s.fatherName}</td>
+                      <td className="py-4 px-5 font-mono font-bold text-[#245894]">{s.rollNumber}</td>
+                      <td className="py-4 px-5 text-center font-black text-emerald-700 font-mono text-base">{s.marks}</td>
+                      <td className="py-4 px-5 text-center font-black text-amber-600">{s.grade || 'A+'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      )}
 
-        {/* Instructions */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 2.0 }}
-        >
-          <Paper elevation={4} sx={{ 
-            p: 4, 
-            mt: 5, 
-            borderRadius: 4, 
-            background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-            border: '1px solid rgba(0, 0, 0, 0.05)'
-          }}>
-            <Typography variant="h5" fontWeight={700} color="#1e293b" gutterBottom sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: 2,
-              mb: 3
-            }}>
-              <Box sx={{ 
-                p: 1,
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
-                color: 'white'
-              }}>
-                📋
-              </Box>
-              Important Information
-            </Typography>
-            <Box component="ol" sx={{ 
-              pl: 3, 
-              color: '#64748b',
-              '& li': {
-                mb: 2,
-                fontSize: '1.1rem',
-                lineHeight: 1.6,
-                '& strong': {
-                  color: '#1e293b',
-                  fontWeight: 700
-                }
-              }
-            }}>
-              <li>Results were announced on <strong>18th October 2024 at 12:00 PM</strong></li>
-              <li>You can search for your result using your roll number (format: 1158 or GK1158)</li>
-              <li>Make sure you have your correct roll number ready</li>
-              <li>If you don't remember your roll number, contact the institute</li>
-              <li>Results are now live and available for viewing</li>
-            </Box>
-          </Paper>
-        </motion.div>
-      </motion.div>
-    </Container>
+      {/* ── Help & Guidelines Section ── */}
+      <section className="max-w-4xl mx-auto px-4 mt-20 no-print text-center">
+        <div className="p-7 bg-white border border-slate-200 rounded-3xl text-slate-600 text-xs sm:text-sm space-y-2 shadow-sm">
+          <p className="font-bold text-slate-900 text-sm sm:text-base">
+            Need assistance regarding your score or examination certificate?
+          </p>
+          <p>
+            Contact NIICT Institute Examination Office at <a href="tel:+918182838680" className="text-[#245894] font-bold hover:underline">+91 8182838680</a> or email <a href="mailto:niict01@gmail.com" className="text-[#245894] font-bold hover:underline">niict01@gmail.com</a>.
+          </p>
+          <p className="text-[11px] text-slate-400 pt-2 font-medium">
+            NIICT Computer Institute &bull; All India Talent Search Examination Cell &bull; Session 2026-2027
+          </p>
+        </div>
+      </section>
+
+    </div>
   );
 };
 

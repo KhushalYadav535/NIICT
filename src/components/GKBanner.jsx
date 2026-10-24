@@ -1,3 +1,3 @@
-import AdmitCardPopup from './AdmitCardPopup';
+import ResultPopup from './ResultPopup';
 
-export default AdmitCardPopup;
+export default ResultPopup;

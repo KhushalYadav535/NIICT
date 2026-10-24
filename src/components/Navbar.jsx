@@ -39,13 +39,14 @@ const Navbar = () => {
     {
       label: 'Student',
       dropdown: [
-        { label: 'Admit Card (2026-27)', path: '/admit-card', isSpecial: true },
+        { label: '🏆 Competition Result (2026-27)', path: '/results', isSpecial: true },
         { label: 'Semester Result', path: '/results' },
         { label: 'Final Result', path: '/results' },
+        { label: 'Admit Card', path: '/admit-card' },
         { label: 'Verification', path: '/student-portal' },
       ]
     },
-    { label: 'Admit Card', path: '/admit-card', badge: '2026-27' },
+    { label: 'Results', path: '/results', badge: '2026-27 LIVE' },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -184,8 +185,8 @@ const Navbar = () => {
               </div>
             ))}
             <div className="mt-3 space-y-2">
-              <Link to="/admit-card" className="block text-center bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-5 py-3 rounded-full text-sm font-bold shadow-md hover:from-emerald-700 hover:to-teal-700 transition-colors uppercase tracking-wide">
-                🎫 Download Admit Card (2026-27)
+              <Link to="/results" className="block text-center bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 px-5 py-3 rounded-full text-sm font-black shadow-lg shadow-amber-500/25 transition-colors uppercase tracking-wide">
+                🏆 Check Results (2026-27 LIVE)
               </Link>
               <Link to="/franchise" className="block text-center bg-[#245894] text-white px-5 py-3 rounded-full text-sm font-semibold hover:bg-[#1a3f6a] transition-colors uppercase">
                 New Registration
