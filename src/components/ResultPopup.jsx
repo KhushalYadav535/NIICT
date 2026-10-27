@@ -95,7 +95,8 @@ const ResultPopup = () => {
     if (rank === 1) return { icon: <Trophy className="w-4 h-4 text-amber-600" />, label: 'Rank #1 (State Topper)', color: 'bg-amber-100 text-amber-900 border-amber-300' };
     if (rank === 2) return { icon: <Medal className="w-4 h-4 text-slate-700" />, label: 'Rank #2 (Silver Medal)', color: 'bg-slate-200 text-slate-900 border-slate-300' };
     if (rank === 3) return { icon: <Award className="w-4 h-4 text-amber-700" />, label: 'Rank #3 (Bronze Medal)', color: 'bg-amber-100 text-amber-950 border-amber-300' };
-    return { icon: <Award className="w-4 h-4 text-blue-600" />, label: `Rank #${rank}`, color: 'bg-blue-100 text-blue-900 border-blue-200' };
+    if (rank && rank <= 20) return { icon: <Award className="w-4 h-4 text-blue-600" />, label: `Rank #${rank}`, color: 'bg-blue-100 text-blue-900 border-blue-200' };
+    return { icon: <CheckCircle2 className="w-4 h-4 text-emerald-600" />, label: 'Qualified', color: 'bg-emerald-100 text-emerald-900 border-emerald-200' };
   };
 
   return (

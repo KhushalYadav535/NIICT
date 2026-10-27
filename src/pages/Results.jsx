@@ -29,7 +29,7 @@ const Results = () => {
   const [error, setError] = useState('');
   
   const [top3Students, setTop3Students] = useState([]);
-  const [top10Students, setTop10Students] = useState([]);
+  const [top20Students, setTop20Students] = useState([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -48,15 +48,14 @@ const Results = () => {
   const fetchLeaderboard = async () => {
     setLoadingLeaderboard(true);
     try {
-      const [res3, res10] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/results/top3`),
-        fetch(`${API_BASE_URL}/api/results/top10`)
-      ]);
-      const data3 = await res3.json();
-      const data10 = await res10.json();
+      const res3 = await fetch(`${API_BASE_URL}/api/results/top3`).then(r => r.json()).catch(() => null);
+      let res20 = await fetch(`${API_BASE_URL}/api/results/top20`).then(r => r.json()).catch(() => null);
+      if (!res20 || !res20.success || !res20.data || res20.data.length === 0) {
+        res20 = await fetch(`${API_BASE_URL}/api/results/top10`).then(r => r.json()).catch(() => null);
+      }
 
-      if (res3.ok && data3.success) setTop3Students(data3.data || []);
-      if (res10.ok && data10.success) setTop10Students(data10.data || []);
+      if (res3 && res3.success) setTop3Students(res3.data || []);
+      if (res20 && res20.success) setTop20Students(res20.data || []);
     } catch (err) {
       console.error('Error fetching leaderboard:', err);
     } finally {
@@ -162,12 +161,21 @@ const Results = () => {
         icon: <Award className="w-8 h-8 text-amber-700 fill-amber-500" />
       };
     }
+    if (rank && rank <= 20) {
+      return {
+        title: `State Merit Rank #${rank}`,
+        subtitle: 'Top 20 State Merit List Holder',
+        badgeBg: 'bg-gradient-to-r from-[#245894] to-[#1e40af] text-white',
+        cardBg: 'bg-gradient-to-br from-blue-50/50 via-white to-slate-50 border-blue-200 text-slate-900',
+        icon: <Award className="w-8 h-8 text-[#245894]" />
+      };
+    }
     return {
-      title: `State Merit Rank #${rank}`,
-      subtitle: 'Merit List Holder',
-      badgeBg: 'bg-gradient-to-r from-[#245894] to-[#1e40af] text-white',
-      cardBg: 'bg-gradient-to-br from-blue-50/50 via-white to-slate-50 border-blue-200 text-slate-900',
-      icon: <Award className="w-8 h-8 text-[#245894]" />
+      title: 'Qualified Candidate',
+      subtitle: 'State Level Talent Search Participant',
+      badgeBg: 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white',
+      cardBg: 'bg-gradient-to-br from-emerald-50/50 via-white to-slate-50 border-emerald-200 text-slate-900',
+      icon: <CheckCircle className="w-8 h-8 text-emerald-600" />
     };
   };
 
@@ -618,7 +626,11 @@ const Results = () => {
                         {result.marks}
                       </td>
                       <td colSpan={3} className="py-3.5 px-4 text-center text-xs">
-                        Merit Standing: <strong>Rank #{result.rank}</strong> out of 395 Candidates
+                        {result.rank && result.rank <= 20 ? (
+                          <>Merit Standing: <strong>Rank #{result.rank}</strong> (Top 20 State Merit)</>
+                        ) : (
+                          <>Status: <strong className="text-emerald-700 font-black">Qualified Candidate</strong> &bull; Talent Search Session 2026-2027</>
+                        )}
                       </td>
                     </tr>
                   </tfoot>
@@ -769,19 +781,22 @@ const Results = () => {
         </div>
       </section>
 
-      {/* ── Top 10 Merit Leaderboard Table (NO Scorecard column or button - strictly Name, Rank, Number/Marks) ── */}
-      {top10Students.length > 0 && (
+      {/* ── Top 20 Merit Leaderboard Table ── */}
+      {top20Students.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 mt-20 no-print">
           <div className="bg-white border-2 border-slate-200 rounded-[2rem] p-6 sm:p-9 shadow-sm">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-7">
               <div>
                 <h3 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
                   <Trophy className="w-6 h-6 text-amber-500" />
-                  <span>State Merit List Top 10 Performers (2026-2027)</span>
+                  <span>State Merit List Top 20 Performers (2026-2027)</span>
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
                   Evaluated based on official answer sheets with negative marking.
                 </p>
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#245894] text-xs font-bold">
+                <span>Top 20 State Rankers</span>
               </div>
             </div>
 
@@ -798,17 +813,19 @@ const Results = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium text-slate-800 bg-white">
-                  {top10Students.map((s, i) => (
+                  {top20Students.map((s, i) => (
                     <tr key={s.rollNumber || i} className="hover:bg-slate-50 transition-colors">
                       <td className="py-4 px-5 font-black">
                         <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-black ${
                           s.rank === 1 
-                            ? 'bg-amber-400 text-slate-950' 
+                            ? 'bg-amber-400 text-slate-950 shadow-sm' 
                             : s.rank === 2 
-                            ? 'bg-slate-300 text-slate-950'
+                            ? 'bg-slate-300 text-slate-950 shadow-sm' 
                             : s.rank === 3 
-                            ? 'bg-amber-600 text-white'
-                            : 'bg-slate-200 text-slate-700'
+                            ? 'bg-amber-600 text-white shadow-sm' 
+                            : s.rank <= 10
+                            ? 'bg-blue-100 text-blue-900 border border-blue-200'
+                            : 'bg-slate-100 text-slate-700 border border-slate-200'
                         }`}>
                           #{s.rank}
                         </span>
