@@ -283,27 +283,15 @@ const Results = () => {
             State Level General Knowledge &amp; Computer Literacy Talent Search Exam 2026-2027.
           </motion.p>
 
-          {/* Quick Metrics */}
+          {/* Quick Info */}
           <motion.div 
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="mt-6 inline-flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs sm:text-sm text-slate-600 bg-white/90 backdrop-blur-md px-6 py-3 rounded-2xl border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)]"
+            className="mt-6 inline-flex items-center justify-center gap-2 text-xs sm:text-sm text-slate-600 bg-white/90 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)]"
           >
-            <div className="flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-amber-500" />
-              <span>Highest Marks: <strong className="text-slate-900 font-black font-mono">92.02 / 100</strong></span>
-            </div>
-            <span className="hidden sm:inline text-slate-300">&bull;</span>
-            <div className="flex items-center gap-2">
-              <GraduationCap className="w-4 h-4 text-[#245894]" />
-              <span>Evaluated: <strong className="text-slate-900 font-black">395 Candidates</strong></span>
-            </div>
-            <span className="hidden sm:inline text-slate-300">&bull;</span>
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-emerald-600" />
-              <span>Exam Date: <strong className="text-slate-900 font-bold">18 Oct 2026</strong></span>
-            </div>
+            <Calendar className="w-4 h-4 text-emerald-600" />
+            <span>Exam Date: <strong className="text-slate-900 font-bold">18 Oct 2026</strong></span>
           </motion.div>
         </div>
       </section>
