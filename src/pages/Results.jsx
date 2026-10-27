@@ -48,14 +48,38 @@ const Results = () => {
   const fetchLeaderboard = async () => {
     setLoadingLeaderboard(true);
     try {
-      const res3 = await fetch(`${API_BASE_URL}/api/results/top3`).then(r => r.json()).catch(() => null);
-      let res20 = await fetch(`${API_BASE_URL}/api/results/top20`).then(r => r.json()).catch(() => null);
-      if (!res20 || !res20.success || !res20.data || res20.data.length === 0) {
-        res20 = await fetch(`${API_BASE_URL}/api/results/top10`).then(r => r.json()).catch(() => null);
+      const [res3, res20] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/results/top3`).then(r => r.json()).catch(() => null),
+        fetch(`${API_BASE_URL}/api/results/top20`).then(r => r.json()).catch(() => null)
+      ]);
+
+      let top20List = [];
+      if (res20 && res20.success && Array.isArray(res20.data) && res20.data.length > 0) {
+        top20List = res20.data;
+      } else {
+        const res10 = await fetch(`${API_BASE_URL}/api/results/top10`).then(r => r.json()).catch(() => null);
+        if (res10 && res10.success && Array.isArray(res10.data)) {
+          top20List = res10.data;
+        }
       }
 
-      if (res3 && res3.success) setTop3Students(res3.data || []);
-      if (res20 && res20.success) setTop20Students(res20.data || []);
+      // Filter to ensure only positive valid ranks (1 to 20) are included and sorted
+      const validRankers = top20List
+        .filter(s => s && typeof s.rank === 'number' && s.rank >= 1 && s.rank <= 20)
+        .sort((a, b) => a.rank - b.rank);
+
+      setTop20Students(validRankers);
+
+      // Top 3 for the podium - strictly ranks 1, 2, 3
+      let top3List = [];
+      if (res3 && res3.success && Array.isArray(res3.data) && res3.data.length > 0 && res3.data[0].rank === 1) {
+        top3List = res3.data.filter(s => s && typeof s.rank === 'number' && s.rank >= 1 && s.rank <= 3);
+      }
+      if (top3List.length === 0 && validRankers.length >= 3) {
+        top3List = validRankers.slice(0, 3);
+      }
+      setTop3Students(top3List);
+
     } catch (err) {
       console.error('Error fetching leaderboard:', err);
     } finally {
@@ -545,10 +569,10 @@ const Results = () => {
                   </div>
 
                   <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs">
-                    <span className="text-slate-500 font-semibold block text-[11px]">Candidate Mobile / Contact</span>
-                    <span className="font-bold text-slate-900 flex items-center gap-1.5 text-sm mt-0.5">
-                      <Phone className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>{result.phone || 'Registered in Database'}</span>
+                    <span className="text-slate-500 font-semibold block text-[11px]">Candidate Contact</span>
+                    <span className="font-bold text-slate-800 flex items-center gap-1.5 text-sm mt-0.5 font-mono">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>{result.phone ? `XXXXXX${String(result.phone).slice(-4)}` : 'Verified & Protected'}</span>
                     </span>
                   </div>
 

@@ -312,8 +312,8 @@ const ResultPopup = () => {
                       <span className="text-xs font-black text-[#245894] font-mono">{result.rollNumber}</span>
                     </div>
                     <div className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm">
-                      <span className="text-[10px] text-slate-500 block font-bold">Candidate Mobile</span>
-                      <span className="text-xs font-bold text-slate-800">{result.phone || 'Registered'}</span>
+                      <span className="text-[10px] text-slate-500 block font-bold">Candidate Contact</span>
+                      <span className="text-xs font-bold text-slate-800 font-mono">{result.phone ? `XXXXXX${String(result.phone).slice(-4)}` : 'Verified'}</span>
                     </div>
                     <div className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm">
                       <span className="text-[10px] text-slate-500 block font-bold">Marks Obtained</span>
